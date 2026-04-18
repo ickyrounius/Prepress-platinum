@@ -1,0 +1,120 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function hasRole(roles) {
+      return isSignedIn()
+        && get(/databases/$(database)/documents/T_USERS/$(request.auth.uid)).data.KATEGORI in roles;
+    }
+
+    function isAdminLike() {
+      return hasRole(['ADMIN', 'DEVELOPER', 'MANAGER']);
+    }
+
+    function isOwnerWrite() {
+      return isSignedIn() && request.resource.data.operator_id == request.auth.uid;
+    }
+
+    // User profile master
+    match /T_USERS/{uid} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.auth.uid == uid;
+      allow update: if isAdminLike() || request.auth.uid == uid;
+      allow delete: if isAdminLike();
+    }
+
+    // KPI settings and global app settings (admin managed)
+    match /m_settings/{docId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isAdminLike();
+    }
+
+    // Workflow and process collections
+    match /workflows_jos/{docId} {
+      allow read: if isSignedIn();
+      allow create, update: if isAdminLike() || isOwnerWrite();
+      allow delete: if isAdminLike();
+    }
+
+    match /workflows_jop/{docId} {
+      allow read: if isSignedIn();
+      allow create, update: if isAdminLike() || isOwnerWrite();
+      allow delete: if isAdminLike();
+    }
+
+    match /proses_jod/{docId} {
+      allow read: if isSignedIn();
+      allow create, update: if isAdminLike() || isOwnerWrite();
+      allow delete: if isAdminLike();
+    }
+
+    match /proses_dt_b/{docId} {
+      allow read: if isSignedIn();
+      allow create, update: if isAdminLike() || isOwnerWrite();
+      allow delete: if isAdminLike();
+    }
+
+    match /proses_prepress_b/{docId} {
+      allow read: if isSignedIn();
+      allow create, update: if isAdminLike() || isOwnerWrite();
+      allow delete: if isAdminLike();
+    }
+
+    match /proses_ctp_b/{docId} {
+      allow read: if isSignedIn();
+      allow create, update: if isAdminLike() || isOwnerWrite();
+      allow delete: if isAdminLike();
+    }
+
+    match /proses_ctcp_b/{docId} {
+      allow read: if isSignedIn();
+      allow create, update: if isAdminLike() || isOwnerWrite();
+      allow delete: if isAdminLike();
+    }
+
+    match /proses_flexo_b/{docId} {
+      allow read: if isSignedIn();
+      allow create, update: if isAdminLike() || isOwnerWrite();
+      allow delete: if isAdminLike();
+    }
+
+    match /proses_etching_b/{docId} {
+      allow read: if isSignedIn();
+      allow create, update: if isAdminLike() || isOwnerWrite();
+      allow delete: if isAdminLike();
+    }
+
+    match /proses_screen_b/{docId} {
+      allow read: if isSignedIn();
+      allow create, update: if isAdminLike() || isOwnerWrite();
+      allow delete: if isAdminLike();
+    }
+
+    match /proses_support_b/{docId} {
+      allow read: if isSignedIn();
+      allow create, update: if isAdminLike() || isOwnerWrite();
+      allow delete: if isAdminLike();
+    }
+
+    match /prepress_requests/{docId} {
+      allow read: if isSignedIn();
+      allow create, update: if isAdminLike() || isOwnerWrite();
+      allow delete: if isAdminLike();
+    }
+
+    // Audit logs immutable for normal users
+    match /audit_logs/{logId} {
+      allow read: if isAdminLike();
+      allow create: if isSignedIn() && request.resource.data.actor_uid == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // Deny all unknown collections by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
