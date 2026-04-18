@@ -13,7 +13,11 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "firebase": "^12.11.0",
+<<<<<<< HEAD
     "framer-motion": "^11.18.2",
+=======
+    "framer-motion": "^11.3.17",
+>>>>>>> 06b91674e4f53ac844b5d9b4e1edf5ceba6c6fac
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.7",
     "lucide-react": "^1.7.0",
