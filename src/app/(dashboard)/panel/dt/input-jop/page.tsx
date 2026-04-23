@@ -33,7 +33,7 @@ export default function InputJOP() {
       <GlobalInputForm
         title="Registrasi JOP Baru"
         collectionName="workflows_jop"
-        docId={formData.no_jop as string}
+        docId={formData.no_jop}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1">
@@ -42,7 +42,7 @@ export default function InputJOP() {
           </div>
           <div className="space-y-1">
             <label className="text-[10px] font-bold text-slate-400 uppercase">Auto Tipe JOP</label>
-            <input readOnly value={(formData.tipe_jop as string) || ''} className="w-full p-3 border rounded-xl bg-slate-200 text-slate-600 font-bold text-sm outline-none" placeholder="Auto Fill" />
+            <input readOnly value={formData.tipe_jop || ''} className="w-full p-3 border rounded-xl bg-slate-200 text-slate-600 font-bold text-sm outline-none" placeholder="Auto Fill" />
           </div>
           <div className="space-y-1 md:col-span-2">
             <label className="text-[10px] font-bold text-slate-400 uppercase">Baru / ReLayout</label>

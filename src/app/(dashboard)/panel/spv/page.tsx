@@ -160,8 +160,8 @@ export default function SPVPanel() {
                                 }
                                 const isJop = targetType === 'NO_JOP';
                                 const dp = calculateDeadlinePressureScore(
-                                  (isJop ? (data?.tgl_target_no_jop ?? data?.tgl_target) : (data?.tgl_target_no_jos ?? data?.tgl_target)) as any,
-                                  (isJop ? (data?.tgl_no_jop ?? data?.tgl_masuk) : (data?.tgl_no_jos ?? data?.tgl_masuk)) as any
+                                  isJop ? (data?.tgl_target_no_jop ?? data?.tgl_target) : (data?.tgl_target_no_jos ?? data?.tgl_target),
+                                  isJop ? (data?.tgl_no_jop ?? data?.tgl_masuk) : (data?.tgl_no_jos ?? data?.tgl_masuk)
                                 );
                                 setDpValue(dp);
                             }}

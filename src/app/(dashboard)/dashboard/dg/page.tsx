@@ -193,7 +193,7 @@ export default function DGDashboard() {
           <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">Kanban Proses DG</h3>
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Board khusus proses divisi Design Graphic</p>
         </div>
-        <KanbanBoard data={kanbanItems as any[]} />
+        <KanbanBoard data={kanbanItems} />
       </motion.div>
     </motion.div>
   );

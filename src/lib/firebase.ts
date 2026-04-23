@@ -18,10 +18,9 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-// Guard service initialization for build-time/SSR safety
-const db = firebaseConfig.projectId ? getFirestore(app) : (null as any);
-const rtdb = firebaseConfig.databaseURL ? getDatabase(app) : (null as any);
-const auth = firebaseConfig.apiKey ? getAuth(app) : (null as any);
+const db = getFirestore(app);
+const rtdb = getDatabase(app);
+const auth = getAuth(app);
 
 // Guard analytics for client side only
 let analytics;

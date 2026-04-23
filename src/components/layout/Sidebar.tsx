@@ -17,8 +17,7 @@ import {
   History,
   Book,
   Code,
-  Scale,
-  CheckSquare
+  Scales
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
@@ -72,13 +71,9 @@ export function Sidebar({ className }: { className?: string }) {
   ];
 
   const adminMenu = [
-    { name: 'System Settings', href: '/panel/admin/settings/kpi', icon: Settings },
+    { name: 'Admin Console', href: '/panel/admin', icon: Settings },
     { name: 'User Management', href: '/users', icon: Users },
     { name: 'Log History', href: '/audit-log', icon: History },
-  ];
-
-  const quickActionMenu = [
-    { name: 'Quick Input (JOS/JOP)', href: '/panel/admin', icon: FileText },
   ];
 
   const operationalMenu = (() => {
@@ -86,7 +81,7 @@ export function Sidebar({ className }: { className?: string }) {
     const normalizedRole = role.toUpperCase();
     
     const spv = [
-      { name: 'Panel SPV (Coord)', href: '/panel/spv', icon: Scale },
+      { name: 'Panel SPV (Coord)', href: '/panel/spv', icon: Scales },
     ];
     const dt = [
       { name: 'Dashboard DT', href: '/dashboard/dt', icon: LayoutDashboard },
@@ -110,33 +105,23 @@ export function Sidebar({ className }: { className?: string }) {
       { name: 'Dashboard Produksi', href: '/dashboard/production', icon: LayoutDashboard },
       { name: 'Panel Produksi', href: '/panel/production', icon: Settings },
     ];
-    const qc = [
-      { name: 'Panel QC', href: '/panel/qc', icon: CheckSquare },
-    ];
 
-    if (['ADMIN', 'DEVELOPER', 'MANAGER'].includes(normalizedRole)) {
-      return [...spv, ...dt, ...dg, ...ds, ...prepress, ...production, ...qc];
+    if (normalizedRole === 'ADMIN' || normalizedRole === 'DEVELOPER') {
+      return [...spv, ...dt, ...dg, ...ds, ...prepress, ...production];
     }
 
     switch(normalizedRole) {
       case 'SPV': return spv;
       case 'DT': return dt;
       case 'DG': return dg;
-<<<<<<< HEAD
-      case 'SUPPORT DESIGN': return ds;
-=======
       case 'SUPPORT_DESIGN': return ds;
->>>>>>> 06b91674e4f53ac844b5d9b4e1edf5ceba6c6fac
       case 'PREPRESS': return prepress;
       case 'PRODUCTION': return production;
-      case 'QC':
-      case 'QCDT':
-      case 'QCDG': return qc;
       default: return [];
     }
   })();
 
-  const isDevOrAdmin = ['ADMIN', 'DEVELOPER', 'MANAGER'].includes(role?.toUpperCase() || '');
+  const isDevOrAdmin = role?.toUpperCase() === 'ADMIN' || role?.toUpperCase() === 'DEVELOPER';
 
   return (
     <>
@@ -187,11 +172,9 @@ export function Sidebar({ className }: { className?: string }) {
             </div>
 
             {isDevOrAdmin && (
-              <div className="space-y-1">
-                <p className="px-4 text-[10px] font-black text-rose-500/80 uppercase tracking-widest mb-3 border-t border-slate-800 pt-5">Developer Tools</p>
+              <div>
+                <p className="px-4 text-[10px] font-black text-rose-500/80 uppercase tracking-widest mb-3 border-t border-slate-800 pt-5">System Admin</p>
                 {adminMenu.map(item => <SidebarItem key={item.name} item={item} pathname={pathname} closeSidebar={closeSidebar} />)}
-                <p className="px-4 text-[10px] font-black text-amber-500/80 uppercase tracking-widest mb-3 border-t border-slate-800 pt-5 mt-5">Quick Actions</p>
-                {quickActionMenu.map(item => <SidebarItem key={item.name} item={item} pathname={pathname} closeSidebar={closeSidebar} />)}
               </div>
             )}
 
@@ -217,7 +200,7 @@ export function Sidebar({ className }: { className?: string }) {
           </div>
           <div className="overflow-hidden">
             <p className="text-xs font-black text-white truncate">
-              {['DEVELOPER', 'MANAGER', 'ADMIN'].includes(role?.toUpperCase() || '') ? 'Super User' : 'Standard User'}
+              {role?.toUpperCase() === 'DEVELOPER' ? 'Super User' : role?.toUpperCase() === 'ADMIN' ? 'Admin User' : 'Standard User'}
             </p>
             <p className="text-[9px] text-slate-400 uppercase tracking-widest font-bold truncate">
               {role?.toUpperCase() === 'DEVELOPER' ? 'Admin System' : role || 'GUEST'}

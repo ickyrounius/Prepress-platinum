@@ -17,8 +17,7 @@ import {
   Monitor,
   Stack,
   ChartBar,
-  Users,
-  Package
+  Users
 } from '@phosphor-icons/react';
 import TrendChart from '@/components/dashboard/TrendChart';
 import WorkloadChart from '@/components/dashboard/WorkloadChart';
@@ -120,7 +119,6 @@ export default function DTDashboard() {
     { title: "Total Export", value: 450, icon: Download, color: "sky" },
     { title: "Total Jasa", value: 310, icon: Archive, color: "rose" },
     { title: "Total Local", value: 485, icon: MapPin, color: "teal" },
-    { title: "Total Karton Box", value: 345, icon: Package, color: "orange" },
     { title: "Overdue", value: 8, icon: Warning, color: "red" },
     { title: "On Time", value: 960, icon: CheckCircle, color: "emerald" },
     { title: "Before Deadline", value: 277, icon: Lightning, color: "yellow" },
@@ -197,7 +195,7 @@ export default function DTDashboard() {
           <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">Kanban Proses DT</h3>
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Board khusus proses divisi DT/CAD</p>
         </div>
-        <KanbanBoard data={kanbanItems as any[]} />
+        <KanbanBoard data={kanbanItems} />
       </motion.div>
     </motion.div>
   );

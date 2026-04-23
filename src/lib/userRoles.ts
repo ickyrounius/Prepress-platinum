@@ -1,38 +1,41 @@
-export const ROLE_SELECT_GROUPS = [
-  {
-    label: "Management & Admin",
-    options: ["ADMIN", "DEVELOPER", "MANAGER", "SPV"],
-  },
-  {
-    label: "Departemen DT",
-    options: ["DT", "SPV DT", "ADMIN DT", "CAD", "QCDT"],
-  },
-  {
-    label: "Departemen DG",
-    options: ["DG", "DS", "SPV DG", "ADMIN DG", "QCDG"],
-  },
-  {
-    label: "Departemen Prepress",
-    options: [
-      "PRODUCTION",
-      "SPV PREPRESS",
-      "KOORDINATOR",
-      "OP CTP",
-      "OP CTCP",
-      "OP FLEXO",
-      "OP SCREEN",
-      "OP ETCHING",
-      "ADMIN PREPRESS",
-    ],
-  },
-  {
-    label: "Support & QC",
-    options: ["SUPPORT DESIGN", "GMG", "CNC", "BLUEPRINT", "QC"],
-  },
+export const USER_ROLES = [
+  "ADMIN",
+  "DEVELOPER",
+  "MANAGER",
+  "ADMIN DT",
+  "ADMIN DG",
+  "ADMIN PREPRESS",
+  "SPV DT",
+  "DT",
+  "CAD",
+  "SPV DG",
+  "DG",
+  "DS",
+  "SPV PREPRESS",
+  "KOORDINATOR",
+  "PRODUCTION",
+  "OP CTP",
+  "OP CTCP",
+  "OP FLEXO",
+  "OP SCREEN",
+  "OP ETCHING",
+  "QC",
+  "SUPPORT DESIGN",
+  "GMG",
+  "CNC",
+  "BLUEPRINT",
+] as const;
+
+export type UserRole = typeof USER_ROLES[number];
+
+export const ROLE_SELECT_GROUPS: Array<{ label: string; options: UserRole[] }> = [
+  { label: "Core Control", options: ["ADMIN", "DEVELOPER", "MANAGER"] },
+  { label: "Operational Admin", options: ["ADMIN DT", "ADMIN DG", "ADMIN PREPRESS"] },
+  { label: "Design Department", options: ["SPV DG", "DG", "DS", "SPV DT", "DT", "CAD", "QC"] },
+  { label: "Prepress Department", options: ["SPV PREPRESS", "KOORDINATOR", "PRODUCTION", "OP CTP", "OP CTCP", "OP FLEXO", "OP SCREEN", "OP ETCHING"] },
+  { label: "Support Department", options: ["SUPPORT DESIGN", "GMG", "CNC", "BLUEPRINT"] },
 ];
 
-export const ALL_ROLES = ROLE_SELECT_GROUPS.flatMap((g) => g.options);
-
-export function isValidUserRole(role: string): boolean {
-  return ALL_ROLES.includes(role.toUpperCase());
+export function isValidUserRole(role: string): role is UserRole {
+  return USER_ROLES.includes(role as UserRole);
 }

@@ -1,36 +1,15 @@
 import { JopData, JosData } from '../job/jobTypes';
-<<<<<<< HEAD
-import { calculateDeadlinePressureScore, calculateTotalTc, DEFAULT_TC_FORMULA, type TCFormulaConfig } from '../../lib/tcFormula';
-
-export const calculateKPI = (item: JopData, tcFormula: TCFormulaConfig = DEFAULT_TC_FORMULA): Partial<JopData> => {
-  const revisi = typeof item.REVISI_KE === 'number' ? item.REVISI_KE : (parseInt(String(item.REVISI_KE)) || 0);
-  const laValue = Math.min(revisi + 1, 5);
-=======
 
 export const calculateKPI = (item: JopData): Partial<JopData> => {
   const revisi = typeof item.REVISI_KE === 'number' ? item.REVISI_KE : (parseInt(String(item.REVISI_KE)) || 0);
   const laValue = Math.min(revisi + 1, 5);
   let dpValue = 1;
->>>>>>> 06b91674e4f53ac844b5d9b4e1edf5ceba6c6fac
   
   const ingressDate = item.TGL_MASUK_JOP || item.TGL_MASUK;
   const targetDate = item.TGL_TARGET_JOP || item.TGL_TARGET;
   const startDate = item.TGL_MULAI_B || item.TGL_MULAI;
   const finishDate = item.TGL_SELESAI_JOP || item.TGL_SELESAI_B || item.TGL_SELESAI;
 
-<<<<<<< HEAD
-  // Use shared DP calculation from tcFormula.ts (single source of truth)
-  const dpValue = calculateDeadlinePressureScore(targetDate as string | undefined, ingressDate as string | undefined);
-
-  // Use shared TC calculation from tcFormula.ts with configurable weights
-  const tcValues = {
-    kt: parseFloat(String(item.KT)) || 0,
-    rp: parseFloat(String(item.RP)) || 0,
-    bs: parseFloat(String(item.BS)) || 0,
-    cad: parseFloat(String(item.CAD)) || 0,
-  };
-  const totalTC = calculateTotalTc(tcValues, laValue, dpValue, tcFormula);
-=======
   if (ingressDate && targetDate) {
     const t1 = new Date(ingressDate);
     const t2 = new Date(targetDate);
@@ -51,18 +30,13 @@ export const calculateKPI = (item: JopData): Partial<JopData> => {
     (parseFloat(String(item.CAD))||0) + 
     laValue + dpValue
   );
->>>>>>> 06b91674e4f53ac844b5d9b4e1edf5ceba6c6fac
 
   const levelTC = totalTC <= 8 ? "RINGAN" : (totalTC <= 13 ? "STANDARD" : (totalTC <= 18 ? "ADVANCED" : (totalTC <= 23 ? "COMPLEX" : "CRITICAL")));
   const hasSupport = !!(item.PIC_SUPPORT && item.PIC_SUPPORT !== "-");
   
   let tcUtama = totalTC;
   let tcSupport = 0;
-<<<<<<< HEAD
-  const faseDT = String(item.FASE_DT || "").toUpperCase();
-=======
   const faseDT = String(item.FASE_DT || item.FAASE_DT || "").toUpperCase();
->>>>>>> 06b91674e4f53ac844b5d9b4e1edf5ceba6c6fac
 
   if (hasSupport) {
     if (faseDT === "FULL") {
@@ -92,10 +66,10 @@ export const calculateKPI = (item: JopData): Partial<JopData> => {
   }
 
   if (startDate && startDate !== "-") {
-    const start = new Date(startDate as any);
-    const masuk = ingressDate ? new Date(ingressDate as any) : null;
-    const end = (progUp.TGL_SELESAI_JOP || finishDate) && finishDate !== "-" ? new Date((progUp.TGL_SELESAI_JOP || finishDate!) as any) : null;
-    const target = targetDate ? new Date(targetDate as any) : null;
+    const start = new Date(startDate);
+    const masuk = ingressDate ? new Date(ingressDate) : null;
+    const end = (progUp.TGL_SELESAI_JOP || finishDate) && finishDate !== "-" ? new Date(progUp.TGL_SELESAI_JOP || finishDate!) : null;
+    const target = targetDate ? new Date(targetDate) : null;
 
     if (!isNaN(start.getTime())) {
       if (masuk && !isNaN(masuk.getTime())) {
@@ -154,10 +128,10 @@ export const calculateKPI_JOS = (item: JosData): Partial<JosData> => {
   }
 
   if (item.TGL_MULAI_JOS && item.TGL_MULAI_JOS !== "-") {
-    const start = new Date(item.TGL_MULAI_JOS as any);
-    const masuk = item.TGL_MASUK_JOS ? new Date(item.TGL_MASUK_JOS as any) : null;
-    const end = (progUp.TGL_SELESAI_JOS || item.TGL_SELESAI_JOS) && item.TGL_SELESAI_JOS !== "-" ? new Date((progUp.TGL_SELESAI_JOS || item.TGL_SELESAI_JOS!) as any) : null;
-    const target = item.TGL_TARGET_JOS ? new Date(item.TGL_TARGET_JOS as any) : null;
+    const start = new Date(item.TGL_MULAI_JOS);
+    const masuk = item.TGL_MASUK_JOS ? new Date(item.TGL_MASUK_JOS) : null;
+    const end = (progUp.TGL_SELESAI_JOS || item.TGL_SELESAI_JOS) && item.TGL_SELESAI_JOS !== "-" ? new Date(progUp.TGL_SELESAI_JOS || item.TGL_SELESAI_JOS!) : null;
+    const target = item.TGL_TARGET_JOS ? new Date(item.TGL_TARGET_JOS) : null;
 
     if (!isNaN(start.getTime())) {
       if (masuk && !isNaN(masuk.getTime())) {

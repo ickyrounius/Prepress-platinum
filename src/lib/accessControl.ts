@@ -3,8 +3,8 @@ export const OPERATIONAL_ADMIN_ROLES = ["ADMIN DT", "ADMIN DG", "ADMIN PREPRESS"
 export const ALL_ADMIN_ROLES = [...ADMIN_ROLES, ...OPERATIONAL_ADMIN_ROLES] as const;
 
 const ROLE_GROUPS = {
-  dt: ["DT", "SPV DT", "ADMIN DT", "CAD", "QCDT"],
-  dg: ["DG", "DS", "SPV DG", "ADMIN DG", "QCDG"],
+  dt: ["DT", "SPV DT", "ADMIN DT"],
+  dg: ["DG", "DS", "SPV DG", "ADMIN DG"],
   prepress: [
     "PRODUCTION",
     "SPV PREPRESS",
@@ -17,7 +17,7 @@ const ROLE_GROUPS = {
     "ADMIN PREPRESS",
   ],
   support: ["SUPPORT DESIGN", "GMG", "CNC", "BLUEPRINT"],
-  qc: ["QC", "QCDT", "QCDG"],
+  qc: ["QC"],
 } as const;
 
 interface RouteAccessRule {

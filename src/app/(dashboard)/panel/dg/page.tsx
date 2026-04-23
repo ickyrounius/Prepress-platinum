@@ -132,8 +132,8 @@ export default function DGPanel() {
                     setLaValue(la);
                   }
                   const dp = calculateDeadlinePressureScore(
-                    (data?.tgl_target_no_jos ?? data?.tgl_target) as any,
-                    (data?.tgl_no_jos ?? data?.tgl_masuk) as any
+                    data?.tgl_target_no_jos ?? data?.tgl_target,
+                    data?.tgl_no_jos ?? data?.tgl_masuk
                   );
                   setDpValue(dp);
                 }}

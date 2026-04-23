@@ -1,77 +1,63 @@
-/**
- * Normalizes workflow status strings for consistency across clinical and operational modules.
- * Ensures the status reflects the standardized DB model (MODEL_DB_FB).
- */
-export function normalizeWorkflowStatusInput(status: string): string {
-  if (!status) return "";
-  
-  const s = status.trim().toUpperCase();
-  
-  // Mapping for common variants to ensure standardization
-  const mapping: Record<string, string> = {
-    "DONE": "CLOSED",
-    "FINISHED": "CLOSED",
-    "PROSES": "ON PROCESS",
-    "PENGERJAAN": "ON PROCESS",
-    "PROCESS": "ON PROCESS",
-    "REVISI": "HOLD",
-    "PENDING": "HOLD",
-  };
-  
-  return mapping[s] || s;
+export type WorkflowBucket = "closed" | "review" | "process" | "hold";
+
+const CLOSED_STATUSES = ["CLOSED", "DONE", "ACC", "SELESAI", "SELESAI LAYOUT", "SELESAI CAD"];
+const REVIEW_STATUSES = ["BLUEPRINT", "PREVIEW", "ACC DG", "ACC DG&MARKETING", "REVIEW"];
+const PROCESS_STATUSES = ["LAYOUT", "ON PROGRESS", "PROSESS", "PROSES", "ASSIGNED"];
+const HOLD_STATUSES = ["HOLD", "REVISI", "REJECT", "CANCEL"];
+
+export type JopType = "EXPORT" | "JASA" | "LOCAL" | "SMS" | "KARTON_BOX";
+export type JosType = "EXPORT" | "JASA" | "LOCAL" | "ALL";
+
+export function detectJopType(value: unknown): JopType {
+  const noJop = String(value || "").toUpperCase();
+  if (noJop.startsWith("7B")) return "JASA";
+  if (noJop.startsWith("79")) return "SMS";
+  if (noJop.startsWith("9")) return "KARTON_BOX";
+  if (noJop.startsWith("8")) return "EXPORT";
+  return "LOCAL";
 }
 
-export type WorkflowBucket = 'review' | 'process' | 'hold' | 'closed';
-
-/**
- * Classifies various status strings into a unified set of buckets for dashboard stats.
- */
-export function classifyWorkflowStatus(status: string | unknown, subStatus?: string | unknown): WorkflowBucket {
-  const s = String(status || "").toUpperCase();
-  const sub = String(subStatus || "").toUpperCase();
-
-  if (s === 'CLOSED' || s === 'DONE' || sub === 'DONE' || sub === 'CLOSED') return 'closed';
-  if (s === 'HOLD' || s === 'REJECT' || sub === 'HOLD' || sub === 'REJECT') return 'hold';
-  if (s === 'REVIEW' || s === 'ASSIGNED' || s === 'BLUEPRINT' || sub === 'REVIEW' || sub === 'BLUEPRINT') return 'review';
-  
-  return 'process';
+export function detectJosType(value: unknown): JosType {
+  const jos = String(value || "").toUpperCase();
+  if (jos.includes("EXPORT")) return "EXPORT";
+  if (jos.includes("JASA")) return "JASA";
+  if (jos.includes("LOCAL")) return "LOCAL";
+  return "ALL";
 }
 
-export type JopType = 'LOCAL' | 'EXPORT' | 'JASA' | 'SMS' | 'KARTON_BOX';
-export type JosType = 'LOCAL' | 'EXPORT' | 'JASA';
+export function classifyWorkflowStatus(statusValue: unknown, subStatusValue?: unknown): WorkflowBucket {
+  const status = String(statusValue || "").toUpperCase();
+  const subStatus = String(subStatusValue || "").toUpperCase();
 
-/**
- * Detects JOP type based on number prefix or explicit field.
- */
-export function detectJopType(idOrType: string | unknown): JopType {
-  const val = String(idOrType || "").toUpperCase();
-  if (val === 'JASA' || val.startsWith('7B')) return 'JASA';
-  if (val === 'SMS' || val.startsWith('79')) return 'SMS';
-  if (val === 'KARTON_BOX' || val.startsWith('9')) return 'KARTON_BOX';
-  if (val === 'EXPORT' || val.startsWith('8')) return 'EXPORT';
-  return 'LOCAL';
+  if (CLOSED_STATUSES.includes(status) || subStatus === "DONE" || ["SELESAI LAYOUT", "SELESAI CAD"].includes(subStatus)) return "closed";
+  if (REVIEW_STATUSES.includes(status)) return "review";
+  if (PROCESS_STATUSES.includes(status)) return "process";
+  if (HOLD_STATUSES.includes(status)) return "hold";
+  return "process";
 }
 
-/**
- * Detects JOS type based on explicit field.
- */
-export function detectJosType(type: string | unknown): JosType {
-  const val = String(type || "").toUpperCase();
-  if (val === 'JASA') return 'JASA';
-  if (val === 'EXPORT') return 'EXPORT';
-  return 'LOCAL';
+const STATUS_NORMALIZATION_MAP: Record<string, string> = {
+  PROSESS: "PROSES",
+  PROSES: "PROSES",
+  LAYOUT: "PROSES",
+  "ON PROGRESS": "PROSES",
+  ASSIGNED: "ASSIGNED",
+  BLUEPRINT: "BLUEPRINT",
+  PREVIEW: "PREVIEW",
+  "ACC DG": "ACC DG",
+  "ACC DG&MARKETING": "ACC DG&MARKETING",
+  REVIEW: "REVIEW",
+  HOLD: "HOLD",
+  REVISI: "REVISI",
+  REJECT: "REJECT",
+  CANCEL: "CANCEL",
+  APPROVED: "APPROVED",
+  DONE: "DONE",
+  SELESAI: "DONE",
+  CLOSED: "DONE",
+};
+
+export function normalizeWorkflowStatusInput(value: unknown): string {
+  const raw = String(value || "").toUpperCase().trim();
+  return STATUS_NORMALIZATION_MAP[raw] || raw;
 }
-
-export const WORKFLOW_STATUSES = [
-  "REVIEW",
-  "ASSIGNED",
-  "ON PROCESS",
-  "BLUEPRINT",
-  "ACC",
-  "CLOSED",
-  "CANCEL",
-  "REJECT",
-  "HOLD"
-] as const;
-
-export type WorkflowStatus = typeof WORKFLOW_STATUSES[number];

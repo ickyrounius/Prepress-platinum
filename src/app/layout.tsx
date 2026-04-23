@@ -39,10 +39,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en">
       <body
-        suppressHydrationWarning
-        className={`${outfit.variable} font-sans antialiased text-slate-800 bg-slate-50 dark:text-slate-200 dark:bg-slate-900 transition-colors duration-300`}
+        className={`${outfit.variable} font-sans antialiased text-slate-800 bg-slate-50 dark:text-slate-200 dark:bg-slate-900`}
       >
         <AuthProvider>
           <NotificationProvider>
