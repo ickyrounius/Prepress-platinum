@@ -17,7 +17,7 @@ import TrendChart from '@/components/dashboard/TrendChart';
 import WorkloadChart from '@/components/dashboard/WorkloadChart';
 import { cn } from '@/lib/utils';
 import type { Icon } from '@phosphor-icons/react';
-import { KanbanBoard } from '@/components/dashboard/KanbanBoard';
+import { KanbanBoard, type KanbanItem } from '@/components/dashboard/KanbanBoard';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -98,7 +98,7 @@ const departments = ["CTCP", "CTP", "FLEXO", "ETCHING", "SCREEN"];
 
 export default function ProductionDashboard() {
   const [activeDept, setActiveDept] = useState("CTCP");
-  const [kanbanItems, setKanbanItems] = useState<Array<Record<string, unknown>>>([]);
+  const [kanbanItems, setKanbanItems] = useState<KanbanItem[]>([]);
 
   useEffect(() => {
     const deptCollectionMap: Record<string, string> = {
@@ -111,9 +111,9 @@ export default function ProductionDashboard() {
     const targetCollection = deptCollectionMap[activeDept] || 'proses_prepress_b';
     const q = query(collection(db, targetCollection));
     const unsub = onSnapshot(q, (snapshot) => {
-      const items: Array<Record<string, unknown>> = [];
+      const items: KanbanItem[] = [];
       snapshot.forEach((doc) => {
-        items.push({ id: doc.id, sourceType: 'PROD', ...doc.data() });
+        items.push({ id: doc.id, sourceType: 'PROD', ...doc.data() } as unknown as KanbanItem);
       });
       setKanbanItems(items);
     });

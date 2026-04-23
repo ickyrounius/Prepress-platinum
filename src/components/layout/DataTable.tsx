@@ -3,7 +3,10 @@
 import { Printer, CaretUpDown, Lightning, Warning, Circle } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 
-interface DataTableProps<T = Record<string, unknown>> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type DataRow = Record<string, any>;
+
+interface DataTableProps<T extends DataRow = DataRow> {
   data: T[];
   columns: { key: string; label: string }[];
   onSort?: (key: string) => void;
@@ -17,7 +20,7 @@ interface DataTableProps<T = Record<string, unknown>> {
   totalClosed: number;
 }
 
-export default function DataTable<T = Record<string, unknown>>({ 
+export default function DataTable<T extends DataRow = DataRow>({ 
   data, columns, onSort, 
   activeTab, setActiveTab, 
   searchTerm, setSearchTerm,

@@ -6,7 +6,7 @@ import { useFormStore } from '@/lib/store/useFormStore';
 import { JOPSearch } from '@/components/forms/JOPSearch';
 import { TCGuide } from '@/components/forms/TCGuide';
 import { db } from '@/lib/firebase';
-import { DEFAULT_TC_FORMULA, calculateDeadlinePressureScore, calculateTotalTc, type TCFormulaConfig } from '@/lib/tcFormula';
+import { DEFAULT_TC_FORMULA, calculateDeadlinePressureScore, calculateTotalTc, type TCFormulaConfig } from '@/lib/calculations';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { normalizeWorkflowStatusInput } from '@/lib/workflow';
@@ -201,7 +201,7 @@ export default function DTPanel() {
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-indigo-500">Role / Input Sebagai</label>
                   <div className="w-full p-4 border-2 border-indigo-100 rounded-2xl bg-indigo-50 cursor-default text-sm font-black text-indigo-600 shadow-sm flex items-center justify-between">
-                    <span className="uppercase tracking-wider">{formData.role_type || role || 'MEMUAT...'}</span>
+                    <span className="uppercase tracking-wider">{(formData.role_type as string) || role || 'MEMUAT...'}</span>
                     <span className="text-[9px] text-indigo-400 font-bold bg-white px-2 py-0.5 rounded-full border border-indigo-100 tracking-widest uppercase">Auto</span>
                   </div>
                 </div>

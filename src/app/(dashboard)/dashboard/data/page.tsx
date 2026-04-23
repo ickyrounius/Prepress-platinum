@@ -15,7 +15,7 @@ import {
   Download
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { WorkflowJop } from '@/lib/types/schema';
+import { JopData as WorkflowJop } from '@/features/job/jobTypes';
 
 export default function MasterDataPage() {
   const [data, setData] = useState<WorkflowJop[]>([]);
@@ -33,7 +33,7 @@ export default function MasterDataPage() {
     
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const allData = snapshot.docs.map(doc => ({
-        id: doc.id,
+        ID: doc.id,
         ...doc.data()
       })) as unknown as WorkflowJop[];
       
@@ -168,7 +168,7 @@ export default function MasterDataPage() {
                 ) : (
                   filteredData.map((item, idx) => (
                     <motion.tr 
-                      key={item.id}
+                      key={item.ID || idx}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: idx * 0.03 }}

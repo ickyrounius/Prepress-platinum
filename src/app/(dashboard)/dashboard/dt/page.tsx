@@ -23,7 +23,7 @@ import TrendChart from '@/components/dashboard/TrendChart';
 import WorkloadChart from '@/components/dashboard/WorkloadChart';
 import { cn } from '@/lib/utils';
 import type { Icon } from '@phosphor-icons/react';
-import { KanbanBoard } from '@/components/dashboard/KanbanBoard';
+import { KanbanBoard, type KanbanItem } from '@/components/dashboard/KanbanBoard';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -96,14 +96,14 @@ const StatCard = ({ title, value, icon: Icon, colorClass }: StatCardProps) => {
 };
 
 export default function DTDashboard() {
-  const [kanbanItems, setKanbanItems] = useState<Array<Record<string, unknown>>>([]);
+  const [kanbanItems, setKanbanItems] = useState<KanbanItem[]>([]);
 
   useEffect(() => {
     const q = query(collection(db, 'proses_dt_b'));
     const unsub = onSnapshot(q, (snapshot) => {
-      const items: Array<Record<string, unknown>> = [];
+      const items: KanbanItem[] = [];
       snapshot.forEach((doc) => {
-        items.push({ id: doc.id, sourceType: 'DT', ...doc.data() });
+        items.push({ id: doc.id, sourceType: 'DT', ...doc.data() } as unknown as KanbanItem);
       });
       setKanbanItems(items);
     });

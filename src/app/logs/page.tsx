@@ -36,7 +36,7 @@ export default function LogHistoryPage() {
         type: activeType,
         ...doc.data()
       }));
-      setLogs(logData);
+      setLogs(logData as unknown as LogEntry[]);
       setLoading(false);
     });
 

@@ -10,6 +10,8 @@ import {
   SignOut 
 } from "@phosphor-icons/react";
 import ThemeToggle from "@/components/layout/ThemeToggle";
+import { auth } from "@/lib/firebase";
+import { signOut } from "firebase/auth";
 
 export default function TopHeader() {
   const { user } = useAuth();
@@ -75,10 +77,14 @@ export default function TopHeader() {
         </span>
 
         <button 
-          onClick={() => {
-            // Assume AuthContext provides logout or use firebase directly if preferred.
-            // But let's keep it simple for now as per project pattern.
-            window.location.href = '/login';
+          onClick={async () => {
+            try {
+              await signOut(auth);
+              window.location.href = '/login';
+            } catch (err) {
+              console.error("Logout failed", err);
+              window.location.href = '/login';
+            }
           }} 
           className="flex items-center gap-2 px-2 sm:px-3 py-1.5 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-lg transition border border-transparent hover:border-rose-100"
         >

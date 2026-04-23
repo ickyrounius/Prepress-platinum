@@ -1,86 +1,39 @@
-export interface WorkflowJos {
-  id: string; // NO_JOS
-  tipe_jos: "Jasa" | "Local" | "Export";
-  tgl_terima: string;
-  tgl_target: string;
-  buyer: string;
-  jml_warna: number;
-  jml_design: number;
-  jenis_bahan: string;
-  status: "On Progress" | "Hold" | "Overdue" | "Done";
-  timestamp_input: number;
-  operator_id: string;
+/**
+ * schema.ts — Utility untuk pembuatan ID Unik terstandarisasi
+ *
+ * Format: "DEPT"-YYMMDD-XXXX
+ * Contoh: "DT-260423-0472", "DG-260423-8812", "PP-260423-3301"
+ *
+ * Digunakan oleh semua service (jobService, josService, dll.)
+ * agar format ID konsisten di seluruh kodebase.
+ */
+
+/**
+ * Membuat ID unik dengan format: DEPT-YYMMDD-XXXX
+ * @param dept  Kode departemen, mis. "DT", "DG", "PP", "QC", "SD"
+ * @returns     ID string unik
+ * @example     generateUniqueId("DT") → "DT-260423-4872"
+ */
+export function generateUniqueId(dept: string): string {
+  const now = new Date();
+  const yy = now.getFullYear().toString().slice(-2);
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const dd = String(now.getDate()).padStart(2, "0");
+  const rand = String(Math.floor(Math.random() * 10000)).padStart(4, "0");
+  const deptCode = dept.toUpperCase().replace(/\s+/g, "").slice(0, 6);
+  return `${deptCode}-${yy}${mm}${dd}-${rand}`;
 }
 
-export interface WorkflowJop {
-  id: string; // NO_JOP
-  no_jos?: string[]; // FK to JOS
-  tipe_jop: string; // Auto generated
-  tgl_terima: string;
-  tgl_target: string;
-  buyer: string;
-  produk: string;
-  baru_relayout: "Baru" | "Relayout";
-  status: "Pending" | "On Process" | "Closed" | "Overdue" | "Hold" | "CANCEL" | "BATAL LAYOUT";
-  timestamp_input: number;
-  operator_id: string;
-  // Added fields from DB schema
-  ST_WORKFLOW?: string;
-  NO_JOP?: string;
-  BUYER?: string;
-  NAMA_JOP?: string;
-  PIC_UTAMA?: string;
-}
+/**
+ * Peta kode departemen standar yang dipakai dalam ID
+ */
+export const DEPT_CODES = {
+  DT:         "DT",   // Design Teknis / JOP
+  DG:         "DG",   // Desain Grafis / JOS
+  PREPRESS:   "PP",   // Prepress
+  QC:         "QC",   // Quality Control
+  SUPPORT:    "SD",   // Support Design
+  ADMIN:      "ADM",  // Admin entry
+} as const;
 
-export interface ProsesJod {
-  id: string; // NO_JOD
-  no_jos: string;
-  status_dg: "Prosess" | "Preview" | "Revisi" | "Selesai";
-  status_qc: "Approved" | "Reject" | "Pending";
-  pic_utama: string;
-  pic_support: string;
-  catatan_spv: string;
-  catatan_dg: string;
-  catatan_qc: string;
-  timestamp_input: number;
-  operator_id: string;
-}
-
-export interface ProsesDtB {
-  id: string; // Auto ID
-  no_b: string;
-  no_jop: string;
-  status_dt: "Prosess" | "Blueprint" | "Revisi" | "Selesai";
-  status_cad: "Prosess" | "Revisi" | "Selesai";
-  pic_utama: string;
-  pic_support: string;
-  catatan_dt: string;
-  catatan_cad: string;
-  timestamp_input: number;
-  operator_id: string;
-}
-
-export interface ProsesPrepressB {
-  id: string; // Auto ID
-  no_b: string;
-  no_jop: string;
-  status_b: "Baru" | "Ganti";
-  proses_pengerjaan: "CTP" | "CTCP" | "FLEXO" | "ETCHING" | "SCREEN";
-  status_prepress: "Baik" | "Rusak" | "Ganti";
-  tahapan_prepress: "RIP" | "Expose & Drying" | "QC" | "Selesai";
-  mesin_id?: string;
-  catatan_prepress: string;
-  timestamp_input: number;
-  operator_id: string;
-}
-
-export interface AppUser {
-  ID_USER: string;
-  KATEGORI: string;
-  PANEL_VIEW: string;
-  PASS: string;
-  PIC_CODE: string;
-  TIPE_VIEW: string;
-  UPDATED_AT: number | string | Date;
-  USER: string;
-}
+export type DeptCode = keyof typeof DEPT_CODES;

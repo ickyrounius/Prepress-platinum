@@ -11,7 +11,7 @@ import {
   Stack
 } from '@phosphor-icons/react';
 
-type KanbanItem = (JopData | JosData) & { sourceType?: 'DG' | 'DT' | 'PROD' };
+export type KanbanItem = (JopData | JosData) & { sourceType?: 'DG' | 'DT' | 'PROD' };
 
 interface KanbanBoardProps {
   data: KanbanItem[];

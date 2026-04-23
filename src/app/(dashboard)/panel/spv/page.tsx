@@ -6,10 +6,10 @@ import { useFormStore } from '@/lib/store/useFormStore';
 import { JOPSearch } from '@/components/forms/JOPSearch';
 import { TCGuide } from '@/components/forms/TCGuide';
 import { db } from '@/lib/firebase';
-import { DEFAULT_TC_FORMULA, calculateDeadlinePressureScore, calculateTotalTc, type TCFormulaConfig } from '@/lib/tcFormula';
+import { DEFAULT_TC_FORMULA, calcDeadlinePressure, calcWeightedTotalTC, type TCFormulaConfig } from '@/lib/calculations';
 import { cn } from '@/lib/utils';
 import { 
-  Scales, Users, Calculator
+  ChartBar, Users, Calculator
 } from '@phosphor-icons/react';
 import { doc, onSnapshot } from 'firebase/firestore';
 
@@ -57,7 +57,7 @@ export default function SPVPanel() {
   }, []);
 
   useEffect(() => {
-    const total = calculateTotalTc(tcValues, laValue, dpValue, tcFormula);
+    const total = calcWeightedTotalTC(tcValues, laValue, dpValue, tcFormula);
     setTotalTc(total);
     updateFormField('tc', {
       kt: tcValues.kt,
@@ -98,7 +98,7 @@ export default function SPVPanel() {
       <div className="flex flex-col gap-2 mb-4">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 bg-indigo-600 text-white rounded-[1.25rem] flex items-center justify-center shadow-lg shadow-indigo-200">
-            <Scales weight="bold" size={24} />
+            <ChartBar weight="bold" size={24} />
           </div>
           <div>
             <h1 className="text-2xl font-black text-slate-800 tracking-tight">Panel SPV (Coordinator)</h1>
@@ -159,7 +159,7 @@ export default function SPVPanel() {
                                   setLaValue(la);
                                 }
                                 const isJop = targetType === 'NO_JOP';
-                                const dp = calculateDeadlinePressureScore(
+                                const dp = calcDeadlinePressure(
                                   isJop ? (data?.tgl_target_no_jop ?? data?.tgl_target) : (data?.tgl_target_no_jos ?? data?.tgl_target),
                                   isJop ? (data?.tgl_no_jop ?? data?.tgl_masuk) : (data?.tgl_no_jos ?? data?.tgl_masuk)
                                 );

@@ -97,7 +97,7 @@ export async function generateProductionReport(type: ProductionType, dateRange?:
         return format(val.toDate(), 'dd/MM/yyyy');
       }
       return val ?? '-';
-    });
+    }) as (string | number | boolean | null)[];
   });
 
   exportToPDF(

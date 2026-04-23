@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
 import { doc, setDoc, onSnapshot } from 'firebase/firestore';
 import { useAuth } from '@/features/auth/AuthContext';
-import { DEFAULT_TC_FORMULA, type TCFormulaConfig } from '@/lib/tcFormula';
+import { DEFAULT_TC_FORMULA, type TCFormulaConfig } from '@/lib/calculations';
 import { 
   Gauge, Calculator, 
   FloppyDisk, ArrowsCounterClockwise,

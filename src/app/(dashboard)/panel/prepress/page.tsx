@@ -104,7 +104,7 @@ export default function PrepressPanel() {
 
             setWaitingList(prev => {
                 const filtered = prev.filter(p => !items.some(newItem => newItem.id === p.id));
-                return [...filtered, ...items].sort((a, b) => b.timestamp - a.timestamp);
+                return [...filtered, ...items].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
             });
             setLoading(false);
         });

@@ -19,7 +19,7 @@ export default function InputJOS() {
       <GlobalInputForm
         title="Registrasi JOS Baru"
         collectionName="workflows_jos"
-        docId={formData.no_jos}
+        docId={formData.no_jos as string | undefined}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1">

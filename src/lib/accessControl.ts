@@ -3,7 +3,7 @@ export const OPERATIONAL_ADMIN_ROLES = ["ADMIN DT", "ADMIN DG", "ADMIN PREPRESS"
 export const ALL_ADMIN_ROLES = [...ADMIN_ROLES, ...OPERATIONAL_ADMIN_ROLES] as const;
 
 const ROLE_GROUPS = {
-  dt: ["DT", "SPV DT", "ADMIN DT"],
+  dt: ["DT", "CAD", "SPV DT", "ADMIN DT"],
   dg: ["DG", "DS", "SPV DG", "ADMIN DG"],
   prepress: [
     "PRODUCTION",
@@ -36,7 +36,7 @@ const ROUTE_ACCESS_RULES: RouteAccessRule[] = [
   { prefix: "/panel/dt", allow: [...ADMIN_ROLES, ...ROLE_GROUPS.dt] },
   { prefix: "/panel/dg", allow: [...ADMIN_ROLES, ...ROLE_GROUPS.dg] },
   { prefix: "/panel/qc", allow: [...ADMIN_ROLES, ...ROLE_GROUPS.qc, ...ROLE_GROUPS.dt, ...ROLE_GROUPS.dg] },
-  { prefix: "/panel/spv", allow: [...ADMIN_ROLES, "SPV DT", "SPV DG", "SPV PREPRESS", "KOORDINATOR", "SPV"] },
+  { prefix: "/panel/spv", allow: [...ADMIN_ROLES, "SPV DT", "SPV DG", "SPV PREPRESS", "KOORDINATOR"] },
   { prefix: "/panel/prepress", allow: [...ADMIN_ROLES, ...ROLE_GROUPS.prepress] },
   { prefix: "/panel/production", allow: [...ADMIN_ROLES, ...ROLE_GROUPS.prepress] },
   { prefix: "/panel/support", allow: [...ADMIN_ROLES, ...ROLE_GROUPS.support] },

@@ -35,7 +35,7 @@ export default function UsersPage() {
       (snapshot) => {
         const usersList: UserItem[] = [];
         snapshot.forEach((doc) => {
-          usersList.push({ id: doc.id, ...doc.data() });
+          usersList.push({ id: doc.id, ...doc.data() } as UserItem);
         });
         setUsers(usersList);
         setLoading(false);

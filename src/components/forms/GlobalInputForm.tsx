@@ -85,10 +85,10 @@ export function GlobalInputForm({
         };
 
         // Add specific entry dates for JOP/JOS as per official schema
-        if (collectionName === 'FS_DB_JOP') {
+        if (collectionName === 'workflows_jop') {
           payload.TGL_MASUK_JOP = displayDateStr;
           payload.ST_WF_JOP = payload.ST_WF_JOP || 'OPEN';
-        } else if (collectionName === 'FS_DB_JOS') {
+        } else if (collectionName === 'workflows_jos') {
           payload.TGL_MASUK_JOS = displayDateStr;
           payload.ST_WF_JOS = payload.ST_WF_JOS || 'OPEN';
         }

@@ -18,7 +18,7 @@ import {
   Kanban, ChartBar, Lightning, Pulse, TrendUp
 } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
-import { KanbanBoard } from '@/components/dashboard/KanbanBoard';
+import { KanbanBoard, type KanbanItem } from '@/components/dashboard/KanbanBoard';
 import { exportToPDF } from '@/features/report/exportPDF';
 import { useAuth } from '@/features/auth/AuthContext';
 import { recordAuditLog } from '@/features/audit-log/auditLogService';
@@ -393,7 +393,7 @@ export default function DashboardPage() {
                             <RechartsTooltip 
                              contentStyle={{ borderRadius: '24px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)', fontWeight: 'bold', fontSize: '10px' }} 
                             />
-                            <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px', fontSize: '10px', sm: '11px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.05em' }} />
+                            <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px', fontSize: '11px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.05em' }} />
                         </PieChart>
                         </ResponsiveContainer>
                     </div>
@@ -422,7 +422,7 @@ export default function DashboardPage() {
                              cursor={{ fill: '#f8fafc', radius: 10 }} 
                              contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} 
                             />
-                            <Legend iconType="circle" wrapperStyle={{ fontSize: '10px', sm: '11px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.05em' }} />
+                            <Legend iconType="circle" wrapperStyle={{ fontSize: '11px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.05em' }} />
                             <Bar dataKey="tcUtama" name="Poin Utama" stackId="a" fill="#6366f1" radius={[0, 0, 8, 8]} barSize={28} isAnimationActive={true} animationDuration={2000} />
                             <Bar dataKey="tcSupport" name="Poin Help" stackId="a" fill="#c7d2fe" radius={[8, 8, 0, 0]} barSize={28} isAnimationActive={true} animationDuration={2500} />
                         </BarChart>
@@ -514,7 +514,7 @@ export default function DashboardPage() {
             transition={{ type: "spring", damping: 20, stiffness: 100 }}
             className="pb-8"
           >
-            <KanbanBoard data={filteredItems} />
+            <KanbanBoard data={filteredItems as unknown as KanbanItem[]} />
           </motion.div>
         )}
       </AnimatePresence>

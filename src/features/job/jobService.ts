@@ -1,13 +1,13 @@
 import { db, rtdb } from '@/lib/firebase';
-import { 
-  collection, 
-  doc, 
-  setDoc, 
-  getDoc, 
-  query, 
-  where, 
-  getDocs, 
-  onSnapshot, 
+import {
+  collection,
+  doc,
+  setDoc,
+  getDoc,
+  query,
+  where,
+  getDocs,
+  onSnapshot,
   serverTimestamp,
   deleteDoc,
   orderBy,
@@ -15,96 +15,123 @@ import {
 } from 'firebase/firestore';
 import { ref, set, onValue, remove } from 'firebase/database';
 import { JopData, BlueprintLog, QCLog, UserLock } from './jobTypes';
+import { generateUniqueId, DEPT_CODES } from '@/lib/types/schema';
 
-export const saveJOP = async (formData: Partial<JopData> & { IS_RELAYOUT?: boolean }): Promise<{status: string, message: string}> => {
+// ─────────────────────────────────────────────────────────────────────────────
+// Helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+function todayString(): string {
+  return new Date().toISOString().split('T')[0];
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// JOP CRUD
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const saveJOP = async (
+  formData: Partial<JopData> & { IS_RELAYOUT?: boolean }
+): Promise<{ status: string; message: string }> => {
   try {
     if (!formData.NO_JOP && !formData.IS_RELAYOUT) {
-      throw new Error("JOP No wajib diisi!");
+      throw new Error('JOP No wajib diisi!');
     }
 
     const jopsRef = collection(db, 'workflows_jop');
 
+    // Cegah duplikat JOP aktif
     if (!formData.IS_RELAYOUT) {
-      const q = query(jopsRef, where("NO_JOP", "==", formData.NO_JOP), where("ST_WORKFLOW", "!=", "Closed"));
-      const querySnapshot = await getDocs(q);
-      if (!querySnapshot.empty) {
-        throw new Error(`Nomor JOP ${formData.NO_JOP} sudah aktif di sistem! Gunakan fitur EDIT atau tandai sebagai RELAYOUT.`);
+      const q = query(
+        jopsRef,
+        where('NO_JOP', '==', formData.NO_JOP),
+        where('ST_WORKFLOW', '!=', 'Closed')
+      );
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        throw new Error(
+          `Nomor JOP ${formData.NO_JOP} sudah aktif di sistem! ` +
+          `Gunakan fitur EDIT atau tandai sebagai RELAYOUT.`
+        );
       }
     }
 
-    const now = new Date();
-    const formattedDate = [now.getFullYear().toString().slice(-2), 
-                           String(now.getMonth()+1).padStart(2, '0'), 
-                           String(now.getDate()).padStart(2, '0'),
-                           String(now.getHours()).padStart(2, '0'),
-                           String(now.getMinutes()).padStart(2, '0')].join('');
-                           
-    const uniqueId = `DT-${formattedDate}-${Math.floor(1000 + Math.random() * 9000)}`;
-    const tglMasuk = now.toISOString().split('T')[0];
-    const noJos = formData.NO_JOS ? formData.NO_JOS : "-";
+    // ID unik format: DT-YYMMDD-XXXX
+    const uniqueId = generateUniqueId(DEPT_CODES.DT);
 
     const newJop: JopData = {
-      ID: uniqueId,
-      TGL_MASUK: tglMasuk,
-      TGL_JOP: formData.TGL_JOP || '',
-      TGL_TARGET: formData.TGL_TARGET || '',
-      NO_JOP: formData.NO_JOP || '',
-      NO_JOS: noJos,
-      TIPE_JOP: formData.TIPE_JOP || '',
-      BUYER: formData.BUYER || '',
-      NAMA_JOP: formData.NAMA_JOP || '',
+      ID:          uniqueId,
+      TGL_MASUK:   formData.TGL_MASUK   || todayString(),
+      TGL_JOP:     formData.TGL_JOP     || '',
+      TGL_TARGET:  formData.TGL_TARGET  || '',
+      NO_JOP:      formData.NO_JOP      || '',
+      NO_JOS:      formData.NO_JOS      || '-',
+      TIPE_JOP:    formData.TIPE_JOP    || '',
+      BUYER:       formData.BUYER       || '',
+      NAMA_JOP:    formData.NAMA_JOP    || '',
+      FASE_DT:     formData.FASE_DT     || '',   // Canonical field (bukan FAASE_DT)
+      PIC_UTAMA:   formData.PIC_UTAMA   || '',
+      PIC_SUPPORT: formData.PIC_SUPPORT || '',
       LAST_UPDATED: serverTimestamp(),
-      ST_WORKFLOW: "REVIEW",
-      ST_PRO_JOP: "Not Started",
-      LEVEL_TC: "RINGAN",
-      KT: 0, RP: 0, BS: 0, CAD: 0, LA: 0, DP: 0, TOTAL_TC: 0, REVISI_KE: 0, TC_UTAMA: 0, TC_SUPPORT: 0
+      ST_WORKFLOW:  'REVIEW',
+      ST_PRO_JOP:   'Not Started',
+      LEVEL_TC:     'RINGAN',
+      KT: 0, RP: 0, BS: 0, CAD: 0,
+      LA: 0, DP: 0,
+      TOTAL_TC: 0, REVISI_KE: 0,
+      TC_UTAMA: 0, TC_SUPPORT: 0,
     };
 
     await setDoc(doc(db, 'workflows_jop', uniqueId), newJop);
 
-    return { status: "success", message: "Sukses! JOP Berhasil Disimpan dengan ID: " + uniqueId };
+    return {
+      status: 'success',
+      message: `Sukses! JOP Berhasil Disimpan dengan ID: ${uniqueId}`,
+    };
   } catch (e: unknown) {
-    const error = e as Error;
-    return { status: "error", message: error.message };
+    return { status: 'error', message: (e as Error).message };
   }
 };
 
 export const deleteJOPData = async (id: string): Promise<string> => {
   try {
     const jopDocRef = doc(db, 'workflows_jop', id);
-    const jopSnap = await getDoc(jopDocRef);
+    const jopSnap  = await getDoc(jopDocRef);
 
-    if (!jopSnap.exists()) {
-      return "❌ ID Tidak Ditemukan!";
-    }
+    if (!jopSnap.exists()) return '❌ ID Tidak Ditemukan!';
 
-    const data = jopSnap.data();
-    
+    // Pindahkan ke deleted_jops sebelum menghapus
     await setDoc(doc(db, 'deleted_jops', id), {
-      ...data,
-      TGL_HAPUS: new Date().toISOString()
+      ...jopSnap.data(),
+      TGL_HAPUS: new Date().toISOString(),
     });
-
     await deleteDoc(jopDocRef);
 
-    return "✅ Data Berhasil Dihapus & Dipindah ke Rekap Delete!";
+    return '✅ Data Berhasil Dihapus & Dipindah ke Rekap Delete!';
   } catch (e: unknown) {
-    const error = e as Error;
-    return "Error: " + error.message;
+    return 'Error: ' + (e as Error).message;
   }
 };
 
-export const subscribeToJopLocks = (callback: (locks: Record<string, UserLock>) => void) => {
+// ─────────────────────────────────────────────────────────────────────────────
+// Realtime Database — Locking
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const subscribeToJopLocks = (
+  callback: (locks: Record<string, UserLock>) => void
+) => {
   const locksRef = ref(rtdb, 'locks');
   return onValue(locksRef, (snapshot) => {
     callback((snapshot.val() as Record<string, UserLock>) || {});
   });
 };
 
-export const lockJOP = async (id: string, userDetails: UserLock['activeUser']) => {
+export const lockJOP = async (
+  id: string,
+  userDetails: UserLock['activeUser']
+) => {
   await set(ref(rtdb, `locks/${id}`), {
     activeUser: userDetails,
-    timestamp: Date.now()
+    timestamp: Date.now(),
   });
 };
 
@@ -112,33 +139,45 @@ export const unlockJOP = async (id: string) => {
   await remove(ref(rtdb, `locks/${id}`));
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Firestore Listeners
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Listen ke semua JOP yang belum Closed, diurutkan berdasarkan LAST_UPDATED terbaru. */
 export const listenToMergedData = (callback: (data: JopData[]) => void) => {
+  // CATATAN: query "!=" membutuhkan composite index di Firestore.
+  // Buat index di: workflows_jop — ST_WORKFLOW (ASC) + LAST_UPDATED (DESC)
   const q = query(
     collection(db, 'workflows_jop'),
     where('ST_WORKFLOW', '!=', 'Closed')
   );
-  
-  return onSnapshot(q, (snapshot) => {
-    const changes: JopData[] = [];
-    snapshot.forEach((doc) => {
-      changes.push(doc.data() as JopData);
-    });
-    changes.sort((a, b) => {
-      const aTime = (a.LAST_UPDATED as Timestamp)?.seconds || 0;
-      const bTime = (b.LAST_UPDATED as Timestamp)?.seconds || 0;
-      return bTime - aTime;
-    });
-    callback(changes);
-  }, (error: unknown) => {
-    console.error("Error listening to merged data:", error);
-  });
+
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      const changes: JopData[] = [];
+      snapshot.forEach((d) => changes.push(d.data() as JopData));
+
+      // Sort client-side agar tidak perlu index tambahan
+      changes.sort((a, b) => {
+        const aTime = (a.LAST_UPDATED as Timestamp)?.seconds ?? 0;
+        const bTime = (b.LAST_UPDATED as Timestamp)?.seconds ?? 0;
+        return bTime - aTime;
+      });
+
+      callback(changes);
+    },
+    (error: unknown) => {
+      console.error('[jobService] listenToMergedData error:', error);
+    }
+  );
 };
 
 export const listenToBlueprintLogs = (callback: (data: BlueprintLog[]) => void) => {
   const q = query(collection(db, 'logs_blueprint'), orderBy('TGL_LOG', 'desc'));
   return onSnapshot(q, (snapshot) => {
     const changes: BlueprintLog[] = [];
-    snapshot.forEach((doc) => changes.push(doc.data() as BlueprintLog));
+    snapshot.forEach((d) => changes.push(d.data() as BlueprintLog));
     callback(changes);
   });
 };
@@ -147,8 +186,7 @@ export const listenToQCLogs = (callback: (data: QCLog[]) => void) => {
   const q = query(collection(db, 'logs_qc'), orderBy('TGL_LOG', 'desc'));
   return onSnapshot(q, (snapshot) => {
     const changes: QCLog[] = [];
-    snapshot.forEach((doc) => changes.push(doc.data() as QCLog));
+    snapshot.forEach((d) => changes.push(d.data() as QCLog));
     callback(changes);
   });
 };
-

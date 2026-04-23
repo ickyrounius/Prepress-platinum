@@ -6,7 +6,7 @@ import { useFormStore } from '@/lib/store/useFormStore';
 import { JOPSearch } from '@/components/forms/JOPSearch';
 import { TCGuide } from '@/components/forms/TCGuide';
 import { db } from '@/lib/firebase';
-import { DEFAULT_TC_FORMULA, calculateDeadlinePressureScore, calculateTotalTc, type TCFormulaConfig } from '@/lib/tcFormula';
+import { DEFAULT_TC_FORMULA, calculateDeadlinePressureScore, calculateTotalTc, type TCFormulaConfig } from '@/lib/calculations';
 import { cn } from '@/lib/utils';
 import { normalizeWorkflowStatusInput } from '@/lib/workflow';
 import { 

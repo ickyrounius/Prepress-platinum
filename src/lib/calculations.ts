@@ -1,18 +1,42 @@
-export interface JobData {
-  TGL_MASUK?: string;
-  TGL_TARGET?: string;
-  TGL_MULAI?: string;
-  TGL_SELESAI?: string;
-  ST_PRO_JOP?: string;
-  ST_WORKFLOW?: string;
-  REVISI_KE?: number;
-  KT?: number;
-  RP?: number;
-  BS?: number;
-  CAD?: number;
-  PIC_SUPPORT?: string;
-  FASE_DT?: string;
+/**
+ * calculations.ts — SINGLE SOURCE OF TRUTH untuk semua logika perhitungan
+ *
+ * File ini adalah kanonikal untuk:
+ *   - LA  (Level Aktifitas / revisi weight)
+ *   - DP  (Deadline Pressure score)
+ *   - TC  (Total Complexity score) — simple & weighted
+ *   - Level TC string (RINGAN, STANDARD, ADVANCED, COMPLEX, CRITICAL)
+ *   - TC Split (pembagian antara PIC Utama & Support)
+ *
+ * Semua modul lain (calculateKPI.ts, kpiStyles.ts, spv/page.tsx, dll.)
+ * harus mengimpor dari sini. JANGAN duplikasi logika ini di tempat lain.
+ */
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TC Formula Config (weighted multipliers — dari legacy tcFormula.ts)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface TCFormulaConfig {
+  kt: number;
+  rp: number;
+  bs: number;
+  cad: number;
+  la: number;
+  dp: number;
 }
+
+export const DEFAULT_TC_FORMULA: TCFormulaConfig = {
+  kt: 1,
+  rp: 1,
+  bs: 1,
+  cad: 1,
+  la: 1,
+  dp: 1,
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Output interface untuk KPI results
+// ─────────────────────────────────────────────────────────────────────────────
 
 export interface CalculationResult {
   LA: number;
@@ -27,110 +51,134 @@ export interface CalculationResult {
   DELAY_TIME: number;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Helper — bisa diimpor secara individual oleh modul lain
+// ─────────────────────────────────────────────────────────────────────────────
+
 /**
- * Konversi logika runAutoCalculation() dari Kode.gs ke lingkungan Typescript.
- * Memproses poin TC (Target Calculation) dan metrik Waktu (Time Metrics).
+ * Hitung skor LA (Level Aktifitas) berdasarkan jumlah revisi.
+ * LA = revisiKe + 1, maksimum 5.
  */
-export function calculateJobMetrics(item: JobData): CalculationResult {
-  const revisi = item.REVISI_KE || 0;
-  // LA max is 5
-  const laValue = Math.min(revisi + 1, 5);
-  let dpValue = 1;
+export function calcLA(revisiKe: number | undefined | null): number {
+  const revisi = typeof revisiKe === "number" ? revisiKe : (parseInt(String(revisiKe ?? "0")) || 0);
+  return Math.min(revisi + 1, 5);
+}
 
-  if (item.TGL_MASUK && item.TGL_TARGET) {
-    const t1 = new Date(item.TGL_MASUK).getTime();
-    const t2 = new Date(item.TGL_TARGET).getTime();
-    if (!isNaN(t1) && !isNaN(t2)) {
-      const diffDays = Math.ceil((t2 - t1) / (1000 * 60 * 60 * 24));
-      if (diffDays <= 1) dpValue = 5;
-      else if (diffDays === 2) dpValue = 4;
-      else if (diffDays === 3) dpValue = 3;
-      else if (diffDays === 4) dpValue = 2;
-      else dpValue = 1;
-    }
-  }
+/**
+ * Hitung skor DP (Deadline Pressure) dari selisih hari masuk vs target.
+ * ≤1 hari → 5, 2 → 4, 3 → 3, 4 → 2, ≥5 → 1
+ */
+export function calcDP(ingressDate: unknown, targetDate: unknown): number {
+  if (!ingressDate || !targetDate) return 1;
+  const t1 = new Date(String(ingressDate));
+  const t2 = new Date(String(targetDate));
+  if (isNaN(t1.getTime()) || isNaN(t2.getTime())) return 1;
+  const diffDays = Math.ceil((t2.getTime() - t1.getTime()) / 86_400_000);
+  if (diffDays <= 1) return 5;
+  if (diffDays === 2) return 4;
+  if (diffDays === 3) return 3;
+  if (diffDays === 4) return 2;
+  return 1;
+}
 
-  const totalTC = Math.floor(
-    (item.KT || 0) +
-    (item.RP || 0) +
-    (item.BS || 0) +
-    (item.CAD || 0) +
-    laValue +
-    dpValue
-  );
+/**
+ * Hitung skor DP dari targetDate vs startDate (atau sekarang jika tidak disediakan).
+ * Alias yang lebih eksplisit — digunakan oleh SPV Panel.
+ */
+export function calcDeadlinePressure(targetDateValue: unknown, startDateValue?: unknown): number {
+  const targetDate = parseDateInput(targetDateValue);
+  if (!targetDate) return 1;
+  const startDate = parseDateInput(startDateValue) || new Date();
+  const diffDays = Math.ceil((targetDate.getTime() - startDate.getTime()) / 86_400_000);
+  if (diffDays <= 1) return 5;
+  if (diffDays === 2) return 4;
+  if (diffDays === 3) return 3;
+  if (diffDays === 4) return 2;
+  return 1;
+}
 
-  let levelTC = "RINGAN";
-  if (totalTC > 8 && totalTC <= 13) levelTC = "STANDARD";
-  else if (totalTC > 13 && totalTC <= 18) levelTC = "ADVANCED";
-  else if (totalTC > 18 && totalTC <= 23) levelTC = "COMPLEX";
-  else if (totalTC > 23) levelTC = "CRITICAL";
+/** Parse date input safely. */
+function parseDateInput(value: unknown): Date | null {
+  if (!value) return null;
+  const date = value instanceof Date ? value : new Date(String(value));
+  return Number.isNaN(date.getTime()) ? null : date;
+}
 
-  const hasSupport = item.PIC_SUPPORT && item.PIC_SUPPORT !== "-" && item.PIC_SUPPORT !== "";
-  let tcUtama = totalTC;
-  let tcSupport = 0;
-  const faseDT = String(item.FASE_DT || "").toUpperCase();
+/**
+ * Hitung nilai TOTAL_TC dari komponen raw + LA + DP (simple sum, no weights).
+ */
+export function calcTotalTC(
+  kt: number, rp: number, bs: number, cad: number,
+  la: number, dp: number
+): number {
+  return Math.floor(kt + rp + bs + cad + la + dp);
+}
 
-  if (hasSupport) {
-    if (faseDT === "FULL") {
-      tcUtama = Math.round(totalTC * 0.7);
-      tcSupport = Math.round(totalTC * 0.3);
-    } else if (faseDT === "LAYOUT") {
-      tcUtama = totalTC;
-      tcSupport = totalTC;
-    } else if (faseDT === "FILE_CAD") {
-      tcUtama = Math.round(totalTC * 0.3);
-      tcSupport = Math.round(totalTC * 0.7);
-    } else {
-      tcUtama = Math.round(totalTC * 0.7);
-      tcSupport = Math.round(totalTC * 0.3);
-    }
-  } else {
-    tcUtama = totalTC;
-    tcSupport = 0;
-  }
+/**
+ * Hitung nilai TOTAL_TC dengan weighted multiplier dari TCFormulaConfig.
+ * Digunakan oleh SPV Panel untuk kalkulasi dengan bobot konfigurasi.
+ */
+export function calcWeightedTotalTC(
+  values: { kt: number; rp: number; bs: number; cad: number },
+  laValue: number,
+  dpValue: number,
+  formula: TCFormulaConfig
+): number {
+  const total =
+    values.kt * formula.kt +
+    values.rp * formula.rp +
+    values.bs * formula.bs +
+    values.cad * formula.cad +
+    laValue * formula.la +
+    dpValue * formula.dp;
+  return Number(total.toFixed(2));
+}
 
-  // Time calculations
-  let waitingTime = 0;
-  let leadTime = 0;
-  let cycleTime = 0;
-  let delayTime = 0;
+/**
+ * Konversi nilai TOTAL_TC ke label level string.
+ * Thresholds: ≤8 RINGAN, ≤13 STANDARD, ≤18 ADVANCED, ≤23 COMPLEX, >23 CRITICAL
+ */
+export function calcLevelTC(totalTC: number): string {
+  if (totalTC <= 8)  return "RINGAN";
+  if (totalTC <= 13) return "STANDARD";
+  if (totalTC <= 18) return "ADVANCED";
+  if (totalTC <= 23) return "COMPLEX";
+  return "CRITICAL";
+}
 
-  if (item.TGL_MULAI && item.TGL_MULAI !== "-" && item.TGL_MULAI !== "") {
-    const start = new Date(item.TGL_MULAI).getTime();
-    const masuk = item.TGL_MASUK ? new Date(item.TGL_MASUK).getTime() : null;
-    const end = (item.TGL_SELESAI && item.TGL_SELESAI !== "-") ? new Date(item.TGL_SELESAI).getTime() : null;
-    const target = item.TGL_TARGET ? new Date(item.TGL_TARGET) : null;
+/**
+ * Hitung pembagian TC antara PIC Utama dan Support berdasarkan FASE_DT.
+ * Jika tidak ada support, TC_UTAMA = TOTAL_TC, TC_SUPPORT = 0.
+ */
+export function calcTCSplit(
+  totalTC: number,
+  picSupport: string | undefined | null,
+  faseDT: string | undefined | null
+): { tcUtama: number; tcSupport: number } {
+  const hasSupport = !!(picSupport && picSupport !== "-" && picSupport !== "");
+  if (!hasSupport) return { tcUtama: totalTC, tcSupport: 0 };
 
-    if (!isNaN(start)) {
-      if (masuk && !isNaN(masuk)) {
-        waitingTime = parseFloat(((start - masuk) / (1000 * 60 * 60)).toFixed(2));
-      }
-      if (end && !isNaN(end)) {
-        const diffHrs = (end - start) / (1000 * 60 * 60);
-        leadTime = parseFloat(diffHrs.toFixed(2));
-        cycleTime = parseFloat((diffHrs * 0.85).toFixed(2));
-        
-        if (target && !isNaN(target.getTime())) {
-          target.setHours(23, 59, 59);
-          const targetTime = target.getTime();
-          if (end > targetTime) {
-            delayTime = parseFloat(((end - targetTime) / (1000 * 60 * 60)).toFixed(2));
-          }
-        }
-      }
-    }
-  }
+  const fase = String(faseDT || "").toUpperCase();
+  if (fase === "FULL")     return { tcUtama: Math.round(totalTC * 0.7), tcSupport: Math.round(totalTC * 0.3) };
+  if (fase === "LAYOUT")   return { tcUtama: totalTC, tcSupport: totalTC };
+  if (fase === "FILE_CAD") return { tcUtama: Math.round(totalTC * 0.3), tcSupport: Math.round(totalTC * 0.7) };
+  // Default split (PARTIAL atau tidak diisi)
+  return { tcUtama: Math.round(totalTC * 0.7), tcSupport: Math.round(totalTC * 0.3) };
+}
 
-  return {
-    LA: laValue,
-    DP: dpValue,
-    TOTAL_TC: totalTC,
-    LEVEL_TC: levelTC,
-    TC_UTAMA: tcUtama,
-    TC_SUPPORT: tcSupport,
-    WAITING_TIME: waitingTime,
-    LEAD_TIME: leadTime,
-    CYCLE_TIME: cycleTime,
-    DELAY_TIME: delayTime
-  };
+// ─────────────────────────────────────────────────────────────────────────────
+// Backward-compatible aliases (menggantikan tcFormula.ts yang sudah dihapus)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Alias for calcDeadlinePressure — digunakan oleh panel DT & DG. */
+export const calculateDeadlinePressureScore = calcDeadlinePressure;
+
+/** Alias for calcWeightedTotalTC — digunakan oleh panel DT & DG. */
+export function calculateTotalTc(
+  values: { kt: number; rp: number; bs: number; cad: number },
+  laValue: number,
+  dpValue: number,
+  formula: TCFormulaConfig
+): number {
+  return calcWeightedTotalTC(values, laValue, dpValue, formula);
 }
