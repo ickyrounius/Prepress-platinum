@@ -22,6 +22,7 @@ import {
   ShieldCheck,
   Crosshair,
   Wrench,
+  Trophy,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
@@ -74,6 +75,7 @@ const SidebarItem = ({ item, pathname, closeSidebar }: SidebarItemProps) => {
 const COMMON_MENU = [
   { name: 'Dashboard',   href: '/dashboard',      icon: LayoutDashboard },
   { name: 'Data Monitor',href: '/dashboard/data', icon: MonitorPlay },
+  { name: 'KPI Leaderboard', href: '/panel/kpi', icon: Trophy },
   { name: 'SOP & Wiki',  href: '/docs/sop',       icon: Book },
 ];
 
@@ -153,7 +155,7 @@ function getOperationalMenu(role: string | null) {
 
   // Prepress operators
   if (['PRODUCTION', 'OP CTP', 'OP CTCP', 'OP FLEXO', 'OP SCREEN', 'OP ETCHING'].includes(r)) {
-    return MENU_PREPRESS;
+    return [...MENU_PREPRESS, ...MENU_PRODUCTION];
   }
 
   // Support Design & GMG & CNC & Blueprint

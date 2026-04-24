@@ -52,7 +52,7 @@ export default function AdminPanel() {
     { label: "User Management", desc: "Atur hak akses & role", icon: UserGear, href: "/users", color: "text-indigo-600 bg-indigo-50" },
     { label: "Register New JOS", desc: "Input data JOS baru", icon: PlusCircle, href: "/panel/dg/input-jos", color: "text-emerald-600 bg-emerald-50" },
     { label: "Register New JOP", desc: "Input data JOP baru", icon: PlusCircle, href: "/panel/dt/input-jop", color: "text-blue-600 bg-blue-50" },
-    { label: "KPI Settings", desc: "Konfigurasi formula TC", icon: Gear, href: "/panel/kpi", color: "text-amber-600 bg-amber-50" },
+    { label: "KPI Settings", desc: "Konfigurasi formula TC", icon: Gear, href: "/panel/admin/settings/kpi", color: "text-amber-600 bg-amber-50" },
   ];
 
   return (

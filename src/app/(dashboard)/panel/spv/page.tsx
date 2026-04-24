@@ -13,6 +13,9 @@ import {
 } from '@phosphor-icons/react';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { useDashboardData } from '@/hooks/useDashboardData';
+import { useAuth } from '@/features/auth/AuthContext';
+import { normalizeRole, ADMIN_ROLES } from '@/lib/accessControl';
+import { WarningCircle } from '@phosphor-icons/react';
 
 const TCSelector = ({ label, value, onChange, colorClass }: { label: string; value: number; onChange: (v: number) => void; colorClass: string }) => {
   return (
@@ -40,6 +43,10 @@ const TCSelector = ({ label, value, onChange, colorClass }: { label: string; val
 };
 
 export default function SPVPanel() {
+  const { role } = useAuth();
+  const normalizedRole = normalizeRole(role);
+  const isAuthorized = [...ADMIN_ROLES, "SPV DT", "SPV DG", "SPV PREPRESS", "KOORDINATOR"].includes(normalizedRole);
+
   const { updateFormField, setFormData } = useFormStore();
   const { productivityData } = useDashboardData();
   const [targetType, setTargetType] = useState('NO_JOS');
@@ -110,6 +117,18 @@ export default function SPVPanel() {
     { code: 'SBR', name: 'SUBARI' },
     { code: 'YD', name: 'WAHYUDI' },
   ];
+
+  if (!isAuthorized) {
+    return (
+        <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 text-center px-6">
+          <div className="w-16 h-16 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center shadow-inner">
+            <WarningCircle size={32} weight="bold" />
+          </div>
+          <h3 className="text-xl font-black text-slate-800 uppercase tracking-tighter">Akses Ditolak</h3>
+          <p className="text-sm font-bold text-slate-400 max-w-sm uppercase leading-relaxed text-[10px]">Halaman ini hanya dapat diakses oleh SPV, Koordinator, atau Admin Sistem.</p>
+        </div>
+    );
+  }
 
   return (
     <div className="p-4 sm:p-8 space-y-8 animate-in fade-in duration-700">

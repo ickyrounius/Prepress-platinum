@@ -11,6 +11,8 @@ import FilterHeader from '@/components/dashboard/FilterHeader';
 import DashboardCharts from '@/components/dashboard/DashboardCharts';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import type { JosTypeFilter, JopTypeFilter } from '@/lib/types';
+import { useRouter } from 'next/navigation';
+import { normalizeRole } from '@/lib/accessControl';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -24,8 +26,23 @@ const containerVariants = {
 };
 
 export default function DashboardPage() {
-  const { user } = useAuth();
+  const { user, role, loading } = useAuth();
+  const router = useRouter();
   const [viewMode, setViewMode] = useState<'overview' | 'kanban'>('overview');
+
+  // Redirect based on role if not Admin
+  React.useEffect(() => {
+    if (loading || !role) return;
+    const r = normalizeRole(role);
+    const ADMIN_ROLES = ["ADMIN", "DEVELOPER", "MANAGER"];
+    
+    if (!ADMIN_ROLES.includes(r)) {
+      if (['DT', 'CAD', 'SPV DT', 'ADMIN DT'].includes(r)) router.push('/dashboard/dt');
+      else if (['DG', 'DS', 'SPV DG', 'ADMIN DG'].includes(r)) router.push('/dashboard/dg');
+      else if (['PRODUCTION', 'SPV PREPRESS', 'KOORDINATOR', 'OP CTP', 'OP CTCP', 'OP FLEXO', 'OP SCREEN', 'OP ETCHING', 'ADMIN PREPRESS'].includes(r)) router.push('/dashboard/prepress');
+      else if (['SUPPORT DESIGN', 'GMG', 'CNC', 'BLUEPRINT'].includes(r)) router.push('/dashboard/support');
+    }
+  }, [role, loading, router]);
 
   const {
     filteredItems,
