@@ -4,7 +4,7 @@ import { collection, query, onSnapshot, orderBy, limit } from 'firebase/firestor
 import { classifyWorkflowStatus, detectJopType, detectJosType, type JopType, type JosType } from '@/lib/workflow';
 import type { DashboardItem, JosTypeFilter, JopTypeFilter } from '@/lib/types';
 
-export function useDashboardData() {
+export function useDashboardData(collectionsToFetch?: string[]) {
   const [rawItems, setRawItems] = useState<DashboardItem[]>([]);
   const [josTypeFilter, setJosTypeFilter] = useState<JosTypeFilter>('ALL');
   const [jopTypeFilter, setJopTypeFilter] = useState<JopTypeFilter>('ALL');
@@ -76,7 +76,7 @@ export function useDashboardData() {
   }, [filteredItems]);
 
   useEffect(() => {
-    const dbCollections = [
+    const defaultCollections = [
       'proses_dt_b',
       'proses_jod',
       'proses_ctp_b',
@@ -86,23 +86,17 @@ export function useDashboardData() {
       'proses_screen_b',
       'proses_support_b',
     ];
+    const dbCollections = collectionsToFetch && collectionsToFetch.length > 0 ? collectionsToFetch : defaultCollections;
     const activeUnsubscribes: (() => void)[] = [];
-    const combinedItemsMap: Record<string, DashboardItem[]> = {
-      proses_dt_b: [],
-      proses_jod: [],
-      proses_ctp_b: [],
-      proses_ctcp_b: [],
-      proses_flexo_b: [],
-      proses_etching_b: [],
-      proses_screen_b: [],
-      proses_support_b: [],
-    };
+    const combinedItemsMap: Record<string, DashboardItem[]> = {};
+    
+    dbCollections.forEach(col => { combinedItemsMap[col] = []; });
 
     dbCollections.forEach(colName => {
         const q = query(
           collection(db, colName),
           orderBy('timestamp_input', 'desc'),
-          limit(50)
+          limit(20) // Reduced limit for Spark Plan optimization
         );
         const unsub = onSnapshot(q, (snapshot) => {
             const items: DashboardItem[] = [];
@@ -119,7 +113,7 @@ export function useDashboardData() {
     });
 
     return () => activeUnsubscribes.forEach(unsub => unsub());
-  }, []);
+  }, [collectionsToFetch]);
 
   const productivityData = useMemo(() => {
     const picTC: Record<string, { tcUtama: number; tcSupport: number }> = {};

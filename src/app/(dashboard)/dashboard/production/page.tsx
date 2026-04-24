@@ -60,7 +60,7 @@ const StatCard = ({ title, value, icon: Icon, colorClass }: any) => (
 );
 
 export default function ProductionDashboard() {
-  const { filteredItems, stats, trendData, productivityData } = useDashboardData();
+  const { filteredItems, stats, trendData, productivityData } = useDashboardData(['proses_ctp_b', 'proses_ctcp_b', 'proses_flexo_b', 'proses_etching_b', 'proses_screen_b']);
 
   // Filter only production items (CTP, CTCP, FLEXO, etc.)
   const prodItems = useMemo(() => {

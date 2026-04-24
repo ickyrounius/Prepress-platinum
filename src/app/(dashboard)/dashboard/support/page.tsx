@@ -60,7 +60,7 @@ const StatCard = ({ title, value, icon: Icon, colorClass }: any) => (
 );
 
 export default function SupportDashboard() {
-  const { filteredItems, trendData, productivityData } = useDashboardData();
+  const { filteredItems, trendData, productivityData } = useDashboardData(['proses_support_b']);
 
   // Filter only support items
   const supportItems = useMemo(() => {
