@@ -82,10 +82,11 @@
         "timestamp_input": 0
       }
     },
-    "users": {
+    "T_USERS": {
       "{uid}": {
-        "name": "string",
+        "NAMA": "string",
         "email": "string",
+        "KATEGORI": "SPV DT|DT|QC|CAD|SPV DG|DG|DS|CTP|CTCP|FLEXO|ETCHING|SCREEN|GMG|CNC|Blueprint|Admin",
         "role": "SPV DT|DT|QC|CAD|SPV DG|DG|DS|CTP|CTCP|FLEXO|ETCHING|SCREEN|GMG|CNC|Blueprint|Admin",
         "permissions": [
           "string"

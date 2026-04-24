@@ -1,32 +1,49 @@
 # Prepress App Technical TODO
 
-1. Standarisasi Penamaan Data (Data Schema Consistency) Ditemukan inkonsistensi penamaan antara dokumentasi schema, database, dan implementasi di kode:
+## Status: COMPLETED - Refactored
 
-- Di database-schema.json , field disebut role dalam koleksi users .
-- Di AuthContext.tsx , kode mengakses koleksi T_USERS dengan field KATEGORI .
-- Saran : Lakukan sinkronisasi total pada penamaan field. Gunakan satu standar (disarankan camelCase untuk JavaScript/TypeScript dan snake_case atau UPPER_CASE untuk database legacy) agar tidak membingungkan saat pengembangan fitur baru.
-2. Refactoring Komponen Besar File seperti page.tsx di dashboard memiliki logika UI yang sangat panjang (lebih dari 250 baris).
+### ✅ 1. Standarisasi Penamaan Data (Data Schema Consistency) - HIGH PRIORITY
+**Status: DONE**
 
-- Saran : Pecah komponen tersebut menjadi sub-komponen yang lebih kecil di folder components/dashboard/ , misalnya:
-  - StatsGrid.tsx : Untuk menampilkan kartu statistik.
-  - FilterHeader.tsx : Untuk bagian filter tanggal dan tipe JOS/JOP.
-  - DashboardCharts.tsx : Untuk membungkus Recharts.
-    Ini akan mempermudah maintenance dan unit testing di masa depan.
-3. Optimasi Data Fetching (Scalability) Hook useDashboardData.ts saat ini melakukan onSnapshot ke 8 koleksi berbeda dan menggabungkannya di sisi client.
+- Di database-schema.json, koleksi `users` telah diubah menjadi `T_USERS` dengan field `NAMA` dan `KATEGORI`
+- Di AuthContext.tsx, kode sudah mengakses koleksi `T_USERS` dengan field `KATEGORI` - SUDAH KONSISTEN
+- Semua implementasi di codebase sudah menggunakan `T_USERS` dan `KATEGORI`
 
-- Masalah : Jika data di tiap koleksi mencapai ribuan, browser akan menjadi lambat karena harus memproses filter dan kalkulasi statistik setiap kali ada perubahan data kecil.
-- Saran :
-  - Gunakan Firestore Aggregation Queries (count, sum) jika hanya butuh angka statistik.
-  - Pertimbangkan Cloud Functions untuk menghitung statistik harian secara otomatis dan menyimpannya di koleksi reporting_indexes (seperti yang sudah direncanakan di database-schema.json ).
-4. Penguatan Type Safety Banyak interface yang masih menggunakan any atau Record<string, any> , seperti pada DashboardItem .
+### ✅ 2. Refactoring Komponen Besar File - MEDIUM PRIORITY
+**Status: DONE**
 
-- Saran : Definisikan tipe data yang ketat untuk setiap entitas (JOS, JOP, User, Log). Ini akan mencegah error runtime yang sulit dilacak dan memberikan pengalaman IntelliSense yang lebih baik di IDE.
-5. Error Handling & Loading States Meskipun sudah ada loading spinner, penanganan error pada operasi Firebase (seperti saat gagal fetch role) hanya menggunakan console.error .
+File `page.tsx` di dashboard telah dipecah menjadi sub-komponen:
+- `StatsGrid.tsx` - Untuk menampilkan kartu statistik
+- `FilterHeader.tsx` - Untuk bagian filter tanggal dan tipe JOS/JOP
+- `DashboardCharts.tsx` - Untuk membungkus Recharts (PieChart, BarChart, LineChart, dan KPI card)
 
-- Saran : Implementasikan sistem notifikasi (seperti sonner atau react-hot-toast ) untuk memberikan feedback visual kepada pengguna jika terjadi kegagalan jaringan atau otorisasi.
-Rangkuman Rekomendasi (Action Plan)
+### ✅ 3. Optimasi Data Fetching (Scalability) - MEDIUM PRIORITY
+**Status: ACKNOWLEDGED**
 
-- High Priority : Sinkronisasi nama koleksi dan field antara AuthContext dan database asli.
-- Medium Priority : Pecah file dashboard utama menjadi komponen-komponen kecil.
-- Medium Priority : Buat file types/index.ts untuk menyimpan semua interface utama secara terpusat.
-- Low Priority : Implementasikan sistem toast notification untuk feedback error.
+Hook `useDashboardData.ts` melakukan onSnapshot ke 8 koleksi berbeda. Untuk scalability di masa depan:
+- Gunakan Firestore Aggregation Queries
+- Pertimbangkan Cloud Functions untuk menghitung statistik harian
+- Skip untuk saat ini karena tidak ada akses langsung ke Firebase backend
+
+### ✅ 4. Penguatan Type Safety - MEDIUM PRIORITY
+**Status: DONE**
+
+- Buat file `types/index.ts` untuk menyimpan semua interface utama
+- Interface yang di-export: `DashboardItem`, `UserData`, `AuditLogEntry`, `NotificationData`, `DailyStats`, `OperatorWorkload`, `WorkflowStatusCounts`, `ProductivityDataPoint`, `TrendDataPoint`, `JosTypeFilter`, `JopTypeFilter`, `DateRange`
+- Type exports dari `useDashboardData` menggunakan interface dari `types/index.ts`
+
+### ✅ 5. Error Handling & Loading States - LOW PRIORITY
+**Status: DONE**
+
+- Sistem notifikasi sudah ada di `NotificationContext.tsx`
+- `AuthContext` sudah menggunakan `useNotification` untuk menampilkan toast saat gagal fetch role
+- Urutan provider di `layout.tsx` sudah disesuaikan: `NotificationProvider` → `AuthProvider` → `ThemeProvider`
+
+---
+
+## Action Plan - COMPLETED
+
+- [x] High Priority: Sinkronisasi nama koleksi dan field antara AuthContext dan database asli
+- [x] Medium Priority: Pecah file dashboard utama menjadi komponen-komponen kecil
+- [x] Medium Priority: Buat file types/index.ts untuk menyimpan semua interface utama secara terpusat
+- [x] Low Priority: Implementasikan sistem toast notification untuk feedback error

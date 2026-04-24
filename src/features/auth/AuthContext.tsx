@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { auth, db } from "../../lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
+import { useNotification } from "@/features/notification/NotificationContext";
 
 interface AuthContextType {
   user: User | null;
@@ -23,12 +24,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const { notify } = useNotification();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
-        // Fetch role from Firestore
         try {
           const userDocInfo = await getDoc(doc(db, "T_USERS", currentUser.uid));
           if (userDocInfo.exists()) {
@@ -38,6 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         } catch (error) {
           console.error("Error fetching user role", error);
+          notify("Gagal mengambil data role pengguna", "error");
         }
       } else {
         setRole(null);
@@ -46,7 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [notify]);
 
   return (
     <AuthContext.Provider value={{ user, role, loading }}>

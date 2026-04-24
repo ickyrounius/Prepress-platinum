@@ -2,14 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, query, onSnapshot, orderBy, limit } from 'firebase/firestore';
 import { classifyWorkflowStatus, detectJopType, detectJosType, type JopType, type JosType } from '@/lib/workflow';
-
-export interface DashboardItem extends Record<string, any> {
-  id: string;
-  sourceType: 'DT' | 'DG' | 'PROD' | 'SUPPORT';
-}
-
-export type JosTypeFilter = 'ALL' | JosType;
-export type JopTypeFilter = 'ALL' | JopType;
+import type { DashboardItem, JosTypeFilter, JopTypeFilter } from '@/lib/types';
 
 export function useDashboardData() {
   const [rawItems, setRawItems] = useState<DashboardItem[]>([]);

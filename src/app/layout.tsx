@@ -43,13 +43,13 @@ export default function RootLayout({
       <body
         className={`${outfit.variable} font-sans antialiased text-slate-800 bg-slate-50 dark:text-slate-200 dark:bg-slate-900`}
       >
-        <AuthProvider>
-          <NotificationProvider>
+        <NotificationProvider>
+          <AuthProvider>
             <ThemeProvider>
               {children}
             </ThemeProvider>
-          </NotificationProvider>
-        </AuthProvider>
+          </AuthProvider>
+        </NotificationProvider>
       </body>
     </html>
   );
