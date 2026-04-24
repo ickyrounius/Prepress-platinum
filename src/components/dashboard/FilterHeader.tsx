@@ -72,14 +72,18 @@ export default function FilterHeader({
 
       <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto justify-center sm:justify-end">
         <div className="flex items-center gap-2 bg-slate-50 p-1 rounded-2xl border border-slate-200 w-full sm:w-auto justify-between sm:justify-start">
+          <label htmlFor="date-start" className="sr-only">Tanggal Mulai</label>
           <input
+            id="date-start"
             type="date"
             value={dateRange.start}
             onChange={(e) => onDateRangeChange({ ...dateRange, start: e.target.value })}
             className="bg-transparent p-2 text-[9px] sm:text-[10px] font-black text-slate-600 outline-none uppercase w-full sm:w-auto"
           />
           <span className="text-slate-300 font-bold px-1">/</span>
+          <label htmlFor="date-end" className="sr-only">Tanggal Selesai</label>
           <input
+            id="date-end"
             type="date"
             value={dateRange.end}
             onChange={(e) => onDateRangeChange({ ...dateRange, end: e.target.value })}
@@ -87,7 +91,9 @@ export default function FilterHeader({
           />
         </div>
         <div className="flex gap-2 w-full sm:w-auto overflow-x-auto no-scrollbar">
+          <label htmlFor="jos-filter" className="sr-only">Filter JOS</label>
           <select
+            id="jos-filter"
             value={josTypeFilter}
             onChange={(e) => onJosTypeFilterChange(e.target.value as JosTypeFilter)}
             className="flex-1 sm:flex-none p-3 rounded-2xl border border-slate-200 text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-600 bg-white min-w-[100px]"
@@ -97,7 +103,9 @@ export default function FilterHeader({
             <option value="JASA">JOS: JASA</option>
             <option value="LOCAL">JOS: LOCAL</option>
           </select>
+          <label htmlFor="jop-filter" className="sr-only">Filter JOP</label>
           <select
+            id="jop-filter"
             value={jopTypeFilter}
             onChange={(e) => onJopTypeFilterChange(e.target.value as JopTypeFilter)}
             className="flex-1 sm:flex-none p-3 rounded-2xl border border-slate-200 text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-600 bg-white min-w-[100px]"
