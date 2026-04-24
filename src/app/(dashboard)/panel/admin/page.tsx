@@ -8,12 +8,16 @@ import { RecentActivityList } from '@/components/admin/RecentActivityList';
 import { 
   Users, Briefcase, FileText, 
   ShieldCheck, Gear, Database,
-  ArrowRight, PlusCircle, UserGear
+  ArrowRight, PlusCircle, UserGear,
+  CloudArrowDown, CheckCircle as CheckIcon, XCircle
 } from '@phosphor-icons/react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { importDataFromGSheet } from '@/features/gsheet/gsheetService';
+import { useNotification } from '@/features/notification/NotificationContext';
 
 export default function AdminPanel() {
+  const { notify } = useNotification();
   const [stats, setStats] = useState({
     users: 0,
     jop: 0,
@@ -47,6 +51,27 @@ export default function AdminPanel() {
 
     fetchStats();
   }, []);
+
+  const [isImporting, setIsImporting] = useState(false);
+  const [importType, setImportType] = useState<'JOP' | 'JOS' | null>(null);
+
+  const handleImport = async (type: 'JOP' | 'JOS') => {
+    setIsImporting(true);
+    setImportType(type);
+    try {
+      const result = await importDataFromGSheet(type);
+      if (result.success) {
+        notify(`Berhasil mengimport ${result.importedCount} data ${type}!`, "success");
+      } else {
+        notify(`Gagal import: ${result.error}`, "error");
+      }
+    } catch (err) {
+      notify("Terjadi kesalahan sistem saat import.", "error");
+    } finally {
+      setIsImporting(false);
+      setImportType(null);
+    }
+  };
 
   const quickActions = [
     { label: "User Management", desc: "Atur hak akses & role", icon: UserGear, href: "/users", color: "text-indigo-600 bg-indigo-50" },
@@ -122,6 +147,51 @@ export default function AdminPanel() {
              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
              <h4 className="text-sm font-black uppercase tracking-widest mb-2">Developer Access</h4>
              <p className="text-[10px] font-bold text-indigo-100 leading-relaxed uppercase">Gunakan panel ini untuk monitoring performa database dan audit trail secara langsung.</p>
+          </div>
+
+          {/* GSheet Import Section */}
+          <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-100">
+                <CloudArrowDown size={20} weight="bold" />
+              </div>
+              <div>
+                <h4 className="text-sm font-black text-slate-800 uppercase tracking-tight">External Sync</h4>
+                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Import from Google Sheets</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <button 
+                onClick={() => handleImport('JOP')}
+                disabled={isImporting}
+                className="flex flex-col items-center justify-center p-4 bg-slate-50 hover:bg-indigo-50 border border-slate-100 hover:border-indigo-100 rounded-2xl transition-all group disabled:opacity-50"
+              >
+                {isImporting && importType === 'JOP' ? (
+                  <Gear size={24} className="animate-spin text-indigo-500 mb-2" />
+                ) : (
+                  <Briefcase size={24} className="text-slate-400 group-hover:text-indigo-500 mb-2" />
+                )}
+                <span className="text-[10px] font-black text-slate-600 group-hover:text-indigo-700 uppercase tracking-widest">Import JOP</span>
+              </button>
+
+              <button 
+                onClick={() => handleImport('JOS')}
+                disabled={isImporting}
+                className="flex flex-col items-center justify-center p-4 bg-slate-50 hover:bg-emerald-50 border border-slate-100 hover:border-emerald-100 rounded-2xl transition-all group disabled:opacity-50"
+              >
+                {isImporting && importType === 'JOS' ? (
+                  <Gear size={24} className="animate-spin text-emerald-500 mb-2" />
+                ) : (
+                  <FileText size={24} className="text-slate-400 group-hover:text-emerald-500 mb-2" />
+                )}
+                <span className="text-[10px] font-black text-slate-600 group-hover:text-emerald-700 uppercase tracking-widest">Import JOS</span>
+              </button>
+            </div>
+            
+            <p className="text-[8px] text-center text-slate-400 font-bold uppercase tracking-widest leading-relaxed">
+              Pastikan struktur kolom di Google Sheet <br /> sudah sesuai dengan skema database.
+            </p>
           </div>
         </div>
 
