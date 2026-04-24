@@ -9,7 +9,8 @@ import { KanbanBoard, type KanbanItem } from '@/components/dashboard/KanbanBoard
 import StatsGrid from '@/components/dashboard/StatsGrid';
 import FilterHeader from '@/components/dashboard/FilterHeader';
 import DashboardCharts from '@/components/dashboard/DashboardCharts';
-import { useDashboardData, type JosTypeFilter, type JopTypeFilter } from '@/hooks/useDashboardData';
+import { useDashboardData } from '@/hooks/useDashboardData';
+import type { JosTypeFilter, JopTypeFilter } from '@/lib/types';
 
 const containerVariants = {
   hidden: { opacity: 0 },
