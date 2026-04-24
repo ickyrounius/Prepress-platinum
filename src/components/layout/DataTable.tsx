@@ -3,7 +3,7 @@
 import { Printer, CaretUpDown, Lightning, Warning, Circle } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line
 type DataRow = Record<string, any>;
 
 interface DataTableProps<T extends DataRow = DataRow> {

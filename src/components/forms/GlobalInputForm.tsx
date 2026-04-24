@@ -164,7 +164,7 @@ export function GlobalInputForm({
         setLoading(false);
       }
     }, 2000), // 2s throttle for Spark safety
-    [user, formData, requiredFields, docId, autoGenPrefix, collectionName, notify, resetForm, onSuccess, setLoading, setError]
+    [user, formData, requiredFields, docId, autoGenPrefix, collectionName, notify, resetForm, onSuccess, setLoading, setError, isProgressUpdate, syncRole]
   );
 
   const handleSubmit = (e: React.FormEvent) => {
