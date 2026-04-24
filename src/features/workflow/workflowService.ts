@@ -1,9 +1,9 @@
 import { doc, getDoc, updateDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, remove } from 'firebase/database';
-import { db, rtdb } from '../../lib/firebase';
-import { JopData } from '../job/jobTypes';
-import { calculateKPI } from '../kpi/calculateKPI';
-import { recordAuditLog } from '../audit-log/auditLogService';
+import { db, rtdb } from '@/lib/firebase';
+import { JopData } from '@/features/job/jobTypes';
+import { calculateKPI } from '@/features/kpi/calculateKPI';
+import { recordAuditLog } from '@/features/audit-log/auditLogService';
 
 /** Safely extract a string from an unknown payload value. */
 function asString(val: unknown, fallback = ""): string {
@@ -33,6 +33,8 @@ export const updateJOPData = async (id: string, role: string, payload: Record<st
       LAST_UPDATED: serverTimestamp(),
     };
     const nowStr = new Date().toISOString();
+    
+    console.log(`[workflowService] Updating JOP ${id} for role ${role}`);
 
     if (role === 'spv') {
       updates = {
@@ -185,8 +187,9 @@ export const updateJOPData = async (id: string, role: string, payload: Record<st
     await remove(ref(rtdb, `locks/${id}`));
 
     // 🔥 HYBRID SYNC: Remove from RTDB if status is CLOSED or CANCEL
-    const finalStatus = asString(finalUpdates.ST_WF_JOP || currentData.ST_WF_JOP || finalUpdates.ST_WORKFLOW || currentData.ST_WORKFLOW).toUpperCase();
-    if (finalStatus === "CLOSED" || finalStatus === "CANCEL") {
+    const finalStatus = asString(finalUpdates.ST_WF_JOP || currentData.ST_WF_JOP || finalUpdates.ST_WORKFLOW || currentData.ST_WORKFLOW || "").toUpperCase();
+    
+    if (finalStatus === "CLOSED" || finalStatus === "CANCEL" || finalStatus === "DONE") {
       try {
         await remove(ref(rtdb, `active_jobs/workflows_jop/${id}`));
         await recordAuditLog({

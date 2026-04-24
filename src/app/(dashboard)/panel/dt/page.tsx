@@ -141,6 +141,8 @@ export default function DTPanel() {
           title="Update Progress (Operator DT & CAD)"
           collectionName="proses_dt_b"
           autoGenPrefix="DT-PROC"
+          isProgressUpdate={true}
+          syncRole="op"
           className="p-0 border-none shadow-none max-w-none"
         >
           <div className="space-y-8">

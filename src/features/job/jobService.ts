@@ -146,7 +146,11 @@ export const unlockJOP = async (id: string) => {
 /** Listen ke semua JOP yang belum Closed, diurutkan berdasarkan LAST_UPDATED terbaru. */
 export const listenToMergedData = (callback: (data: JopData[]) => void) => {
   // CATATAN: query "!=" membutuhkan composite index di Firestore.
-  // Buat index di: workflows_jop — ST_WORKFLOW (ASC) + LAST_UPDATED (DESC)
+  // SEGERA BUAT INDEX di Firebase Console:
+  // Koleksi: workflows_jop
+  // Field 1: ST_WORKFLOW (Ascending)
+  // Field 2: LAST_UPDATED (Descending)
+  // Query scope: Collection
   const q = query(
     collection(db, 'workflows_jop'),
     where('ST_WORKFLOW', '!=', 'Closed')

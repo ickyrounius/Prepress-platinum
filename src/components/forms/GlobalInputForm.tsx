@@ -13,6 +13,7 @@ import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { useNotification } from '@/features/notification/NotificationContext';
 import { recordAuditLog } from '@/features/audit-log/auditLogService';
+import { updateJOPData } from '@/features/workflow/workflowService';
 
 interface GlobalInputFormProps {
   title: string;
@@ -24,6 +25,8 @@ interface GlobalInputFormProps {
   className?: string;
   submitLabel?: string;
   requiredFields?: string[];
+  isProgressUpdate?: boolean;
+  syncRole?: string;
 }
 
 export function GlobalInputForm({
@@ -35,7 +38,9 @@ export function GlobalInputForm({
   onSuccess,
   className,
   submitLabel = "Submit Data",
-  requiredFields = []
+  requiredFields = [],
+  isProgressUpdate = false,
+  syncRole = "op"
 }: GlobalInputFormProps) {
   const { user } = useAuth();
   const { formData, isLoading, setLoading, resetForm, error, setError } = useFormStore();
@@ -81,6 +86,7 @@ export function GlobalInputForm({
           ID: targetId,
           operator_id: user.uid,
           OPERATOR_ID: user.uid,
+          PIC_SENDER: user.displayName || user.email || 'SYSTEM',
           DATE: dateStr,
           date: dateStr,
           TGL_INPUT: displayDateStr,
@@ -132,6 +138,16 @@ export function GlobalInputForm({
             entityId: targetId,
             metadata: { status: workflowStatus }
           });
+        }
+        
+        // 🔥 SYNC MASTER JOP if this is a progress update
+        if (isProgressUpdate && (payload.no_jop || payload.no_jos || payload.id_jop)) {
+            const masterId = (payload.no_jop || payload.no_jos || payload.id_jop) as string;
+            // Hanya jalankan jika bukan sedang menulis ke koleksi master itu sendiri
+            if (collectionName !== 'workflows_jop' && collectionName !== 'workflows_jos') {
+                console.log(`[GlobalInputForm] Syncing master ${masterId} with role ${syncRole}`);
+                await updateJOPData(masterId, syncRole, payload);
+            }
         }
         
         notify("Data berhasil disimpan!", "success");
