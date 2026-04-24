@@ -207,37 +207,61 @@ export default function PrepressPanel() {
                         <div className="space-y-8">
                             <div className="space-y-4">
                                 <label className="text-[11px] font-black text-slate-500 uppercase tracking-[0.15em] flex items-center gap-2">
-                                    <FileText weight="bold" size={18} className="text-indigo-500" /> Nomor Identifikasi
+                                    <FileText weight="bold" size={18} className="text-indigo-500" /> Nomor Identifikasi Utama (JOP/JOS)
                                 </label>
                                 <JOPSearch 
                                     type="JOP"
                                     label="CARI NO JOP / JOS"
                                     required
-                                    onSelect={(id) => updateFormField('no_jop', id)}
+                                    onSelect={(id, data) => {
+                                        updateFormField('no_jop', id);
+                                        if (data) {
+                                            updateFormField('buyer', data.buyer || data.BUYER || '');
+                                            updateFormField('nama_produk', data.nama_produk || data.NAMA_PRODUK || data.nama_jop || '');
+                                        }
+                                    }}
                                 />
                             </div>
 
                             <div className="space-y-4">
                                 <label className="text-[11px] font-black text-slate-500 uppercase tracking-[0.15em] flex items-center gap-2">
-                                    <SelectionAll weight="bold" size={18} className="text-sky-500" /> Referensi Blok (NO B)
+                                    <SelectionAll weight="bold" size={18} className="text-sky-500" /> Referensi Blok / Bundle (NO B)
                                 </label>
-                                <input 
-                                    required 
-                                    value={(formData.no_b as string) || ''}
-                                    onChange={(e) => updateFormField('no_b', e.target.value)} 
-                                    className="w-full p-5 border-2 border-slate-100 rounded-[1.5rem] bg-slate-50 text-sm font-black focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all placeholder:text-slate-300" 
-                                    placeholder="CONTOH: B1, B2..." 
-                                />
+                                <div className="relative group">
+                                    <input 
+                                        required 
+                                        value={(formData.no_b as string) || ''}
+                                        onChange={(e) => updateFormField('no_b', e.target.value.toUpperCase())} 
+                                        className="w-full p-6 border-2 border-slate-100 rounded-[1.5rem] bg-slate-50 text-lg font-black focus:bg-white focus:border-sky-500 focus:ring-8 focus:ring-sky-500/5 outline-none transition-all placeholder:text-slate-200 shadow-inner" 
+                                        placeholder="MISAL: B1..." 
+                                    />
+                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 px-3 py-1 bg-sky-100 text-sky-600 rounded-lg text-[9px] font-black uppercase tracking-widest">Wajib</div>
+                                </div>
                             </div>
 
-                            <div className="space-y-4">
-                                <label className="text-[11px] font-black text-indigo-500 uppercase tracking-[0.15em] flex items-center gap-2">
-                                    <User weight="bold" size={18} className="text-indigo-500" /> Bekerja Sebagai
+                            {/* NO_B Gathering NO_JOD Section */}
+                            <div className="space-y-4 p-6 bg-slate-50 rounded-[2rem] border-2 border-slate-100 border-dashed">
+                                <label className="text-[11px] font-black text-slate-500 uppercase tracking-[0.15em] flex items-center gap-2">
+                                    <Stack weight="bold" size={18} className="text-indigo-500" /> Gathering Designs (NO JOD)
                                 </label>
-                                <div className="w-full p-5 border-2 border-indigo-100 rounded-[1.5rem] bg-indigo-50 text-indigo-600 flex items-center justify-between shadow-sm">
-                                    <span className="text-sm font-black uppercase tracking-wider">{role || 'MEMUAT...'}</span>
-                                    <span className="text-[9px] font-black bg-white px-2 py-0.5 rounded-full border border-indigo-100 tracking-widest uppercase">Auto</span>
-                                </div>
+                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter leading-tight mb-2">
+                                    Inputkan nomor-nomor JOD yang digabungkan dalam blok {formData.no_b || 'ini'}. Pisahkan dengan koma atau spasi.
+                                </p>
+                                <textarea 
+                                    value={(formData.gathered_jods as string) || ''}
+                                    onChange={(e) => updateFormField('gathered_jods', e.target.value)} 
+                                    className="w-full p-5 border-2 border-white rounded-[1.5rem] bg-white text-xs font-black focus:border-indigo-500 outline-none transition-all h-24 resize-none placeholder:text-slate-200 shadow-sm" 
+                                    placeholder="JOD-001, JOD-002, JOD-005..." 
+                                />
+                                {(formData.gathered_jods as string)?.split(/[, \n]+/).filter(Boolean).length > 0 && (
+                                    <div className="flex flex-wrap gap-2 mt-2">
+                                        {(formData.gathered_jods as string).split(/[, \n]+/).filter(Boolean).map((jod, i) => (
+                                            <span key={i} className="px-2 py-1 bg-indigo-100 text-indigo-600 rounded-md text-[9px] font-black border border-indigo-200">
+                                                {jod}
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -246,13 +270,13 @@ export default function PrepressPanel() {
                                 <label className="text-[11px] font-black text-slate-500 uppercase tracking-[0.15em] flex items-center gap-2">
                                     <Monitor weight="bold" size={18} className="text-emerald-500" /> Unit Mesin Produksi
                                 </label>
-                                <div className="grid grid-cols-2 gap-3 p-4 bg-slate-50 rounded-[1.5rem] border-2 border-slate-100">
+                                <div className="grid grid-cols-2 gap-3 p-4 bg-slate-50 rounded-[2rem] border-2 border-slate-100 shadow-inner">
                                 {['CTP', 'CTCP', 'FLEXO', 'ETCHING', 'SCREEN'].map(tipe => (
                                     <label key={tipe} className={cn(
-                                        "flex items-center gap-3 p-3.5 rounded-xl border-2 transition-all cursor-pointer",
+                                        "flex items-center gap-3 p-4 rounded-2xl border-2 transition-all cursor-pointer group/btn",
                                         formData.proses_pengerjaan === tipe 
-                                            ? "bg-slate-900 border-slate-900 text-white shadow-lg scale-[1.03]" 
-                                            : "bg-white border-slate-50 text-slate-600 hover:border-indigo-200"
+                                            ? "bg-slate-900 border-slate-900 text-white shadow-xl scale-[1.03]" 
+                                            : "bg-white border-white text-slate-400 hover:border-indigo-100 hover:text-slate-600"
                                     )}>
                                     <input 
                                         type="radio" 
@@ -263,62 +287,80 @@ export default function PrepressPanel() {
                                         className="hidden" 
                                     />
                                     <div className={cn(
-                                        "w-4 h-4 rounded-full border-2 flex items-center justify-center",
-                                        formData.proses_pengerjaan === tipe ? "border-white" : "border-slate-300"
+                                        "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all",
+                                        formData.proses_pengerjaan === tipe ? "border-indigo-400 bg-indigo-500/20" : "border-slate-100 group-hover/btn:border-indigo-200"
                                     )}>
-                                        {formData.proses_pengerjaan === tipe && <div className="w-2 h-2 bg-indigo-400 rounded-full" />}
+                                        {formData.proses_pengerjaan === tipe && <div className="w-2 h-2 bg-white rounded-full shadow-sm" />}
                                     </div>
                                     <span className="text-[11px] font-black tracking-widest">{tipe}</span>
                                     </label>
                                 ))}
                                 </div>
                             </div>
+                            
+                            <div className="space-y-4">
+                                <label className="text-[11px] font-black text-slate-500 uppercase tracking-[0.15em] flex items-center gap-2">
+                                    <User weight="bold" size={18} className="text-indigo-500" /> Operator In Charge
+                                </label>
+                                <div className="w-full p-6 border-2 border-indigo-50 rounded-[2rem] bg-indigo-50/50 text-indigo-900 flex items-center justify-between shadow-sm relative overflow-hidden group">
+                                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                                    <div className="flex items-center gap-3 relative z-10">
+                                        <div className="w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center text-xs font-black shadow-lg shadow-indigo-200">
+                                            {user?.displayName?.substring(0, 2).toUpperCase() || '??'}
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className="text-xs font-black uppercase tracking-tight">{user?.displayName || 'Loading...'}</span>
+                                            <span className="text-[9px] font-black text-indigo-400 uppercase tracking-widest">{role || 'OP'} UNIT</span>
+                                        </div>
+                                    </div>
+                                    <div className="px-3 py-1 bg-white rounded-full border border-indigo-100 text-[9px] font-black text-indigo-400 tracking-tighter shadow-sm relative z-10">VERIFIED</div>
+                                </div>
+                            </div>
                         </div>
 
                         <div className="space-y-4 md:col-span-1">
                             <label className="text-[11px] font-black text-slate-500 uppercase tracking-[0.15em] flex items-center gap-2">
-                                <CheckCircle weight="bold" size={18} className="text-amber-500" /> Status Hasil
+                                <CheckCircle weight="bold" size={18} className="text-emerald-500" /> Status Hasil Produksi
                             </label>
                             <select 
                                 required 
                                 onChange={(e) => updateFormField('status_prepress', normalizeWorkflowStatusInput(e.target.value))} 
                                 value={(formData.status_prepress as string) || ''}
-                                className="w-full p-5 border-2 border-slate-100 rounded-[1.5rem] bg-slate-50 text-xs font-black appearance-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all"
+                                className="w-full p-6 border-2 border-slate-100 rounded-[2rem] bg-slate-50 text-[11px] font-black appearance-none focus:bg-white focus:border-indigo-500 focus:ring-8 focus:ring-indigo-500/5 outline-none transition-all shadow-inner"
                             >
-                                <option value="">- PILIH STATUS -</option>
-                                <option value="APPROVED">BAIK (NORMAL)</option>
-                                <option value="REJECT">RUSAK (REJECT)</option>
-                                <option value="HOLD">GANTI (REPLACEMENT)</option>
+                                <option value="">- PILIH KEPUTUSAN -</option>
+                                <option value="APPROVED">✅ HASIL BAIK (NORMAL)</option>
+                                <option value="REJECT">❌ HASIL RUSAK (REJECT)</option>
+                                <option value="HOLD">⚠️ GANTI PLATE (REPLACEMENT)</option>
                             </select>
                         </div>
 
                         <div className="space-y-4 md:col-span-1">
                             <label className="text-[11px] font-black text-slate-500 uppercase tracking-[0.15em] flex items-center gap-2">
-                                <Lightning weight="bold" size={18} className="text-indigo-500" /> Tahap Pengerjaan
+                                <Lightning weight="bold" size={18} className="text-amber-500" /> Tahap Pengerjaan
                             </label>
                             <select 
                                 required 
                                 onChange={(e) => updateFormField('tahapan_prepress', normalizeWorkflowStatusInput(e.target.value))} 
                                 value={(formData.tahapan_prepress as string) || ''}
-                                className="w-full p-5 border-2 border-slate-100 rounded-[1.5rem] bg-slate-50 text-xs font-black appearance-none focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all"
+                                className="w-full p-6 border-2 border-slate-100 rounded-[2rem] bg-slate-50 text-[11px] font-black appearance-none focus:bg-white focus:border-indigo-500 focus:ring-8 focus:ring-indigo-500/5 outline-none transition-all shadow-inner"
                             >
                                 <option value="">- PILIH TAHAPAN -</option>
-                                <option value="PROSES">RIP / PROCESSING</option>
-                                <option value="PROSES">EXPOSE & DRYING</option>
-                                <option value="REVIEW">QUALITY CONTROL</option>
-                                <option value="DONE">DONE / FINISHED</option>
+                                <option value="PROSES">⚙️ SEDANG PROSES (EXPOSE/RIP)</option>
+                                <option value="REVIEW">🔍 QUALITY CHECK (WAITING)</option>
+                                <option value="DONE">🏁 SELESAI (READY FOR QC)</option>
                             </select>
                         </div>
 
                         <div className="space-y-4 md:col-span-2">
                             <label className="text-[11px] font-black text-slate-500 uppercase tracking-[0.15em] flex items-center gap-2">
-                                <NotePencil weight="bold" size={18} className="text-slate-400" /> Catatan Detail (Opsional)
+                                <NotePencil weight="bold" size={18} className="text-slate-400" /> Catatan Produksi & QC Detail
                             </label>
                             <textarea 
                                 onChange={(e) => updateFormField('catatan_prepress', e.target.value)} 
                                 value={(formData.catatan_prepress as string) || ''}
-                                className="w-full p-6 border-2 border-slate-100 rounded-[2rem] bg-slate-50 text-sm font-medium focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all h-36 resize-none placeholder:text-slate-300" 
-                                placeholder="Tambahkan alasan kerusakan atau instruksi khusus..."
+                                className="w-full p-8 border-2 border-slate-100 rounded-[3rem] bg-slate-50 text-sm font-medium focus:bg-white focus:border-indigo-500 focus:ring-8 focus:ring-indigo-500/5 outline-none transition-all h-44 resize-none placeholder:text-slate-300 shadow-inner" 
+                                placeholder="Jelaskan alasan reject jika rusak, atau berikan catatan khusus untuk QC..."
                             />
                         </div>
 

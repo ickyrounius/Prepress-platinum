@@ -61,13 +61,18 @@ export default function FilterHeader({
 
         <div className="hidden xl:block h-6 w-[1px] bg-slate-200 mx-2"></div>
 
-        <div className="flex items-center gap-3 px-4 py-2.5 bg-indigo-50/50 rounded-2xl border border-indigo-100/50 w-full sm:w-auto justify-center">
+        <button 
+          onClick={() => window.location.reload()}
+          className="flex items-center gap-3 px-5 py-2.5 bg-indigo-50 hover:bg-indigo-100 rounded-2xl border border-indigo-100 transition-all group w-full sm:w-auto justify-center"
+        >
           <div className="relative flex items-center justify-center">
             <div className="absolute w-3 h-3 bg-emerald-400 rounded-full animate-ping opacity-75"></div>
             <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
           </div>
-          <span className="text-[9px] sm:text-[10px] font-black text-indigo-600 uppercase tracking-widest leading-none">Live Sync Active</span>
-        </div>
+          <span className="text-[9px] sm:text-[10px] font-black text-indigo-600 uppercase tracking-widest leading-none flex items-center gap-2">
+            Live Sync <ArrowsCounterClockwise className="group-hover:rotate-180 transition-transform duration-700" weight="bold" />
+          </span>
+        </button>
       </div>
 
       <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto justify-center sm:justify-end">

@@ -175,38 +175,76 @@ export function GlobalInputForm({
 
   return (
     <motion.form 
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      className={cn("bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6 w-full max-w-2xl mx-auto", className)}
+      exit={{ opacity: 0, y: -15 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      className={cn(
+        "bg-white/80 backdrop-blur-xl p-8 sm:p-12 rounded-[3.5rem] border border-slate-100 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.05)] space-y-10 w-full max-w-3xl mx-auto relative overflow-hidden",
+        className
+      )}
       onSubmit={handleSubmit}
     >
-      <div className="border-b pb-4">
-        <h2 className="text-xl font-bold text-slate-800">{title}</h2>
-        <p className="text-xs text-slate-500 mt-1">
-          {user ? `Operator: ${user.email} (ID: ${user.uid})` : "Not logged in"}
-        </p>
+      {/* Decorative Gradient Blob */}
+      <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full -mr-32 -mt-32 blur-3xl pointer-events-none" />
+      
+      <div className="relative z-10 flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-slate-100 pb-8">
+        <div className="space-y-2">
+            <h2 className="text-3xl font-black text-slate-900 tracking-tight leading-none">{title}</h2>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                Data Entry Terminal
+            </p>
+        </div>
+        <div className="px-4 py-2 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col items-end">
+            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Authenticated Operator</span>
+            <span className="text-[11px] font-black text-indigo-600 truncate max-w-[150px]">{user?.displayName || user?.email || 'Guest User'}</span>
+        </div>
       </div>
 
       {error && (
-        <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm font-medium border border-red-100">
+        <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="p-4 bg-rose-50 text-rose-600 rounded-[1.5rem] text-[11px] font-black uppercase tracking-wider border-2 border-rose-100 flex items-center gap-3 shadow-sm shadow-rose-100/50"
+        >
+          <div className="w-6 h-6 bg-rose-600 text-white rounded-full flex items-center justify-center shrink-0">!</div>
           {error}
-        </div>
+        </motion.div>
       )}
 
-      <div className="space-y-4">
+      <div className="space-y-8 relative z-10">
         {children}
       </div>
 
-      <div className="pt-4 border-t border-slate-100">
+      <div className="pt-10 relative z-10">
         <button
           type="submit"
           disabled={isLoading || !user}
-          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-indigo-100 transition active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center gap-2"
+          className="group w-full bg-slate-900 hover:bg-indigo-600 text-white font-black py-5 px-8 rounded-[2rem] shadow-2xl shadow-indigo-200/20 transition-all duration-500 active:scale-[0.97] disabled:opacity-50 disabled:active:scale-100 flex justify-center items-center gap-3 overflow-hidden relative"
         >
-          {isLoading && <Loader2 className="animate-spin w-5 h-5" />}
-          {submitLabel}
+          {isLoading ? (
+            <Loader2 className="animate-spin w-5 h-5 text-indigo-300" />
+          ) : (
+            <>
+                <span className="relative z-10 uppercase tracking-[0.15em] text-xs">{submitLabel}</span>
+                <div className="w-8 h-8 bg-white/10 rounded-xl flex items-center justify-center group-hover:bg-white/20 transition-colors">
+                    <motion.div
+                        animate={{ x: [0, 2, 0] }}
+                        transition={{ repeat: Infinity, duration: 1.5 }}
+                    >
+                        →
+                    </motion.div>
+                </div>
+            </>
+          )}
+          
+          {/* Subtle Hover Effect */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
         </button>
+        <p className="text-center text-[9px] font-bold text-slate-300 uppercase tracking-widest mt-6">
+            Klik submit untuk sinkronisasi data ke cloud server platinum
+        </p>
       </div>
     </motion.form>
   );

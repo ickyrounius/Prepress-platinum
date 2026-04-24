@@ -113,6 +113,47 @@ export default function DashboardCharts({ stats, productivityData, trendData }: 
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-10">
+        <motion.div variants={itemVariants} className="bg-white border border-slate-100 rounded-[3rem] p-10 shadow-sm hover:shadow-md transition-shadow group">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center shadow-inner group-hover:bg-amber-500 group-hover:text-white transition-all">
+                <Trophy weight="bold" size={24} />
+              </div>
+              <div>
+                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Rankings</p>
+                <h4 className="text-lg font-black text-slate-800 uppercase tracking-wider">Top Performers PIC</h4>
+              </div>
+            </div>
+          </div>
+          <div className="space-y-4">
+            {productivityData
+              .sort((a, b) => (b.tcUtama + b.tcSupport) - (a.tcUtama + a.tcSupport))
+              .slice(0, 5)
+              .map((pic, idx) => {
+                const total = pic.tcUtama + pic.tcSupport;
+                return (
+                  <div key={pic.name} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-transparent hover:border-amber-200 hover:bg-amber-50/30 transition-all">
+                    <div className="flex items-center gap-4">
+                      <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px] font-black">
+                        #{idx + 1}
+                      </div>
+                      <span className="text-xs font-black text-slate-700 uppercase">{pic.name}</span>
+                    </div>
+                    <div className="flex items-baseline gap-2">
+                        <span className="text-lg font-black text-slate-900">{total}</span>
+                        <span className="text-[9px] font-black text-slate-400 uppercase">Points</span>
+                    </div>
+                  </div>
+                );
+              })}
+            {productivityData.length === 0 && (
+                <div className="py-10 text-center">
+                    <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">No production data yet</p>
+                </div>
+            )}
+          </div>
+        </motion.div>
+
         <motion.div variants={itemVariants} className="bg-white p-6 sm:p-10 rounded-[2.5rem] sm:rounded-[3rem] shadow-sm border border-slate-100 hover:shadow-md transition-shadow group">
           <div className="flex items-center justify-between mb-6 sm:mb-8">
             <div className="flex items-center gap-3 sm:gap-4">
@@ -126,46 +167,33 @@ export default function DashboardCharts({ stats, productivityData, trendData }: 
             </div>
           </div>
           <div className="h-64 sm:h-80 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={trendData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: '#94a3b8', fontWeight: 'bold' }} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: '#94a3b8', fontWeight: 'bold' }} />
-                <RechartsTooltip
-                  contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                />
-                <Line isAnimationActive={true} animationDuration={3000} type="monotone" dataKey="jop" name="JOP Masuk" stroke="#10b981" strokeWidth={4} dot={{ r: 5, fill: '#10b981', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 7, strokeWidth: 0 }} />
-              </LineChart>
-            </ResponsiveContainer>
+            <TrendChart data={trendData.map(d => ({ date: d.name, value: d.jop }))} label="JOP Masuk" color="#10b981" />
           </div>
         </motion.div>
+      </div>
 
+      <div className="grid grid-cols-1 xl:grid-cols-1 gap-10">
         <motion.div variants={itemVariants} className="relative group">
           <Link href="/panel/kpi">
-            <div className="bg-slate-900 p-8 sm:p-10 rounded-[2.5rem] sm:rounded-[3rem] shadow-2xl shadow-indigo-100 flex flex-col justify-between h-full group hover:scale-[1.01] transition-transform duration-500 cursor-pointer overflow-hidden border border-white/5 min-h-[320px] sm:min-h-0">
-              <div className="absolute top-0 right-0 w-48 h-48 sm:w-64 sm:h-64 bg-indigo-500/10 rounded-full -mr-24 -mt-24 sm:-mr-32 sm:-mt-32 blur-3xl animate-pulse"></div>
+            <div className="bg-slate-900 p-8 sm:p-12 rounded-[3.5rem] shadow-2xl shadow-indigo-100 flex flex-col md:flex-row items-center justify-between h-full group hover:scale-[1.005] transition-transform duration-500 cursor-pointer overflow-hidden border border-white/5 min-h-[280px]">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full -mr-32 -mt-32 blur-3xl animate-pulse"></div>
 
-              <div className="relative z-10 space-y-6 sm:space-y-8">
-                <div className="flex items-center justify-between">
-                  <div className="w-12 h-12 sm:w-14 sm:h-14 bg-white/5 border border-white/10 rounded-xl sm:rounded-[1.5rem] flex items-center justify-center text-white backdrop-blur-md group-hover:bg-indigo-500 group-hover:shadow-lg transition-all duration-500">
-                    <Trophy weight="fill" size={24} className="sm:size-[28px] text-amber-400 group-hover:text-white" />
-                  </div>
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/20 text-emerald-400 text-[9px] sm:text-[10px] font-black rounded-full border border-emerald-500/30 whitespace-nowrap">
-                    <Lightning weight="fill" size={12} className="sm:size-[14px]" /> KPI TARGET MET
-                  </div>
+              <div className="relative z-10 flex flex-col md:flex-row items-center gap-10 w-full">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 bg-white/5 border border-white/10 rounded-[2rem] flex items-center justify-center text-white backdrop-blur-md group-hover:bg-indigo-500 group-hover:shadow-lg transition-all duration-500 shrink-0">
+                    <Trophy weight="fill" size={40} className="text-amber-400 group-hover:text-white" />
                 </div>
 
-                <div className="space-y-1 sm:space-y-2">
-                  <h4 className="text-2xl sm:text-3xl font-black text-white leading-tight">Performa <br /><span className="text-indigo-400 underline decoration-indigo-500/30 underline-offset-8">Prepress Platinum</span></h4>
-                  <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Efficiency Achievement Rate</p>
+                <div className="space-y-2 text-center md:text-left flex-1">
+                    <h4 className="text-3xl sm:text-4xl font-black text-white leading-tight">Prepress <span className="text-indigo-400">Platinum</span> Excellence</h4>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.4em]">Efficiency & Accuracy Achievement Rate</p>
                 </div>
 
-                <div className="space-y-3 sm:space-y-4">
-                  <div className="flex items-baseline gap-3 sm:gap-4">
-                    <h2 className="text-5xl sm:text-6xl font-black text-white group-hover:text-indigo-300 transition-colors">98.4<span className="text-xl sm:text-2xl opacity-50">%</span></h2>
-                    <TrendUp weight="bold" size={20} className="sm:size-[24px] text-emerald-400 animate-bounce" />
+                <div className="flex flex-col items-center md:items-end gap-4 shrink-0">
+                  <div className="flex items-baseline gap-3">
+                    <h2 className="text-6xl sm:text-7xl font-black text-white group-hover:text-indigo-300 transition-colors tracking-tighter">98.4<span className="text-2xl opacity-50">%</span></h2>
+                    <TrendUp weight="bold" size={24} className="text-emerald-400 animate-bounce" />
                   </div>
-                  <div className="w-full bg-white/5 h-3 sm:h-4 rounded-full overflow-hidden border border-white/10 p-0.5">
+                  <div className="w-48 bg-white/5 h-2 rounded-full overflow-hidden border border-white/10 p-0.5">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: '98.4%' }}
@@ -176,9 +204,9 @@ export default function DashboardCharts({ stats, productivityData, trendData }: 
                 </div>
               </div>
 
-              <div className="relative z-10 mt-6 pt-6 border-t border-white/5 flex items-center justify-between text-slate-500">
-                <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest group-hover:text-white transition-colors">Lihat detail ranking PIC</span>
-                <ArrowsCounterClockwise weight="bold" size={14} className="sm:size-[16px] group-hover:rotate-180 transition-transform duration-700" />
+              <div className="absolute bottom-6 left-12 right-12 z-10 pt-6 border-t border-white/5 hidden md:flex items-center justify-between text-slate-500">
+                <span className="text-[9px] font-black uppercase tracking-[0.3em] group-hover:text-white transition-colors">Lihat detail ranking performa seluruh PIC secara lengkap</span>
+                <ArrowsCounterClockwise weight="bold" size={16} className="group-hover:rotate-180 transition-transform duration-700" />
               </div>
             </div>
           </Link>
