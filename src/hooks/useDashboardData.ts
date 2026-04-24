@@ -15,9 +15,8 @@ export function useDashboardData() {
 
   const filteredItems = useMemo(() => {
     return rawItems.filter((item) => {
-      // Handle both cases for Jos/Jop detection
-      const tipeJos = item.tipe_jos || item.TIPE_JOS;
-      const noJop = item.no_jop || item.NO_JOP || item.id;
+      const tipeJos = String(item.tipe_jos || item.TIPE_JOS || '');
+      const noJop = String(item.no_jop || item.NO_JOP || item.id || '');
       
       const matchedJos = josTypeFilter === 'ALL' || detectJosType(tipeJos) === josTypeFilter;
       const matchedJop = jopTypeFilter === 'ALL' || detectJopType(noJop) === jopTypeFilter;
@@ -26,11 +25,12 @@ export function useDashboardData() {
       if (dateRange.start || dateRange.end) {
         let itemDate: Date | null = null;
         if (item.timestamp_input) {
-          itemDate = typeof item.timestamp_input === 'number' 
-            ? new Date(item.timestamp_input) 
-            : item.timestamp_input.toDate?.() || new Date(item.timestamp_input);
+          const ts = item.timestamp_input as { toDate?: () => Date } | number;
+          itemDate = typeof ts === 'number'
+            ? new Date(ts)
+            : ts.toDate?.() || new Date(String(ts));
         } else if (item.DATE || item.date) {
-          itemDate = new Date(item.DATE || item.date);
+          itemDate = new Date(String(item.DATE || item.date));
         }
 
         if (itemDate && !isNaN(itemDate.getTime())) {
@@ -57,8 +57,8 @@ export function useDashboardData() {
     filteredItems.forEach((item) => {
       totalLoad++;
       const bucket = classifyWorkflowStatus(
-        item.ST_WORKFLOW || item.status_workflow || item.status_dg || item.status_dt || item.ST_WF_JOP || item.ST_WF_JOS,
-        item.ST_PRO_JOP || item.status_pro_jop || item.ST_PRO_JOS
+        String(item.ST_WORKFLOW || item.status_workflow || item.status_dg || item.status_dt || item.ST_WF_JOP || item.ST_WF_JOS || ''),
+        String(item.ST_PRO_JOP || item.status_pro_jop || item.ST_PRO_JOS || '')
       );
       if (bucket === 'closed') closedCount++;
       else if (bucket === 'review') reviewCount++;
@@ -124,8 +124,8 @@ export function useDashboardData() {
   const productivityData = useMemo(() => {
     const picTC: Record<string, { tcUtama: number; tcSupport: number }> = {};
     filteredItems.forEach(item => {
-      const picU = item.pic_utama || item.PIC_UTAMA || 'N/A';
-      const picS = item.pic_support || item.PIC_SUPPORT;
+      const picU = String(item.pic_utama || item.PIC_UTAMA || 'N/A');
+      const picS = String(item.pic_support || item.PIC_SUPPORT);
       const tcU = Number(item.TC_UTAMA || item.tc_utama || 0);
       const tcS = Number(item.TC_SUPPORT || item.tc_support || 0);
       
@@ -156,9 +156,9 @@ export function useDashboardData() {
     });
 
     filteredItems.forEach(item => {
-      const dateVal = item.timestamp_input || item.DATE || item.date;
+      const dateVal = item.timestamp_input as { toDate?: () => Date } | number | string | undefined;
       if (dateVal) {
-        const d = new Date(typeof dateVal === 'number' ? dateVal : dateVal);
+        const d = new Date(typeof dateVal === 'number' ? dateVal : String(dateVal));
         const dayMatch = days.find(day => day.dateStr === d.toDateString());
         if (dayMatch) dayMatch.jop++;
       }
