@@ -67,13 +67,7 @@ export default function DTPanel() {
   useEffect(() => {
     if (role) {
       const normalizedStr = role.toUpperCase();
-      let determinedRole = normalizedStr;
-      
-      // Auto mapping to activate DT/CAD forms
-      if (normalizedStr.includes('DT') || normalizedStr === 'ADMIN') determinedRole = 'DT';
-      else if (normalizedStr.includes('CAD')) determinedRole = 'CAD';
-      
-      updateFormField('role_type', determinedRole);
+      updateFormField('role_type', normalizedStr);
     }
   }, [role, updateFormField]);
 
@@ -129,6 +123,18 @@ export default function DTPanel() {
     { value: 'REJECT PRODUKSI', label: 'REJECT PRODUKSI' },
     { value: 'FILE BELUM LENGKAP', label: 'FILE BELUM LENGKAP' }, // For CAD
   ];
+
+  const isDTRole = (() => {
+    const rt = String(formData.role_type || '').toUpperCase();
+    if (rt.includes('QC')) return false;
+    return rt.includes('DT') || ['ADMIN', 'DEVELOPER', 'MANAGER', 'KOORDINATOR'].includes(rt);
+  })();
+
+  const isCADRole = (() => {
+    const rt = String(formData.role_type || '').toUpperCase();
+    if (rt.includes('QC')) return false;
+    return rt.includes('CAD') || ['ADMIN', 'DEVELOPER', 'MANAGER', 'KOORDINATOR'].includes(rt);
+  })();
 
   return (
     <div className="max-w-4xl mx-auto p-3 sm:p-8 space-y-6 sm:space-y-8 animate-in fade-in duration-700">
@@ -207,7 +213,7 @@ export default function DTPanel() {
                     <span className="text-[9px] text-indigo-400 font-bold bg-white px-2 py-0.5 rounded-full border border-indigo-100 tracking-widest uppercase">Auto</span>
                   </div>
                 </div>
-                {formData.role_type === 'DT' && (
+                {isDTRole && (
                   <div className="space-y-1.5 animate-in fade-in zoom-in-95 duration-300">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Fase DT</label>
                     <select 
@@ -226,7 +232,7 @@ export default function DTPanel() {
             </div>
 
             {/* Section 2: Progress Updates based on Role */}
-            {formData.role_type === 'DT' && (
+            {isDTRole && (
               <div className="space-y-5 border-t border-slate-100 pt-6 animate-in slide-in-from-bottom-2 duration-300">
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Status Progress</label>
@@ -322,7 +328,7 @@ export default function DTPanel() {
               </div>
             )}
 
-            {formData.role_type === 'CAD' && (
+            {isCADRole && (
               <div className="space-y-5 border-t border-slate-100 pt-6 animate-in slide-in-from-bottom-2 duration-300">
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Update Progress CAD</label>
