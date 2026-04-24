@@ -37,6 +37,8 @@ const QtyCounter = ({ label, value, name, colorClass, icon: Icon }: QtyCounterPr
       <div className="flex items-center justify-between gap-4 sm:gap-6">
          <button 
             type="button"
+            title="Kurangi"
+            aria-label="Kurangi Jumlah"
             onClick={() => updateFormField(name, Math.max(0, val - 1))}
             className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl border border-slate-200 flex items-center justify-center text-slate-400 hover:bg-white hover:text-indigo-500 hover:border-indigo-200 transition-all shadow-sm"
           >
@@ -45,6 +47,8 @@ const QtyCounter = ({ label, value, name, colorClass, icon: Icon }: QtyCounterPr
          <div className="flex flex-col items-center">
             <input 
                 type="number"
+                title={label}
+                aria-label={label}
                 value={val}
                 onChange={(e) => updateFormField(name, Number(e.target.value))}
                 className="w-16 sm:w-20 text-center text-2xl sm:text-3xl font-black text-slate-800 bg-transparent outline-none"
@@ -53,6 +57,8 @@ const QtyCounter = ({ label, value, name, colorClass, icon: Icon }: QtyCounterPr
          </div>
          <button 
             type="button"
+            title="Tambah"
+            aria-label="Tambah Jumlah"
             onClick={() => updateFormField(name, val + 1)}
             className={cn("w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center text-white shadow-lg transition-all active:scale-90", colorClass.replace('text-', 'bg-'))}
           >
@@ -73,6 +79,15 @@ export default function SupportPage() {
     }
   }, [role, updateFormField]);
 
+  // Determine prefix based on selected support type
+  const getSupportPrefix = () => {
+    const type = formData.type_support as string;
+    if (type === 'GMG') return 'SD-GMG';
+    if (type === 'CNC') return 'SD-CNC';
+    if (type === 'BLUEPRINT') return 'SD-BPR';
+    return 'SD-PROC'; // Fallback
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-3 sm:p-8 space-y-6 sm:space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col gap-2 mb-4">
@@ -90,7 +105,9 @@ export default function SupportPage() {
       <GlobalInputForm
         title="Update Progress Support Design"
         collectionName="proses_support_b"
-        autoGenPrefix="SUP-PROC"
+        autoGenPrefix={getSupportPrefix()}
+        isProgressUpdate={true}
+        syncRole="support"
         className="p-0 border-none shadow-none max-w-none"
       >
         <div className="space-y-8">
@@ -124,6 +141,7 @@ export default function SupportPage() {
                 <label className="text-[10px] font-black text-amber-600 uppercase tracking-widest ml-1">Kategori Support</label>
                 <select 
                     required 
+                    title="Kategori Support"
                     onChange={(e) => updateFormField('type_support', e.target.value)} 
                     value={(formData.type_support as string) || ''}
                     className="w-full p-4 border-2 border-amber-100 rounded-2xl bg-white text-sm font-black text-amber-600 focus:border-amber-500 outline-none transition-all cursor-pointer shadow-sm"
@@ -147,6 +165,7 @@ export default function SupportPage() {
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Status Pengerjaan</label>
                 <select 
                     required 
+                    title="Status Pengerjaan"
                     onChange={(e) => updateFormField('status_workflow', e.target.value)} 
                     value={(formData.status_workflow as string) || ''}
                     className="w-full p-4 border-2 border-slate-100 rounded-2xl bg-white text-sm font-bold text-slate-700 focus:border-indigo-500 outline-none transition-all cursor-pointer shadow-sm"

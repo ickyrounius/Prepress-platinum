@@ -74,6 +74,17 @@ export const updateJOPData = async (id: string, role: string, payload: Record<st
         updates.ST_WF_JOP = 'Assigned';
       }
       if (updates.ST_WF_JOP === 'Layout') updates.ST_WF_JOP = 'On Process';
+    } else if (role === 'support') {
+      const workflowStatus = asString(payload.status_workflow || payload.ST_WORKFLOW || 'On Process');
+      const supportType = asString(payload.type_support || payload.TYPE_SUPPORT);
+      
+      updates = {
+        ...updates,
+        ST_WF_JOP: workflowStatus,
+        ST_PRO_NO_B: (workflowStatus === 'Done' || workflowStatus === 'Closed') ? 'Done' : 'Support',
+        [`ST_${supportType}`]: workflowStatus, // e.g., ST_GMG, ST_CNC
+        HOLD_REASON: (workflowStatus === 'Hold') ? asString(payload.catatan_support || payload.HOLD_REASON) : "",
+      };
     } else if (role === 'blueprint') {
       updates = {
         ...updates,
@@ -177,6 +188,17 @@ export const updateJOPData = async (id: string, role: string, payload: Record<st
       };
 
       await submitLog('logs_qc', { ...currentData, ...payload, TGL_LOG: nowStr });
+    } else if (role === 'prepress') {
+      const workflowStatus = asString(payload.status_workflow || payload.ST_WORKFLOW || 'On Process');
+      const prepressStatus = asString(payload.status_prepress || payload.ST_PREPRESS || 'Approved');
+      
+      updates = {
+        ...updates,
+        ST_WF_JOP: workflowStatus,
+        ST_PRO_NO_B: (workflowStatus === 'Done' || workflowStatus === 'Closed') ? 'Done' : 'Produksi',
+        ST_PREPRESS: prepressStatus,
+        HOLD_REASON: (workflowStatus === 'Hold') ? asString(payload.catatan_operator || payload.HOLD_REASON) : "",
+      };
     }
 
     const combinedData = { ...currentData, ...updates };

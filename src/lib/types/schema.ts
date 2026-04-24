@@ -36,4 +36,26 @@ export const DEPT_CODES = {
   ADMIN:      "ADM",  // Admin entry
 } as const;
 
+/**
+ * Peta kode mesin spesifik di departemen Prepress
+ */
+export const MACHINE_CODES = {
+  CTP:        "CTP",
+  CTCP:       "CTCP",
+  FLEXO:      "FLX",
+  SCREEN:     "SCR",
+  ETCHING:    "ETC",
+} as const;
+
+/**
+ * Peta kode untuk Support Department
+ */
+export const SUPPORT_CODES = {
+  GMG:        "GMG",
+  CNC:        "CNC",
+  BLUEPRINT:  "BPR",
+} as const;
+
 export type DeptCode = keyof typeof DEPT_CODES;
+export type MachineCode = keyof typeof MACHINE_CODES;
+export type SupportCode = keyof typeof SUPPORT_CODES;

@@ -58,7 +58,7 @@ export function useDashboardData() {
       totalLoad++;
       const bucket = classifyWorkflowStatus(
         String(item.ST_WORKFLOW || item.status_workflow || item.status_dg || item.status_dt || item.ST_WF_JOP || item.ST_WF_JOS || ''),
-        String(item.ST_PRO_JOP || item.status_pro_jop || item.ST_PRO_JOS || '')
+        String(item.ST_PRO_JOP || item.status_pro_jop || item.ST_PRO_JOS || item.ST_PRO_NO_B || '')
       );
       if (bucket === 'closed') closedCount++;
       else if (bucket === 'review') reviewCount++;

@@ -14,6 +14,7 @@ import { format } from 'date-fns';
 import { useNotification } from '@/features/notification/NotificationContext';
 import { recordAuditLog } from '@/features/audit-log/auditLogService';
 import { updateJOPData } from '@/features/workflow/workflowService';
+import { generateUniqueId } from '@/lib/types/schema';
 
 interface GlobalInputFormProps {
   title: string;
@@ -68,7 +69,7 @@ export function GlobalInputForm({
 
         let targetId = docId;
         if (!targetId && autoGenPrefix) {
-          targetId = `${autoGenPrefix}-${Math.floor(Math.random() * 100000)}`;
+          targetId = generateUniqueId(autoGenPrefix);
         } else if (!targetId) {
           targetId = doc(collection(db, collectionName)).id;
         }
@@ -141,8 +142,8 @@ export function GlobalInputForm({
         }
         
         // 🔥 SYNC MASTER JOP if this is a progress update
-        if (isProgressUpdate && (payload.no_jop || payload.no_jos || payload.id_jop)) {
-            const masterId = (payload.no_jop || payload.no_jos || payload.id_jop) as string;
+        const masterId = (payload.no_jop || payload.NO_JOP || payload.no_jos || payload.NO_JOS || payload.id_jop || payload.ID_JOP) as string;
+        if (isProgressUpdate && masterId) {
             // Hanya jalankan jika bukan sedang menulis ke koleksi master itu sendiri
             if (collectionName !== 'workflows_jop' && collectionName !== 'workflows_jos') {
                 console.log(`[GlobalInputForm] Syncing master ${masterId} with role ${syncRole}`);
