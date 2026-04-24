@@ -2,12 +2,12 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Book, CheckCircle2, AlertCircle, 
-  FileText, Printer, PenTool, 
-  Database, Search, Layers, 
+import {
+  Book, CheckCircle2, AlertCircle,
+  FileText, Printer, PenTool,
+  Database, Search, Layers,
   ShieldCheck, Wrench, Trophy,
-  CaretRight
+  ChevronRight
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -29,7 +29,7 @@ const Section = ({ title, icon: Icon, children, id }: { title: string, icon: Rea
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-2">SOP Reference Module</p>
         </div>
       </div>
-      <CaretRight className="text-slate-200 group-hover:text-indigo-300 transition-colors" size={24} />
+      <ChevronRight className="text-slate-200 group-hover:text-indigo-300 transition-colors" size={24} />
     </div>
     <div className="prose prose-slate max-w-none">
       {children}
