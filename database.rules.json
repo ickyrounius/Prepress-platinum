@@ -1,7 +1,5 @@
 {
   "rules": {
-    ".read": false,
-    ".write": false,
     "notifications": {
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",
@@ -11,12 +9,19 @@
         }
       }
     },
+    "locks": {
+      ".read": "auth != null",
+      "$jobId": {
+        ".write": "auth != null",
+        ".validate": "newData.hasChildren(['activeUser', 'timestamp'])"
+      }
+    },
     "active_jobs": {
       ".read": "auth != null",
       "$collection": {
         "$jobId": {
           ".write": "auth != null",
-          ".validate": "newData.hasChildren(['id', 'operator_id', 'timestamp_update']) && newData.child('operator_id').isString()"
+          ".validate": "newData.hasChildren(['id', 'timestamp_update'])"
         }
       }
     }

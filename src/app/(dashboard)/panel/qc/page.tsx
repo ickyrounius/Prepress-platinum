@@ -52,7 +52,7 @@ export default function QCPanel() {
                                 targetType === 'NO_JOS' ? "bg-white text-slate-900 shadow-md" : "text-slate-400"
                             )}
                         >
-                            Design QC
+                            NO_JOS-D QC
                         </button>
                         <button 
                             onClick={() => onTargetChange('NO_JOP')}
@@ -61,7 +61,7 @@ export default function QCPanel() {
                                 targetType === 'NO_JOP' ? "bg-white text-slate-900 shadow-md" : "text-slate-400"
                             )}
                         >
-                            Prepress QC
+                            NO_JOP QC
                         </button>
                     </div>
                 </div>
@@ -70,7 +70,7 @@ export default function QCPanel() {
       </div>
 
       <GlobalInputForm
-        title={`QC Verification: ${targetType === 'NO_JOS' ? 'Design/Artwork' : 'Physical Plate/Proof'}`}
+        title={`QC Verification: ${targetType === 'NO_JOS' ? 'NO_JOS-D' : 'NO_JOP'}`}
         collectionName={targetType === 'NO_JOS' ? 'proses_jod' : 'proses_prepress_b'}
         autoGenPrefix="QC-CHK"
         className="p-0 border-none shadow-none max-w-none bg-transparent space-y-12"
@@ -86,14 +86,14 @@ export default function QCPanel() {
 
                     <JOPSearch 
                         type={targetType === 'NO_JOP' ? 'JOP' : 'JOS'}
-                        label={`PILIH ${targetType}`}
+                        label={`PILIH ${targetType === 'NO_JOS' ? 'NO_JOS-D' : 'NO_JOP'}`}
                         required
                         onSelect={(id) => updateFormField(targetType.toLowerCase(), id)}
                     />
 
                     <div className="space-y-4">
                         <label className="text-[11px] font-black text-slate-500 uppercase tracking-[0.15em] flex items-center gap-2">
-                            <Stack weight="bold" size={18} className="text-slate-400" /> Specific Identifier ({targetType === 'NO_JOS' ? 'NO JOD' : 'NO B'})
+                            <Stack weight="bold" size={18} className="text-slate-400" /> Specific Identifier ({targetType === 'NO_JOS' ? 'NO_JOD' : 'NO_B'})
                         </label>
                         <input 
                             required 

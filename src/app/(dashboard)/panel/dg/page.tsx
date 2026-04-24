@@ -138,25 +138,9 @@ export default function DGPanel() {
 
                     <JOPSearch 
                         type="JOS"
-                        label="CARI NO JOS (ATAU BUYER)"
+                        label="CARI NO_JOS-D (ATAU BUYER)"
                         required
-                        onSelect={(id, data) => {
-                            updateFormField('no_jos', id);
-                            if (data) {
-                                if (data.tgl_no_jos) updateFormField('tgl_masuk', String(data.tgl_no_jos));
-                                if (data.tgl_target_no_jos) updateFormField('tgl_target', String(data.tgl_target_no_jos));
-                                if (data.revisi_ke) {
-                                    const rev = Number(data.revisi_ke);
-                                    updateFormField('revisi_ke', rev);
-                                    setLaValue(Math.min(rev + 1, 5));
-                                }
-                                const dp = calculateDeadlinePressureScore(
-                                    data.tgl_target_no_jos ?? data.tgl_target,
-                                    data.tgl_no_jos ?? data.tgl_masuk
-                                );
-                                setDpValue(dp);
-                            }
-                        }}
+                        updateFormField('no_jos', id);
                     />
 
                     <div className="space-y-4">

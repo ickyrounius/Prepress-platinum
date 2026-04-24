@@ -156,7 +156,7 @@ export default function DTPanel() {
 
                     <JOPSearch 
                         type="JOP"
-                        label="CARI NO JOP (ATAU BUYER)"
+                        label="CARI NO_JOP (ATAU BUYER)"
                         required
                         onSelect={(id, data) => {
                             updateFormField('no_jop', id);

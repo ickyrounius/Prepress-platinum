@@ -207,11 +207,11 @@ export default function PrepressPanel() {
                         <div className="space-y-8">
                             <div className="space-y-4">
                                 <label className="text-[11px] font-black text-slate-500 uppercase tracking-[0.15em] flex items-center gap-2">
-                                    <FileText weight="bold" size={18} className="text-indigo-500" /> Nomor Identifikasi Utama (JOP/JOS)
+                                    <FileText weight="bold" size={18} className="text-indigo-500" /> Nomor Identifikasi Utama (NO_JOP)
                                 </label>
                                 <JOPSearch 
                                     type="JOP"
-                                    label="CARI NO JOP / JOS"
+                                    label="CARI NO_JOP"
                                     required
                                     onSelect={(id, data) => {
                                         updateFormField('no_jop', id);

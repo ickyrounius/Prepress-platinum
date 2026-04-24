@@ -26,12 +26,12 @@ service cloud.firestore {
     function isDG() { return hasRole(['DG', 'DS', 'SPV DG', 'ADMIN DG']); }
 
     function isPrepress() {
-      return hasRole(['SPV PREPRESS','KOORDINATOR','PRODUCTION',
+      return hasRole(['PREPRESS', 'SPV PREPRESS','KOORDINATOR','PRODUCTION',
         'OP CTP','OP CTCP','OP FLEXO','OP SCREEN','OP ETCHING','ADMIN PREPRESS']);
     }
 
-    function isQC()      { return hasRole(['QC']); }
-    function isSupport() { return hasRole(['SUPPORT DESIGN','GMG','CNC','BLUEPRINT']); }
+    function isQC()      { return hasRole(['QC', 'QC INSPECTOR']); }
+    function isSupport() { return hasRole(['SUPPORT', 'SUPPORT DESIGN','GMG','CNC','BLUEPRINT']); }
 
     function isOwnerWrite() {
       return isSignedIn() && request.resource.data.operator_id == request.auth.uid;
@@ -54,13 +54,13 @@ service cloud.firestore {
     // ── JOS & JOP Workflows ─────────────────────────────────────────────────
     match /workflows_jos/{docId} {
       allow read: if isSignedIn();
-      allow create, update: if isAdminLike() || isOperationalAdmin() || isOwnerWrite();
+      allow create, update: if isAdminLike() || isOperationalAdmin() || isOwnerWrite() || isDT() || isDG() || isPrepress() || isQC() || isSupport();
       allow delete: if isAdminLike();
     }
 
     match /workflows_jop/{docId} {
       allow read: if isSignedIn();
-      allow create, update: if isAdminLike() || isOperationalAdmin() || isOwnerWrite();
+      allow create, update: if isAdminLike() || isOperationalAdmin() || isOwnerWrite() || isDT() || isDG() || isPrepress() || isQC() || isSupport();
       allow delete: if isAdminLike();
     }
 
