@@ -205,8 +205,8 @@ export function JOPSearch({
                     </span>
                   </div>
                   <div className="flex justify-between text-xs text-slate-500 mt-0.5">
-                    <span className="truncate max-w-[150px]">{item.buyer || item.customer || 'No Buyer'}</span>
-                    <span className="text-[10px] text-slate-400 italic">{item.produk || item.nama_job || ''}</span>
+                    <span className="truncate max-w-[150px]">{(item.BUYER || item.buyer || item.customer || 'No Buyer') as string}</span>
+                    <span className="text-[10px] text-slate-400 italic">{(item.NAMA_JOP || item.produk || item.nama_job || item.nama_produk || '') as string}</span>
                   </div>
                 </button>
               );

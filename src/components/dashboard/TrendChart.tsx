@@ -2,16 +2,13 @@
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
-const data = [
-  { date: '1 Apr', JOS: 14, JOP: 20 },
-  { date: '2 Apr', JOS: 18, JOP: 25 },
-  { date: '3 Apr', JOS: 22, JOP: 18 },
-  { date: '4 Apr', JOS: 27, JOP: 30 },
-  { date: '5 Apr', JOS: 15, JOP: 22 },
-  { date: '6 Apr', JOS: 31, JOP: 35 },
-];
+interface TrendChartProps {
+  data?: { date: string; value: number }[];
+  label?: string;
+  color?: string;
+}
 
-export default function TrendChart() {
+export default function TrendChart({ data = [], label = "Jobs", color = "hsl(var(--primary))" }: TrendChartProps) {
   return (
     <div className="w-full">
       <ResponsiveContainer width="100%" height={300}>
@@ -29,21 +26,30 @@ export default function TrendChart() {
             dataKey="date" 
             axisLine={false} 
             tickLine={false} 
-            tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} 
+            tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10, fontWeight: 'bold' }} 
             dy={10} 
           />
           <YAxis 
             axisLine={false} 
             tickLine={false} 
-            tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} 
+            tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10, fontWeight: 'bold' }} 
           />
           <Tooltip 
-            contentStyle={{ backgroundColor: 'hsl(var(--card))', borderRadius: '8px', border: '1px solid hsl(var(--border))' }}
-            labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 'bold' }}
+            contentStyle={{ backgroundColor: 'white', borderRadius: '16px', border: '1px solid hsl(var(--border))', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontSize: '10px' }}
+            labelStyle={{ color: 'black', fontWeight: 'bold' }}
           />
-          <Legend verticalAlign="top" height={36} iconType="circle" />
-          <Line type="monotone" dataKey="JOS" stroke="hsl(var(--primary))" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
-          <Line type="monotone" dataKey="JOP" stroke="hsl(var(--destructive))" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+          <Legend verticalAlign="top" height={36} iconType="circle" wrapperStyle={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase' }} />
+          <Line 
+            type="monotone" 
+            dataKey="value" 
+            name={label} 
+            stroke={color} 
+            strokeWidth={4} 
+            dot={{ r: 4, strokeWidth: 2, fill: 'white', stroke: color }} 
+            activeDot={{ r: 6, strokeWidth: 0 }} 
+            isAnimationActive={true}
+            animationDuration={1500}
+          />
         </LineChart>
       </ResponsiveContainer>
     </div>

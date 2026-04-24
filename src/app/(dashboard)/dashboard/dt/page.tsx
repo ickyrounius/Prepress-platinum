@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { db } from '@/lib/firebase';
 import { collection, onSnapshot, query } from 'firebase/firestore';
@@ -95,33 +95,27 @@ const StatCard = ({ title, value, icon: Icon, colorClass }: StatCardProps) => {
   );
 };
 
-export default function DTDashboard() {
-  const [kanbanItems, setKanbanItems] = useState<KanbanItem[]>([]);
+import { useRoleStats } from '@/hooks/useRoleStats';
 
-  useEffect(() => {
-    const q = query(collection(db, 'proses_dt_b'));
-    const unsub = onSnapshot(q, (snapshot) => {
-      const items: KanbanItem[] = [];
-      snapshot.forEach((doc) => {
-        items.push({ id: doc.id, sourceType: 'DT', ...doc.data() } as unknown as KanbanItem);
-      });
-      setKanbanItems(items);
-    });
-    return () => unsub();
-  }, []);
+export default function DTDashboard() {
+  const { items: rawItems, stats: realStats, trendData, workloadData, loading } = useRoleStats('proses_dt_b');
+
+  const kanbanItems = useMemo(() => {
+    return rawItems.map(item => ({ ...item, sourceType: 'DT' } as unknown as KanbanItem));
+  }, [rawItems]);
 
   const stats = [
-    { title: "Total JOP", value: 1245, icon: FileText, color: "indigo" },
-    { title: "Closed", value: 980, icon: CheckCircle, color: "emerald" },
-    { title: "On Process", value: 120, icon: Clock, color: "blue" },
-    { title: "Blueprint", value: 85, icon: Stack, color: "purple" },
-    { title: "Hold/Pending", value: 15, icon: WarningCircle, color: "amber" },
-    { title: "Total Export", value: 450, icon: Download, color: "sky" },
-    { title: "Total Jasa", value: 310, icon: Archive, color: "rose" },
-    { title: "Total Local", value: 485, icon: MapPin, color: "teal" },
-    { title: "Overdue", value: 8, icon: Warning, color: "red" },
-    { title: "On Time", value: 960, icon: CheckCircle, color: "emerald" },
-    { title: "Before Deadline", value: 277, icon: Lightning, color: "yellow" },
+    { title: "Total JOP", value: realStats.total, icon: FileText, color: "indigo" },
+    { title: "Closed", value: realStats.closed, icon: CheckCircle, color: "emerald" },
+    { title: "On Process", value: realStats.process, icon: Clock, color: "blue" },
+    { title: "Blueprint", value: realStats.blueprint, icon: Stack, color: "purple" },
+    { title: "Hold/Pending", value: realStats.hold, icon: WarningCircle, color: "amber" },
+    { title: "Total Export", value: realStats.exportCount, icon: Download, color: "sky" },
+    { title: "Total Jasa", value: realStats.jasaCount, icon: Archive, color: "rose" },
+    { title: "Total Local", value: realStats.localCount, icon: MapPin, color: "teal" },
+    { title: "Overdue", value: realStats.overdue, icon: Warning, color: "red" },
+    { title: "On Time", value: realStats.onTime, icon: CheckCircle, color: "emerald" },
+    { title: "Today Active", value: trendData[trendData.length - 1]?.value || 0, icon: Lightning, color: "yellow" },
   ];
 
   return (
@@ -170,7 +164,7 @@ export default function DTDashboard() {
               </div>
           </div>
           <div className="h-80">
-            <TrendChart />
+            <TrendChart data={trendData} label="JOP Masuk" color="#6366f1" />
           </div>
         </motion.div>
 
@@ -185,7 +179,7 @@ export default function DTDashboard() {
               </div>
           </div>
           <div className="h-80">
-            <WorkloadChart />
+            <WorkloadChart data={workloadData} label="Active Jobs" color="#10b981" />
           </div>
         </motion.div>
       </div>

@@ -11,6 +11,8 @@ import {
 } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
 import type { Icon } from '@phosphor-icons/react';
+import { useAuth } from '@/features/auth/AuthContext';
+import { useEffect } from 'react';
 
 interface QtyCounterProps {
   label: string;
@@ -62,7 +64,14 @@ const QtyCounter = ({ label, value, name, colorClass, icon: Icon }: QtyCounterPr
 };
 
 export default function SupportPage() {
+  const { role } = useAuth();
   const { updateFormField, formData } = useFormStore();
+
+  useEffect(() => {
+    if (role) {
+      updateFormField('role_type', role.toUpperCase());
+    }
+  }, [role, updateFormField]);
 
   return (
     <div className="max-w-4xl mx-auto p-3 sm:p-8 space-y-6 sm:space-y-8 animate-in fade-in duration-700">
@@ -124,6 +133,14 @@ export default function SupportPage() {
                   <option value="GMG">GMG Proofing</option>
                   <option value="CNC">CNC Block / Machining</option>
                 </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 text-amber-500">Bekerja Sebagai</label>
+                <div className="w-full p-4 border-2 border-amber-100 rounded-2xl bg-amber-50 cursor-default text-sm font-black text-amber-600 shadow-sm flex items-center justify-between">
+                  <span className="uppercase tracking-wider">{role || 'MEMUAT...'}</span>
+                  <span className="text-[9px] text-amber-400 font-bold bg-white px-2 py-0.5 rounded-full border border-amber-100 tracking-widest uppercase">Auto</span>
+                </div>
               </div>
 
               <div className="space-y-1">

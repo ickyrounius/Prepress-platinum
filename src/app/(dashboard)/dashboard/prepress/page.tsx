@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db } from '@/lib/firebase';
 import { collection, onSnapshot, query } from 'firebase/firestore';
@@ -11,7 +11,8 @@ import {
   ArrowsCounterClockwise,
   Printer,
   ChartBar,
-  Users
+  Users,
+  Clock
 } from '@phosphor-icons/react';
 import TrendChart from '@/components/dashboard/TrendChart';
 import WorkloadChart from '@/components/dashboard/WorkloadChart';
@@ -96,38 +97,30 @@ const StatCard = ({ title, value, icon: Icon, colorClass }: StatCardProps) => {
 
 const departments = ["CTCP", "CTP", "FLEXO", "ETCHING", "SCREEN"];
 
+import { useRoleStats } from '@/hooks/useRoleStats';
+
 export default function ProductionDashboard() {
   const [activeDept, setActiveDept] = useState("CTCP");
-  const [kanbanItems, setKanbanItems] = useState<KanbanItem[]>([]);
+  
+  const deptCollectionMap: Record<string, string> = {
+    CTCP: 'proses_ctcp_b',
+    CTP: 'proses_ctp_b',
+    FLEXO: 'proses_flexo_b',
+    ETCHING: 'proses_etching_b',
+    SCREEN: 'proses_screen_b',
+  };
 
-  useEffect(() => {
-    const deptCollectionMap: Record<string, string> = {
-      CTCP: 'proses_ctcp_b',
-      CTP: 'proses_ctp_b',
-      FLEXO: 'proses_flexo_b',
-      ETCHING: 'proses_etching_b',
-      SCREEN: 'proses_screen_b',
-    };
-    const targetCollection = deptCollectionMap[activeDept] || 'proses_prepress_b';
-    const q = query(collection(db, targetCollection));
-    const unsub = onSnapshot(q, (snapshot) => {
-      const items: KanbanItem[] = [];
-      snapshot.forEach((doc) => {
-        items.push({ id: doc.id, sourceType: 'PROD', ...doc.data() } as unknown as KanbanItem);
-      });
-      setKanbanItems(items);
-    });
-    return () => unsub();
-  }, [activeDept]);
+  const { items: rawItems, stats: realStats, trendData, workloadData, loading } = useRoleStats(deptCollectionMap[activeDept] || 'proses_prepress_b');
 
-  // Mock data scaling based on department
-  const multiplier = activeDept === "CTCP" ? 1 : activeDept === "CTP" ? 1.5 : activeDept === "FLEXO" ? 0.3 : activeDept === "ETCHING" ? 0.8 : 2.5;
+  const kanbanItems = useMemo(() => {
+    return rawItems.map(item => ({ ...item, sourceType: 'PROD' } as unknown as KanbanItem));
+  }, [rawItems]);
 
   const stats = [
-    { title: `Total ${activeDept === 'SCREEN' ? 'Screen' : 'Plate'}`, value: Math.round(5420 * multiplier), icon: Stack, color: "indigo" },
-    { title: `Good ${activeDept === 'SCREEN' ? 'Screen' : 'Plate'}`, value: Math.round(5100 * multiplier), icon: CheckCircle, color: "emerald" },
-    { title: `Bad ${activeDept === 'SCREEN' ? 'Screen' : 'Plate'}`, value: Math.round(180 * multiplier), icon: Warning, color: "rose" },
-    { title: "Replacement (Gantian)", value: Math.round(140 * multiplier), icon: ArrowsCounterClockwise, color: "amber" },
+    { title: `Total ${activeDept === 'SCREEN' ? 'Screen' : 'Plate'}`, value: realStats.total, icon: Stack, color: "indigo" },
+    { title: `Closed`, value: realStats.closed, icon: CheckCircle, color: "emerald" },
+    { title: `On Process`, value: realStats.process, icon: Clock, color: "blue" },
+    { title: "Hold/Overdue", value: realStats.hold + realStats.overdue, icon: Warning, color: "rose" },
   ];
 
   return (
@@ -203,7 +196,7 @@ export default function ProductionDashboard() {
                   </div>
               </div>
               <div className="h-80">
-                <TrendChart />
+                <TrendChart data={trendData} label={`${activeDept} Workload`} color="#6366f1" />
               </div>
             </motion.div>
 
@@ -218,7 +211,7 @@ export default function ProductionDashboard() {
                   </div>
               </div>
               <div className="h-80">
-                <WorkloadChart />
+                <WorkloadChart data={workloadData} label="Operator Jobs" color="#10b981" />
               </div>
             </motion.div>
           </div>

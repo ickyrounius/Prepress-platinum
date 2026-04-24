@@ -48,12 +48,20 @@ export default function MasterDataPage() {
 
   useEffect(() => {
     const result = data.filter((item) => {
-      const matchesTab = activeTab === 'aktif' ? item.ST_WORKFLOW !== 'Closed' : item.ST_WORKFLOW === 'Closed';
+      const status = item.ST_WORKFLOW || item.status_workflow || item.ST_WF_JOP || 'OPEN';
+      const matchesTab = activeTab === 'aktif' ? status !== 'Closed' : status === 'Closed';
+      
+      const noJop = item.NO_JOP || item.no_jop || item.ID || '';
+      const buyer = item.BUYER || item.buyer || '';
+      const product = item.NAMA_JOP || item.produk || item.nama_produk || '';
+      
       const matchesSearch = !searchTerm || 
-        (item.NO_JOP?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (item.BUYER?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (item.NAMA_JOP?.toLowerCase().includes(searchTerm.toLowerCase()));
-      const matchesPIC = !picFilter || item.PIC_UTAMA === picFilter;
+        (String(noJop).toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (String(buyer).toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (String(product).toLowerCase().includes(searchTerm.toLowerCase()));
+        
+      const pic = item.PIC_UTAMA || item.pic_utama || '';
+      const matchesPIC = !picFilter || pic === picFilter;
       
       return matchesTab && matchesSearch && matchesPIC;
     });
@@ -175,32 +183,32 @@ export default function MasterDataPage() {
                       className="group hover:bg-slate-50/50 transition-colors"
                     >
                       <td className="px-6 py-5">
-                        <StatusBadge status={item.ST_WORKFLOW || 'OPEN'} />
+                        <StatusBadge status={(item.ST_WORKFLOW || item.status_workflow || item.ST_WF_JOP || 'OPEN') as string} />
                       </td>
                       <td className="px-6 py-5">
                         <div className="flex flex-col">
-                          <span className="text-sm font-black text-slate-800 tracking-tight">{item.NO_JOP}</span>
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{item.TIPE_JOP}</span>
+                          <span className="text-sm font-black text-slate-800 tracking-tight">{(item.NO_JOP || item.no_jop || item.ID) as string}</span>
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{(item.TIPE_JOP || item.tipe_jop) as string}</span>
                         </div>
                       </td>
                       <td className="px-6 py-5">
                         <div className="flex flex-col">
-                          <span className="text-sm font-bold text-slate-700">{item.BUYER}</span>
-                          <span className="text-xs text-slate-400 line-clamp-1">{item.NAMA_JOP}</span>
+                          <span className="text-sm font-bold text-slate-700">{(item.BUYER || item.buyer) as string}</span>
+                          <span className="text-xs text-slate-400 line-clamp-1">{(item.NAMA_JOP || item.produk || item.nama_produk) as string}</span>
                         </div>
                       </td>
                       <td className="px-6 py-5">
                         <div className="flex items-center gap-2">
                           <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-500 uppercase">
-                            {item.PIC_UTAMA?.substring(0, 2) || '--'}
+                            {String(item.PIC_UTAMA || item.pic_utama || '--').substring(0, 2)}
                           </div>
-                          <span className="text-xs font-bold text-slate-600 uppercase tracking-widest">{item.PIC_UTAMA || 'Not Assigned'}</span>
+                          <span className="text-xs font-bold text-slate-600 uppercase tracking-widest">{(item.PIC_UTAMA || item.pic_utama || 'Not Assigned') as string}</span>
                         </div>
                       </td>
                       <td className="px-6 py-5">
                         <div className="flex items-center gap-2 text-slate-500">
                           <Clock size={14} className="text-slate-300" />
-                          <span className="text-xs font-medium">{item.TGL_TARGET}</span>
+                          <span className="text-xs font-medium">{(item.TGL_TARGET || item.tgl_target || item.TGL_TARGET_JOP) as string}</span>
                         </div>
                       </td>
                       <td className="px-6 py-5 text-right">

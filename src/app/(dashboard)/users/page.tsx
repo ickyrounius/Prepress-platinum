@@ -29,13 +29,20 @@ export default function UsersPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const q = query(collection(db, "T_USERS"), orderBy("displayName", "asc"), limit(100));
+    const q = query(collection(db, "T_USERS"), orderBy("NAMA", "asc"), limit(100));
     
     const unsubscribe = onSnapshot(q, 
       (snapshot) => {
         const usersList: UserItem[] = [];
         snapshot.forEach((doc) => {
-          usersList.push({ id: doc.id, ...doc.data() } as UserItem);
+          const d = doc.data();
+          usersList.push({ 
+            id: doc.id, 
+            displayName: d.NAMA || d.displayName || 'No Name',
+            email: d.EMAIL || d.email || '-',
+            KATEGORI: d.KATEGORI || d.role || 'GUEST',
+            lastLogin: d.LAST_LOGIN || d.lastLogin || '-'
+          } as UserItem);
         });
         setUsers(usersList);
         setLoading(false);

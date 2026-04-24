@@ -39,7 +39,7 @@ service cloud.firestore {
 
     // ── T_USERS ─────────────────────────────────────────────────────────────
     match /T_USERS/{uid} {
-      allow read: if isSignedIn();
+      allow read: if isAdminLike() || (isSignedIn() && request.auth.uid == uid);
       allow create: if isSignedIn() && request.auth.uid == uid;
       allow update: if isAdminLike() || request.auth.uid == uid;
       allow delete: if isAdminLike();

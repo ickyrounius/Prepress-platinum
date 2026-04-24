@@ -78,19 +78,27 @@ export function GlobalInputForm({
         const payload: Record<string, unknown> = {
           ...formData,
           id: targetId,
+          ID: targetId,
           operator_id: user.uid,
+          OPERATOR_ID: user.uid,
           DATE: dateStr,
+          date: dateStr,
           TGL_INPUT: displayDateStr,
+          tgl_input: displayDateStr,
           timestamp_input: now.getTime()
         };
 
         // Add specific entry dates for JOP/JOS as per official schema
         if (collectionName === 'workflows_jop') {
           payload.TGL_MASUK_JOP = displayDateStr;
-          payload.ST_WF_JOP = payload.ST_WF_JOP || 'OPEN';
+          payload.tgl_masuk_jop = displayDateStr;
+          payload.ST_WF_JOP = payload.ST_WF_JOP || payload.st_wf_jop || 'OPEN';
+          payload.ST_WORKFLOW = payload.ST_WORKFLOW || payload.status_workflow || 'OPEN';
         } else if (collectionName === 'workflows_jos') {
           payload.TGL_MASUK_JOS = displayDateStr;
-          payload.ST_WF_JOS = payload.ST_WF_JOS || 'OPEN';
+          payload.tgl_masuk_jos = displayDateStr;
+          payload.ST_WF_JOS = payload.ST_WF_JOS || payload.st_wf_jos || 'OPEN';
+          payload.ST_WORKFLOW = payload.ST_WORKFLOW || payload.status_workflow || 'OPEN';
         }
 
         // 🔥 AUTO CALCULATION INTEGRATION

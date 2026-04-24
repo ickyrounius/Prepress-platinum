@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { GlobalInputForm } from '@/components/forms/GlobalInputForm';
 import { useFormStore } from '@/lib/store/useFormStore';
 import { JOPSearch } from '@/components/forms/JOPSearch';
@@ -12,6 +12,7 @@ import {
   ChartBar, Users, Calculator
 } from '@phosphor-icons/react';
 import { doc, onSnapshot } from 'firebase/firestore';
+import { useDashboardData } from '@/hooks/useDashboardData';
 
 const TCSelector = ({ label, value, onChange, colorClass }: { label: string; value: number; onChange: (v: number) => void; colorClass: string }) => {
   return (
@@ -40,6 +41,7 @@ const TCSelector = ({ label, value, onChange, colorClass }: { label: string; val
 
 export default function SPVPanel() {
   const { updateFormField, setFormData } = useFormStore();
+  const { productivityData } = useDashboardData();
   const [targetType, setTargetType] = useState('NO_JOS');
   const [tcValues, setTcValues] = useState({ kt: 1, rp: 1, bs: 1, cad: 1 });
   const [laValue, setLaValue] = useState(1);
@@ -83,6 +85,22 @@ export default function SPVPanel() {
     setTcValues((prev) => ({ ...prev, [key]: val }));
     updateFormField(`tc_${key}`, val);
   };
+
+  const picStatus = useMemo(() => {
+    const available: string[] = [];
+    const fullCache: string[] = [];
+    const overload: string[] = [];
+    const allPicCodes = ['STB', 'RK', 'ARK', 'MER', 'SBR', 'YD'];
+    
+    allPicCodes.forEach(code => {
+      const picData = productivityData.find(d => d.name === code);
+      const totalPoints = picData ? (picData.tcUtama + picData.tcSupport) : 0;
+      if (totalPoints > 100) overload.push(code);
+      else if (totalPoints > 50) fullCache.push(code);
+      else available.push(code);
+    });
+    return { available, fullCache, overload };
+  }, [productivityData]);
 
   const pics = [
     { code: 'STB', name: 'ARIS SLAMET WASONO' },
@@ -200,16 +218,6 @@ export default function SPVPanel() {
                                     const manualTotal = Number(e.target.value) || 0;
                                     setTotalTc(manualTotal);
                                     updateFormField('total_tc_validated', manualTotal);
-                                    updateFormField('tc', {
-                                      kt: tcValues.kt,
-                                      rp: tcValues.rp,
-                                      bs: tcValues.bs,
-                                      cad: tcValues.cad,
-                                      la: laValue,
-                                      dp: dpValue,
-                                      total_tc: manualTotal,
-                                      total_tc_validated: manualTotal,
-                                    });
                                   }}
                                   className="w-full p-4 border-2 border-slate-100 rounded-2xl bg-white text-sm font-bold text-slate-700 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-300 shadow-sm"
                                   placeholder="Total TC final"
@@ -290,10 +298,15 @@ export default function SPVPanel() {
                         <div key={status.label} className="space-y-2">
                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">{status.label}</label>
                            <div className={cn("min-h-[60px] p-3 rounded-2xl border flex flex-wrap gap-2", status.color)}>
-                                {/* Mock PIC Icons */}
-                                {status.label === 'Available' && <div className="w-8 h-8 rounded-lg bg-emerald-200 border border-emerald-300 flex items-center justify-center text-[9px] font-black">RK</div>}
-                                {status.label === 'Available' && <div className="w-8 h-8 rounded-lg bg-emerald-200 border border-emerald-300 flex items-center justify-center text-[9px] font-black">YD</div>}
-                                {status.label === 'Full Cache' && <div className="w-8 h-8 rounded-lg bg-blue-200 border border-blue-300 flex items-center justify-center text-[9px] font-black">STB</div>}
+                                {status.label === 'Available' && picStatus.available.map(code => (
+                                  <div key={code} className="w-8 h-8 rounded-lg bg-emerald-200 border border-emerald-300 flex items-center justify-center text-[9px] font-black">{code}</div>
+                                ))}
+                                {status.label === 'Full Cache' && picStatus.fullCache.map(code => (
+                                  <div key={code} className="w-8 h-8 rounded-lg bg-blue-200 border border-blue-300 flex items-center justify-center text-[9px] font-black">{code}</div>
+                                ))}
+                                {status.label === 'Overload' && picStatus.overload.map(code => (
+                                  <div key={code} className="w-8 h-8 rounded-lg bg-rose-200 border border-rose-300 flex items-center justify-center text-[9px] font-black">{code}</div>
+                                ))}
                            </div>
                         </div>
                     ))}
