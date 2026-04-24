@@ -194,7 +194,10 @@ export default function MasterDataPage() {
                       <td className="px-6 py-5">
                         <div className="flex flex-col">
                           <span className="text-sm font-bold text-slate-700">{(item.BUYER || item.buyer) as string}</span>
-                          <span className="text-xs text-slate-400 line-clamp-1">{(item.NAMA_JOP || item.produk || item.nama_produk) as string}</span>
+                          <span className="text-xs text-slate-400 line-clamp-1">
+                            {(item.NAMA_JOP || item.produk || item.nama_produk) as string}
+                            {item.TOTAL_KARTON_BOX || item.total_karton_box ? ` - ${item.TOTAL_KARTON_BOX || item.total_karton_box} Box` : ''}
+                          </span>
                         </div>
                       </td>
                       <td className="px-6 py-5">

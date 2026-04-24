@@ -139,6 +139,14 @@ export default function InputJOP() {
               </div>
             </div>
 
+            <div className="space-y-1">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Total Karton Box</label>
+              <div className="relative">
+                  <Hash className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" weight="bold" />
+                  <input type="number" min="0" onChange={(e) => updateFormField('total_karton_box', Number(e.target.value))} className="w-full pl-12 pr-4 py-4 border-2 border-slate-50 rounded-2xl bg-slate-50 focus:bg-white focus:border-indigo-500 outline-none transition-all text-sm font-bold text-slate-700" placeholder="0" />
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-1">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tgl Terima JOP</label>

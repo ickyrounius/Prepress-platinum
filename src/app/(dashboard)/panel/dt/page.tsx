@@ -271,15 +271,28 @@ export default function DTPanel() {
                   </div>
                 )}
 
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Detail Progress</label>
-                  <input 
-                    type="text" 
-                    onChange={(e) => updateFormField('progress_detail', e.target.value)} 
-                    value={(formData.progress_detail as string) || ''} 
-                    placeholder="Contoh: Proses layout B1..." 
-                    className="w-full p-4 border-2 border-slate-100 rounded-2xl bg-white text-sm font-bold text-slate-700 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-300 placeholder:font-normal shadow-sm" 
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Detail Progress</label>
+                    <input 
+                      type="text" 
+                      onChange={(e) => updateFormField('progress_detail', e.target.value)} 
+                      value={(formData.progress_detail as string) || ''} 
+                      placeholder="Contoh: Proses layout B1..." 
+                      className="w-full p-4 border-2 border-slate-100 rounded-2xl bg-white text-sm font-bold text-slate-700 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-300 placeholder:font-normal shadow-sm" 
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Karton Box</label>
+                    <input 
+                      type="number" min="0" 
+                      onChange={(e) => updateFormField('total_karton_box', Number(e.target.value))} 
+                      value={(formData.total_karton_box as number) || ''} 
+                      placeholder="Jumlah (jika ada)..." 
+                      className="w-full p-4 border-2 border-slate-100 rounded-2xl bg-white text-sm font-bold text-slate-700 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-300 placeholder:font-normal shadow-sm" 
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-1.5">

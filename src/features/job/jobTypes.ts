@@ -6,6 +6,7 @@ export interface JopData {
   TIPE_JOP: string;
   BUYER: string;
   NAMA_JOP: string;
+  TOTAL_KARTON_BOX?: number;
   
   // Workflow Dates
   TGL_MASUK?: string;
