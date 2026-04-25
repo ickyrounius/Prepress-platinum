@@ -140,7 +140,23 @@ export default function DGPanel() {
                         type="JOS"
                         label="CARI NO_JOS-D (ATAU BUYER)"
                         required
-                        updateFormField('no_jos', id);
+                        onSelect={(id, data) => {
+                            updateFormField('no_jos', id);
+                            if (data) {
+                                if (data.tgl_no_jos || data.TGL_MASUK_JOS) updateFormField('tgl_masuk', String(data.tgl_no_jos || data.TGL_MASUK_JOS));
+                                if (data.tgl_target_no_jos || data.TGL_TARGET_JOS) updateFormField('tgl_target', String(data.tgl_target_no_jos || data.TGL_TARGET_JOS));
+                                if (data.revisi_ke || data.REVISI_KE) {
+                                    const rev = Number(data.revisi_ke || data.REVISI_KE);
+                                    updateFormField('revisi_ke', rev);
+                                    setLaValue(Math.min(rev + 1, 5));
+                                }
+                                const dp = calculateDeadlinePressureScore(
+                                    data.tgl_target_no_jos ?? data.TGL_TARGET_JOS ?? data.tgl_target,
+                                    data.tgl_no_jos ?? data.TGL_MASUK_JOS ?? data.tgl_masuk
+                                );
+                                setDpValue(dp);
+                            }
+                        }}
                     />
 
                     <div className="space-y-4">

@@ -23,6 +23,9 @@ import {
   Crosshair,
   Wrench,
   Trophy,
+  House,
+  BarChart,
+  Factory,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
@@ -73,10 +76,11 @@ const SidebarItem = ({ item, pathname, closeSidebar }: SidebarItemProps) => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const COMMON_MENU = [
-  { name: 'Dashboard',   href: '/dashboard',      icon: LayoutDashboard },
-  { name: 'Data Monitor',href: '/dashboard/data', icon: MonitorPlay },
-  { name: 'KPI Leaderboard', href: '/panel/kpi', icon: Trophy },
-  { name: 'SOP & Wiki',  href: '/docs/sop',       icon: Book },
+  { name: 'Dashboard',   href: '/',             icon: House },
+  { name: 'Analytics',   href: '/analytics',     icon: BarChart },
+  { name: 'Production',  href: '/panel/production', icon: Factory },
+  { name: 'Support',     href: '/panel/support', icon: Layers },
+  { name: 'Settings',    href: '/settings',      icon: Settings },
 ];
 
 const ADMIN_MENU = [
