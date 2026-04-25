@@ -47,7 +47,7 @@ Dashboard:
       panel SPV
       panel KOordinator 
       panel PIC CTCP 
-      panel PIC CTP p
+      panel PIC CTP
       Panel PIC FLEXO 
       panel ETCHING 
       panel PIC SCREEN
