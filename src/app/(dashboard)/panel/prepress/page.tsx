@@ -371,7 +371,7 @@ export default function PrepressPanel() {
 
         {/* Right Column: Waiting List / Queue */}
         <motion.div variants={itemVariants} className="space-y-6">
-            <div className="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-xl min-h-[600px] flex flex-col group">
+            <div className="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-xl min-h-0 flex flex-col group">
                 <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center gap-4">
                         <div className="w-12 h-12 bg-emerald-50 text-emerald-500 rounded-2xl flex items-center justify-center shadow-inner group-hover:bg-emerald-500 group-hover:text-white transition-all">
@@ -384,7 +384,7 @@ export default function PrepressPanel() {
                     </div>
                 </div>
 
-                <div className="flex-1 space-y-4 overflow-y-auto pr-2 custom-scrollbar">
+                <div className="space-y-4 pr-2 custom-scrollbar">
                     {loading ? (
                         <div className="h-full flex flex-col items-center justify-center gap-4 opacity-50">
                             <Pulse size={48} className="text-emerald-500 animate-pulse" />

@@ -77,7 +77,7 @@ export default function ETCHINGPanel() {
   }, [role, updateFormField]);
 
   return (
-    <div className="p-4 sm:p-8 space-y-8 animate-in fade-in duration-700">
+    <div className="space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col gap-2 mb-4">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 bg-amber-500 text-white rounded-[1.25rem] flex items-center justify-center shadow-lg shadow-amber-200">

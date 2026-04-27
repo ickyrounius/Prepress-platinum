@@ -188,7 +188,7 @@ export default function SOPWikiPage() {
   );
 
   return (
-    <div className="max-w-5xl mx-auto space-y-12 pb-20 animate-in fade-in duration-700">
+    <div className="w-full space-y-12 pb-20 animate-in fade-in duration-700">
       <div className="bg-indigo-600 p-10 sm:p-16 rounded-[3.5rem] relative overflow-hidden shadow-2xl shadow-indigo-100 text-white">
         <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full -mr-48 -mt-48 blur-3xl"></div>
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full -ml-32 -mb-32 blur-2xl"></div>
@@ -198,7 +198,7 @@ export default function SOPWikiPage() {
             <Book className="text-white" size={14} />
             <span className="text-[10px] font-black uppercase tracking-[0.2em]">Documentation Center</span>
           </div>
-          <h1 className="text-5xl font-black tracking-tighter leading-none">SOP & Wiki <br /> <span className="text-indigo-200">Prepress Platinum</span></h1>
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tighter leading-none">SOP & Wiki <br /> <span className="text-indigo-200">Prepress Platinum</span></h1>
           <p className="text-indigo-100 font-bold text-sm uppercase tracking-widest text-[10px] max-w-lg leading-relaxed">
             Panduan resmi operasional, alur kerja antar departemen, dan standar manajemen kualitas sistem Prepress Platinum.
           </p>

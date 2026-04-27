@@ -42,13 +42,13 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="flex bg-background min-h-screen text-foreground relative w-full">
+    <div className="relative flex min-h-screen w-full items-start bg-background text-foreground">
       <Sidebar />
       
-      <div className="flex-1 flex flex-col min-w-0 w-full">
+      <div className="flex min-h-screen w-full min-w-0 flex-1 flex-col">
         <TopHeader />
-        <main className="flex-1 p-4 sm:p-6 md:p-8">
-          <div className="max-w-7xl mx-auto w-full animate-fade-in">
+        <main className="flex-1 px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+          <div className="mx-auto w-full max-w-[1400px] animate-fade-in">
             {children}
           </div>
         </main>

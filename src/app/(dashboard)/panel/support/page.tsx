@@ -89,7 +89,7 @@ export default function SupportPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-3 sm:p-8 space-y-6 sm:space-y-8 animate-in fade-in duration-700">
+    <div className="w-full space-y-6 sm:space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col gap-2 mb-4">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 sm:w-14 sm:h-14 bg-amber-500 text-white rounded-2xl sm:rounded-3xl flex items-center justify-center shadow-xl shadow-amber-100">

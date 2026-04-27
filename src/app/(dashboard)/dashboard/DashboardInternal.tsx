@@ -247,7 +247,7 @@ export default function DashboardInternal() {
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 group-hover:text-indigo-500 transition-colors">{card.title}</p>
                         <h3 className={cn(
                         "text-4xl font-black transition-all group-hover:scale-110 origin-left",
-                        card.id === 'Total' ? "text-slate-800 dark:text-slate-100" : `text-${card.color}-600`
+                        card.id === 'Total' ? "text-slate-800 dark:text-slate-100" : colors.text
                         )}>{card.value}</h3>
                         <div className="mt-4 flex items-center gap-1.5 overflow-hidden">
                            <Pulse className={cn("w-3 h-3 group-hover:animate-pulse", colors.text)} weight="bold" />

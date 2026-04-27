@@ -131,19 +131,19 @@ export default function AuditLogPage() {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-100 bg-white p-4">
+      <div className="rounded-2xl border border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
         <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center">
           <ShieldCheck weight="bold" className="text-indigo-500" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Cari actor/action/entity..."
-            className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm outline-none focus:border-indigo-400 lg:max-w-sm"
+            className="w-full rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2 text-sm text-slate-700 dark:text-slate-100 outline-none focus:border-indigo-400 lg:max-w-sm"
           />
           <select
             value={actionFilter}
             onChange={(e) => setActionFilter(e.target.value)}
-            className="rounded-xl border border-slate-200 px-4 py-2 text-sm outline-none focus:border-indigo-400"
+            className="rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2 text-sm text-slate-700 dark:text-slate-100 outline-none focus:border-indigo-400"
           >
             {actionOptions.map((action) => (
               <option key={action} value={action}>
@@ -155,21 +155,21 @@ export default function AuditLogPage() {
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            className="rounded-xl border border-slate-200 px-4 py-2 text-sm outline-none focus:border-indigo-400"
+            className="rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2 text-sm text-slate-700 dark:text-slate-100 outline-none focus:border-indigo-400"
             title="Tanggal awal"
           />
           <input
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
-            className="rounded-xl border border-slate-200 px-4 py-2 text-sm outline-none focus:border-indigo-400"
+            className="rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 px-4 py-2 text-sm text-slate-700 dark:text-slate-100 outline-none focus:border-indigo-400"
             title="Tanggal akhir"
           />
         </div>
-        <div className="max-h-[65vh] overflow-auto">
+        <div className="overflow-x-auto">
           <table className="w-full min-w-[900px] text-left text-xs">
-            <thead className="sticky top-0 bg-slate-50">
-              <tr className="text-[10px] uppercase tracking-widest text-slate-400">
+            <thead className="bg-slate-50 dark:bg-slate-700">
+              <tr className="text-[10px] uppercase tracking-widest text-slate-400 dark:text-slate-300">
                 <th className="px-3 py-3">Timestamp</th>
                 <th className="px-3 py-3">Actor</th>
                 <th className="px-3 py-3">Action</th>
@@ -180,18 +180,18 @@ export default function AuditLogPage() {
             </thead>
             <tbody>
               {pagedLogs.map((log) => (
-                <tr key={log.id} className="border-b border-slate-100 align-top">
+                <tr key={log.id} className="border-b border-slate-100 dark:border-slate-700 align-top text-slate-700 dark:text-slate-200">
                   <td className="px-3 py-3">{log.timestamp?.toDate?.().toLocaleString() || '-'}</td>
-                  <td className="px-3 py-3 font-bold text-slate-700">{log.actor_uid}</td>
+                  <td className="px-3 py-3 font-bold text-slate-700 dark:text-slate-100">{log.actor_uid}</td>
                   <td className="px-3 py-3">{log.action}</td>
                   <td className="px-3 py-3">{log.entity_type}</td>
                   <td className="px-3 py-3">{log.entity_id}</td>
-                  <td className="px-3 py-3 text-slate-500">{JSON.stringify(log.metadata || {})}</td>
+                  <td className="px-3 py-3 text-slate-500 dark:text-slate-300">{JSON.stringify(log.metadata || {})}</td>
                 </tr>
               ))}
               {pagedLogs.length === 0 && (
                 <tr>
-                  <td className="px-3 py-6 text-center text-slate-400" colSpan={6}>
+                  <td className="px-3 py-6 text-center text-slate-400 dark:text-slate-300" colSpan={6}>
                     Tidak ada log yang cocok.
                   </td>
                 </tr>
@@ -200,7 +200,7 @@ export default function AuditLogPage() {
           </table>
         </div>
         <div className="mt-4 flex items-center justify-between">
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-500 dark:text-slate-300">
             {filtered.length === 0
               ? 'Menampilkan 0 dari 0 log'
               : `Menampilkan ${(page - 1) * pageSize + 1}-${Math.min(page * pageSize, filtered.length)} dari ${filtered.length} log`}
@@ -209,17 +209,17 @@ export default function AuditLogPage() {
             <button
               disabled={page <= 1}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
-              className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-bold disabled:opacity-40"
+              className="rounded-lg border border-slate-200 dark:border-slate-600 px-3 py-1.5 text-xs font-bold disabled:opacity-40"
             >
               Prev
             </button>
-            <span className="text-xs font-bold text-slate-500">
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-300">
               {page}/{totalPages}
             </span>
             <button
               disabled={page >= totalPages}
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-bold disabled:opacity-40"
+              className="rounded-lg border border-slate-200 dark:border-slate-600 px-3 py-1.5 text-xs font-bold disabled:opacity-40"
             >
               Next
             </button>

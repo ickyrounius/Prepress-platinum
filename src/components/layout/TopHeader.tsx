@@ -45,8 +45,8 @@ export default function TopHeader() {
   };
 
   return (
-    <header className="h-16 sm:h-20 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center px-4 sm:px-8 no-print shrink-0 w-full z-30 transition-all sticky top-0">
-      <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+    <header className="sticky top-0 z-30 flex min-h-16 w-full shrink-0 items-center justify-between gap-3 border-b border-slate-200 bg-white/90 px-4 backdrop-blur-md transition-all dark:border-slate-800 dark:bg-slate-900/90 sm:min-h-20 sm:px-6 lg:px-8 no-print">
+      <div className="flex min-w-0 items-center gap-2 sm:gap-4">
         <button 
           title="Buka Sidebar" 
           onClick={toggleSidebar}

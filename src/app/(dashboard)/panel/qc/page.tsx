@@ -24,7 +24,7 @@ export default function QCPanel() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto p-4 sm:p-10 space-y-12 animate-in fade-in duration-1000">
+    <div className="w-full space-y-12 animate-in fade-in duration-1000">
       
       {/* Header Section */}
       <div className="relative group">
