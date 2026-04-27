@@ -11,6 +11,7 @@ import {
 } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
 import { normalizeWorkflowStatusInput } from '@/lib/workflow';
+import { useAuth } from '@/features/auth/AuthContext';
 
 export default function QCPanel() {
   const { user } = useAuth();

@@ -245,7 +245,7 @@ export default function PrepressPanel() {
                                     <Stack weight="bold" size={18} className="text-indigo-500" /> Gathering Designs (NO JOD)
                                 </label>
                                 <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter leading-tight mb-2">
-                                    Inputkan nomor-nomor JOD yang digabungkan dalam blok {formData.no_b || 'ini'}. Pisahkan dengan koma atau spasi.
+                                    Inputkan nomor-nomor JOD yang digabungkan dalam blok {String(formData.no_b || 'ini')}. Pisahkan dengan koma atau spasi.
                                 </p>
                                 <textarea 
                                     value={(formData.gathered_jods as string) || ''}

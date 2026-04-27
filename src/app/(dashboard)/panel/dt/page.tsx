@@ -14,7 +14,7 @@ import { doc, onSnapshot } from 'firebase/firestore';
 import { useAuth } from '@/features/auth/AuthContext';
 import { getTCLevelInfo } from '@/features/kpi/kpiStyles';
 import { 
-  Palette, Calculator, WarningCircle
+  Palette, Calculator, WarningCircle, SelectionAll, Lightning
 } from '@phosphor-icons/react';
 
 const TCSelector = ({ label, value, onChange, colorClass }: { label: string, value: number, onChange: (v: number) => void, colorClass: string }) => {

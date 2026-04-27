@@ -11,10 +11,11 @@ import { cn } from '@/lib/utils';
 import { normalizeWorkflowStatusInput } from '@/lib/workflow';
 import { 
   Palette, PencilCircle,
-  Info, Shapes, Calculator
+  Info, Calculator, SelectionAll
 } from '@phosphor-icons/react';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { useAuth } from '@/features/auth/AuthContext';
+import { getTCLevelInfo } from '@/features/kpi/kpiStyles';
 
 const TCSelector = ({ label, value, onChange, colorClass }: { label: string; value: number; onChange: (v: number) => void; colorClass: string }) => {
   return (

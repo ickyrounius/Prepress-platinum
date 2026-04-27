@@ -12,6 +12,7 @@ import {
   Lightning, TrendUp, ArrowsCounterClockwise
 } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
+import TrendChart from '@/components/dashboard/TrendChart';
 import type { ProductivityDataPoint, TrendDataPoint, WorkflowStatusCounts } from '@/lib/types';
 
 interface DashboardChartsProps {

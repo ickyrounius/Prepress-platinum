@@ -21,7 +21,7 @@
       "$collection": {
         "$jobId": {
           ".write": "auth != null",
-          ".validate": "newData.hasChildren(['id', 'timestamp_update'])"
+          ".validate": "newData.hasChildren(['id']) && (newData.child('timestamp_update').exists() || newData.child('timestamp_input').exists() || newData.child('LAST_UPDATED').exists())"
         }
       }
     }

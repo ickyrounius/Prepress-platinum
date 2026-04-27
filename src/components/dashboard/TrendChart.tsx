@@ -1,6 +1,6 @@
 "use client";
 
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, defs, linearGradient, stop } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 interface TrendChartProps {
   data?: { date: string; value: number }[];
@@ -66,7 +66,7 @@ export default function TrendChart({ data = [], label = "Jobs", color = "#6366f1
             isAnimationActive={true}
             animationDuration={2000}
             dot={{ r: 4, strokeWidth: 3, fill: 'white', stroke: color }}
-            activeDot={{ r: 8, strokeWidth: 0, fill: color, shadow: '0 0 10px rgba(0,0,0,0.2)' }}
+            activeDot={{ r: 8, strokeWidth: 0, fill: color }}
           />
         </AreaChart>
       </ResponsiveContainer>
