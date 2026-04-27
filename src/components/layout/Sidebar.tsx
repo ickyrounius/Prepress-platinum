@@ -206,7 +206,7 @@ export function Sidebar({ className }: { className?: string }) {
       </AnimatePresence>
 
       <div className={cn(
-        "fixed inset-y-0 left-0 z-50 flex flex-col h-screen w-64 bg-slate-900 border-r border-slate-800 transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 shrink-0",
+        "fixed inset-y-0 left-0 z-50 flex flex-col h-screen w-64 bg-slate-900 border-r border-slate-800 transition-transform duration-300 ease-in-out lg:sticky lg:top-0 lg:translate-x-0 shrink-0",
         isSidebarOpen ? "translate-x-0" : "-translate-x-full",
         className
       )}>
@@ -230,7 +230,7 @@ export function Sidebar({ className }: { className?: string }) {
         </div>
 
         {/* Navigation */}
-        <div className="flex-1 px-4 space-y-6 mt-4 overflow-y-auto relative custom-scrollbar pb-10">
+        <div className="flex-1 px-4 space-y-6 mt-4 relative custom-scrollbar pb-10">
           {loading ? (
             <div className="animate-pulse space-y-3">
               {[1, 2, 3, 4, 5].map(i => <div key={i} className="h-10 bg-slate-800 rounded-xl" />)}

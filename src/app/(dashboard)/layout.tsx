@@ -42,12 +42,12 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="flex bg-background min-h-screen text-foreground relative w-full overflow-hidden">
+    <div className="flex bg-background min-h-screen text-foreground relative w-full">
       <Sidebar />
       
       <div className="flex-1 flex flex-col min-w-0 w-full">
         <TopHeader />
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
+        <main className="flex-1 p-4 sm:p-6 md:p-8">
           <div className="max-w-7xl mx-auto w-full animate-fade-in">
             {children}
           </div>
