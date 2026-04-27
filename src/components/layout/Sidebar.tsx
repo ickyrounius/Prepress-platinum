@@ -78,6 +78,7 @@ const SidebarItem = ({ item, pathname, closeSidebar }: SidebarItemProps) => {
 const COMMON_MENU = [
   { name: 'Dashboard',   href: '/',             icon: House },
   { name: 'Analytics',   href: '/analytics',     icon: BarChart },
+  { name: 'SOP Wiki',    href: '/docs/sop',      icon: Book },
   { name: 'Production',  href: '/panel/production', icon: Factory },
   { name: 'Support',     href: '/panel/support', icon: Layers },
   { name: 'Settings',    href: '/settings',      icon: Settings },
