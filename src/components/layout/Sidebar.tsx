@@ -189,11 +189,11 @@ const COMMON_MENU: MenuItem[] = [
   { name: 'Dashboard',  href: '/',             icon: House },
   { name: 'Analytics',  href: '/analytics',    icon: BarChart },
   { name: 'SOP Wiki',   href: '/docs/sop',     icon: Book },
-  { name: 'Settings',   href: '/settings',     icon: Settings },
 ];
 
 const ADMIN_MENU: MenuItem[] = [
   { name: 'Admin Console',   href: '/panel/admin', icon: Settings },
+  { name: 'App Settings',    href: '/settings',    icon: Wrench },
   { name: 'User Management', href: '/users',        icon: Users },
   { name: 'Log History',     href: '/audit-log',    icon: History },
 ];
