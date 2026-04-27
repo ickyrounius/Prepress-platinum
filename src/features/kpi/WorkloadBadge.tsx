@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { collection, query, onSnapshot } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Activity, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -20,17 +20,20 @@ export default function WorkloadBadge({ picCode }: WorkloadBadgeProps) {
     // Query active jobs for this PIC across JOP collection
     const q = query(
         collection(db, 'workflows_jop'), 
-        where('PIC_UTAMA', '==', picCode),
-        where('ST_WORKFLOW', '!=', 'Closed')
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       let kt = 0, rp = 0;
-      const count = snapshot.size;
+      let count = 0;
       snapshot.forEach(doc => {
         const d = doc.data();
-        kt += (d.KT || 0);
-        rp += (d.RP || 0);
+        const pic = String(d.PIC_UTAMA || '');
+        const wf = String(d.ST_WF_JOP || d.ST_WORKFLOW || '').toUpperCase();
+        if (pic === picCode && !['CLOSED', 'DONE', 'CANCEL'].includes(wf)) {
+          count++;
+          kt += (d.KT || 0);
+          rp += (d.RP || 0);
+        }
       });
       setStats({ activeJobs: count, totalKT: kt, totalRP: rp });
     });

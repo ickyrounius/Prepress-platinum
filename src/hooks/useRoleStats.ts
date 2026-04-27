@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, onSnapshot, query, where, Timestamp } from 'firebase/firestore';
 import { format, subDays, startOfDay, endOfDay, isSameDay } from 'date-fns';
-import { classifyWorkflowStatus, detectJosType } from '@/lib/workflow';
+import { classifyWorkflowStatus, detectJosType, resolveWorkflowStatus } from '@/lib/workflow';
 
 export interface StatSummary {
   total: number;
@@ -60,8 +60,9 @@ export function useRoleStats(collectionName: string) {
     const now = new Date();
 
     items.forEach(item => {
+      const sourceType = collectionName.includes('jod') || collectionName.includes('jos') ? 'DG' : 'DT';
       const bucket = classifyWorkflowStatus(
-        item.ST_WORKFLOW || item.status_workflow || item.status_dg || item.status_dt || item.ST_WF_JOP || item.ST_WF_JOS,
+        resolveWorkflowStatus(item as Record<string, unknown>, sourceType),
         item.ST_PRO_JOP || item.status_pro_jop || item.ST_PRO_JOS
       );
       

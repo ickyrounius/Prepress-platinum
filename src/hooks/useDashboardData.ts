@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, query, onSnapshot, orderBy, limit } from 'firebase/firestore';
-import { classifyWorkflowStatus, detectJopType, detectJosType, type JopType, type JosType } from '@/lib/workflow';
+import { classifyWorkflowStatus, detectJopType, detectJosType, resolveWorkflowStatus, type JopType, type JosType } from '@/lib/workflow';
 import type { DashboardItem, JosTypeFilter, JopTypeFilter } from '@/lib/types';
 
 export function useDashboardData(collectionsToFetch?: string[]) {
@@ -56,8 +56,9 @@ export function useDashboardData(collectionsToFetch?: string[]) {
 
     filteredItems.forEach((item) => {
       totalLoad++;
+      const status = resolveWorkflowStatus(item as Record<string, unknown>, String(item.sourceType || ''));
       const bucket = classifyWorkflowStatus(
-        String(item.ST_WORKFLOW || item.status_workflow || item.status_dg || item.status_dt || item.ST_WF_JOP || item.ST_WF_JOS || ''),
+        status,
         String(item.ST_PRO_JOP || item.status_pro_jop || item.ST_PRO_JOS || item.ST_PRO_NO_B || '')
       );
       if (bucket === 'closed') closedCount++;

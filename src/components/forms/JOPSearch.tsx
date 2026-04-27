@@ -6,10 +6,18 @@ import { collection, query, getDocs, limit, orderBy, startAt, endAt } from 'fire
 import { ref, get } from 'firebase/database';
 import { Search, Loader2, X, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { resolveWorkflowStatus } from '@/lib/workflow';
 
 type SearchItem = {
   id: string;
   is_rtdb?: boolean;
+  NO_JOP?: string;
+  NO_JOS?: string;
+  NO_B?: string;
+  NO_JOD?: string;
+  BUYER?: string;
+  NAMA_PRODUK?: string;
+  NAMA_JOP?: string;
   buyer?: string;
   customer?: string;
   produk?: string;
@@ -78,7 +86,7 @@ export function JOPSearch({
         if (activeSnapshot.exists()) {
           const data = activeSnapshot.val() as Record<string, Record<string, unknown>>;
           Object.keys(data).forEach(key => {
-            const item = { id: key, ...data[key], is_rtdb: true };
+            const item: SearchItem = { id: key, ...data[key], is_rtdb: true };
             const val = (item[searchField] as string || '').toUpperCase();
             if (val.includes(searchTerm.toUpperCase()) || key.toUpperCase().includes(searchTerm.toUpperCase())) {
               activeItems.push(item);
@@ -176,12 +184,15 @@ export function JOPSearch({
 
               const getStatusLabel = () => {
                 if (item.is_rtdb) return 'Active';
-                const s = item.status || item.status_workflow || item.status_dg || item.status_dt || item.status_qc || item.status_cad || item.tahapan_prepress;
+                const s = resolveWorkflowStatus(item as Record<string, unknown>, type === 'JOP' ? 'DT' : 'DG')
+                  || item.status
+                  || item.status_qc
+                  || item.status_cad;
                 return s || 'Archived';
               };
 
               const isFinished = () => {
-                const s = (item.status || item.status_workflow || item.status_dg || item.status_dt || item.status_qc || item.status_cad || item.tahapan_prepress || '').toUpperCase();
+                const s = (resolveWorkflowStatus(item as Record<string, unknown>, type === 'JOP' ? 'DT' : 'DG') || '').toUpperCase();
                 return ['SELESAI', 'CLOSED', 'DONE', 'APPROVED'].includes(s);
               };
 

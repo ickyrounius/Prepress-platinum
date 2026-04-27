@@ -2,6 +2,7 @@
 
 import { Printer, CaretUpDown, Lightning, Warning, Circle } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
+import { resolveWorkflowStatus } from "@/lib/workflow";
 
 // eslint-disable-next-line
 type DataRow = Record<string, any>;
@@ -255,7 +256,7 @@ export default function DataTable<T extends DataRow = DataRow>({
 
                     if (col.key === 'status') return (
                       <td key={col.key} className="px-6 py-4 border-b border-slate-50 align-middle">
-                        {getStatusBadge(row.ST_WORKFLOW)}
+                        {getStatusBadge(resolveWorkflowStatus(row as Record<string, unknown>, "DT"))}
                       </td>
                     );
 

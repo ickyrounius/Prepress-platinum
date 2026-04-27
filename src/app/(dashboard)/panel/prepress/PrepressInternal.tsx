@@ -8,7 +8,7 @@ import { db } from '@/lib/firebase';
 import { useAuth } from '@/features/auth/AuthContext';
 import { recordAuditLog } from '@/features/audit-log/auditLogService';
 import { collection, query, onSnapshot } from 'firebase/firestore';
-import { normalizeWorkflowStatusInput } from '@/lib/workflow';
+import { normalizeWorkflowStatusInput, resolveWorkflowStatus } from '@/lib/workflow';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Stack, 
@@ -85,7 +85,7 @@ export default function PrepressInternal() {
             }> = [];
             snapshot.forEach(doc => {
                 const data = doc.data();
-                const status = (data.status_dg || data.ST_WORKFLOW || data.status_dt || '').toUpperCase();
+                const status = resolveWorkflowStatus(data as Record<string, unknown>, col.name === 'proses_jod' ? 'DG' : 'DT').toUpperCase();
                 
                 // Only show jobs that are DONE but not yet in prepress (logic check simplified for demo)
                 if (['DONE', 'CLOSED', 'SELESAI', 'SELESAI LAYOUT', 'SELESAI CAD'].includes(status)) {

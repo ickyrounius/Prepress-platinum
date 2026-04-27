@@ -4,6 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { JopData, JosData } from '@/features/job/jobTypes';
+import { resolveWorkflowStatus } from '@/lib/workflow';
 import { 
   FileText,
   Circle, Clock, CheckCircle, 
@@ -27,18 +28,7 @@ const COLUMN_CONFIG = [
 
 export function KanbanBoard({ data }: KanbanBoardProps) {
   const getStatusValue = (item: KanbanItem) => {
-    const status = (
-      item.ST_WORKFLOW ||
-      item.ST_WF_JOP ||
-      item.ST_WF_JOS ||
-      item.st_workflow ||
-      item.status_workflow ||
-      item.status_dg ||
-      item.status_dt ||
-      item.status_cad ||
-      item.tahapan_prepress ||
-      ''
-    ) as string;
+    const status = resolveWorkflowStatus(item as Record<string, unknown>, item.sourceType);
     return status.toUpperCase();
   };
 

@@ -13,6 +13,7 @@ import { useDashboardData } from '@/hooks/useDashboardData';
 import type { JosTypeFilter, JopTypeFilter } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 import { normalizeRole } from '@/lib/accessControl';
+import { resolveWorkflowStatus } from '@/lib/workflow';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -64,7 +65,7 @@ export default function DashboardPage() {
       String(item.id || '-'),
       String(item.sourceType || '-'),
       String(item.buyer || '-'),
-      String(item.status_workflow || item.status_dg || item.status_dt || item.ST_WORKFLOW || '-'),
+      resolveWorkflowStatus(item as Record<string, unknown>, String(item.sourceType || '')) || '-',
       String(item.ST_PRO_JOP || '-'),
     ]);
     exportToPDF('Prepress Dashboard Report', columns, rows, `prepress-dashboard-${Date.now()}.pdf`);

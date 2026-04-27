@@ -21,7 +21,7 @@ import { cn } from '@/lib/utils';
 import { KanbanBoard } from '@/components/dashboard/KanbanBoard';
 import { useAuth } from '@/features/auth/AuthContext';
 import { recordAuditLog } from '@/features/audit-log/auditLogService';
-import { classifyWorkflowStatus, detectJopType, detectJosType, type JopType, type JosType } from '@/lib/workflow';
+import { classifyWorkflowStatus, detectJopType, detectJosType, resolveWorkflowStatus, type JopType, type JosType } from '@/lib/workflow';
 import { getKPIColorClasses } from '@/features/kpi/kpiStyles';
 
 interface DashboardItem extends Record<string, unknown> {
@@ -67,7 +67,7 @@ export default function DashboardInternal() {
       String(item.id || '-'),
       String(item.sourceType || '-'),
       String(item.buyer || '-'),
-      String(item.status_workflow || item.status_dg || item.status_dt || item.ST_WORKFLOW || '-'),
+      resolveWorkflowStatus(item as Record<string, unknown>, String(item.sourceType || '')) || '-',
       String(item.ST_PRO_JOP || '-'),
     ]);
     await exportToPDF('Prepress Dashboard Report', columns, rows, `prepress-dashboard-${Date.now()}.pdf`);

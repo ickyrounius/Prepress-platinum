@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { JopData as WorkflowJop } from '@/features/job/jobTypes';
+import { resolveWorkflowStatus } from '@/lib/workflow';
 
 export default function MasterDataPage() {
   const [data, setData] = useState<WorkflowJop[]>([]);
@@ -38,8 +39,8 @@ export default function MasterDataPage() {
       })) as unknown as WorkflowJop[];
       
       setData(allData);
-      setTotalAktif(allData.filter((item) => item.ST_WORKFLOW !== 'Closed').length);
-      setTotalClosed(allData.filter((item) => item.ST_WORKFLOW === 'Closed').length);
+      setTotalAktif(allData.filter((item) => resolveWorkflowStatus(item as Record<string, unknown>, 'DT').toUpperCase() !== 'CLOSED').length);
+      setTotalClosed(allData.filter((item) => resolveWorkflowStatus(item as Record<string, unknown>, 'DT').toUpperCase() === 'CLOSED').length);
       setLoading(false);
     });
 
@@ -48,8 +49,8 @@ export default function MasterDataPage() {
 
   useEffect(() => {
     const result = data.filter((item) => {
-      const status = item.ST_WORKFLOW || item.status_workflow || item.ST_WF_JOP || 'OPEN';
-      const matchesTab = activeTab === 'aktif' ? status !== 'Closed' : status === 'Closed';
+      const status = resolveWorkflowStatus(item as Record<string, unknown>, 'DT').toUpperCase() || 'OPEN';
+      const matchesTab = activeTab === 'aktif' ? status !== 'CLOSED' : status === 'CLOSED';
       
       const noJop = item.NO_JOP || item.no_jop || item.ID || '';
       const buyer = item.BUYER || item.buyer || '';
@@ -183,7 +184,7 @@ export default function MasterDataPage() {
                       className="group hover:bg-slate-50/50 transition-colors"
                     >
                       <td className="px-6 py-5">
-                        <StatusBadge status={(item.ST_WORKFLOW || item.status_workflow || item.ST_WF_JOP || 'OPEN') as string} />
+                        <StatusBadge status={resolveWorkflowStatus(item as Record<string, unknown>, 'DT') || 'OPEN'} />
                       </td>
                       <td className="px-6 py-5">
                         <div className="flex flex-col">

@@ -61,3 +61,45 @@ export function normalizeWorkflowStatusInput(value: unknown): string {
   const raw = String(value || "").toUpperCase().trim();
   return STATUS_NORMALIZATION_MAP[raw] || raw;
 }
+
+/**
+ * Resolve canonical workflow status by domain with legacy fallback.
+ * - JOP should prefer ST_WF_JOP
+ * - JOS should prefer ST_WF_JOS
+ */
+export function resolveWorkflowStatus(
+  item: Record<string, unknown>,
+  sourceType?: string
+): string {
+  if (sourceType === "DT") {
+    return String(
+      item.ST_WF_JOP ||
+      item.ST_WORKFLOW ||
+      item.status_workflow ||
+      item.status_dt ||
+      ""
+    );
+  }
+
+  if (sourceType === "DG") {
+    return String(
+      item.ST_WF_JOS ||
+      item.ST_WORKFLOW ||
+      item.status_workflow ||
+      item.status_dg ||
+      ""
+    );
+  }
+
+  return String(
+    item.ST_WF_JOP ||
+    item.ST_WF_JOS ||
+    item.ST_WORKFLOW ||
+    item.status_workflow ||
+    item.status_dg ||
+    item.status_dt ||
+    item.status_cad ||
+    item.tahapan_prepress ||
+    ""
+  );
+}

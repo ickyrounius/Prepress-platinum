@@ -17,6 +17,7 @@ import WorkloadChart from '@/components/dashboard/WorkloadChart';
 import { KanbanBoard, type KanbanItem } from '@/components/dashboard/KanbanBoard';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { cn } from '@/lib/utils';
+import { resolveWorkflowStatus } from '@/lib/workflow';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -76,9 +77,9 @@ export default function ProductionDashboard() {
   
   const displayStats = [
     { title: "Production Total", value: prodItems.length, icon: Stack, color: "indigo" },
-    { title: "Completed", value: prodItems.filter(i => (i.ST_WORKFLOW || i.status_workflow) === 'Done' || (i.ST_WORKFLOW || i.status_workflow) === 'Selesai').length, icon: CheckCircle, color: "emerald" },
-    { title: "On Process", value: prodItems.filter(i => (i.ST_WORKFLOW || i.status_workflow) === 'Prosess' || (i.ST_WORKFLOW || i.status_workflow) === 'Proses').length, icon: Clock, color: "blue" },
-    { title: "Hold/Pending", value: prodItems.filter(i => (i.ST_WORKFLOW || i.status_workflow) === 'Hold').length, icon: Warning, color: "amber" },
+    { title: "Completed", value: prodItems.filter((i) => ['DONE', 'SELESAI', 'CLOSED'].includes(resolveWorkflowStatus(i as Record<string, unknown>, 'PROD').toUpperCase())).length, icon: CheckCircle, color: "emerald" },
+    { title: "On Process", value: prodItems.filter((i) => ['PROSESS', 'PROSES', 'ON PROCESS'].includes(resolveWorkflowStatus(i as Record<string, unknown>, 'PROD').toUpperCase())).length, icon: Clock, color: "blue" },
+    { title: "Hold/Pending", value: prodItems.filter((i) => resolveWorkflowStatus(i as Record<string, unknown>, 'PROD').toUpperCase() === 'HOLD').length, icon: Warning, color: "amber" },
   ];
 
   return (
