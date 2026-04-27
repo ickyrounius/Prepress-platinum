@@ -11,11 +11,13 @@ import { cn } from '@/lib/utils';
 import { normalizeWorkflowStatusInput } from '@/lib/workflow';
 import { 
   Palette, PencilCircle,
-  Info, Calculator, SelectionAll
+  Info, Calculator, SelectionAll,
+  Plus
 } from '@phosphor-icons/react';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { useAuth } from '@/features/auth/AuthContext';
 import { getTCLevelInfo } from '@/features/kpi/kpiStyles';
+import { MultiItemInput } from '@/components/forms/MultiItemInput';
 
 const TCSelector = ({ label, value, onChange, colorClass }: { label: string; value: number; onChange: (v: number) => void; colorClass: string }) => {
   return (
@@ -160,18 +162,15 @@ export default function DGPanel() {
                         }}
                     />
 
-                    <div className="space-y-4">
-                        <label className="text-[11px] font-black text-slate-500 uppercase tracking-[0.15em] flex items-center gap-2">
-                            <SelectionAll weight="bold" size={18} className="text-pink-500" /> Detail Order / NO JOD
-                        </label>
-                        <input 
-                            required 
-                            value={(formData.no_jod as string) || ''}
-                            onChange={(e) => updateFormField('no_jod', e.target.value.toUpperCase())} 
-                            className="w-full p-4 sm:p-6 border-2 border-slate-100 rounded-[1.5rem] bg-slate-50 text-base sm:text-lg font-black focus:bg-white focus:border-pink-500 focus:ring-4 sm:focus:ring-8 focus:ring-pink-500/5 outline-none transition-all placeholder:text-slate-200"
-                            placeholder="MISAL: J1, J2..." 
-                        />
-                    </div>
+                    <MultiItemInput 
+                        label="Detail Order / NO JOD"
+                        placeholder="Ketik NO JOD (misal: J1), lalu Enter..."
+                        value={(formData.no_jod as string) || ''}
+                        onChange={(val) => updateFormField('no_jod', val)}
+                        icon={<SelectionAll weight="bold" size={18} className="text-pink-500" />}
+                        themeColor="pink"
+                        required
+                    />
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">

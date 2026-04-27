@@ -14,8 +14,10 @@ import { doc, onSnapshot } from 'firebase/firestore';
 import { useAuth } from '@/features/auth/AuthContext';
 import { getTCLevelInfo } from '@/features/kpi/kpiStyles';
 import { 
-  Palette, Calculator, WarningCircle, SelectionAll, Lightning
+  Palette, Calculator, WarningCircle, SelectionAll, Lightning,
+  Plus, Stack
 } from '@phosphor-icons/react';
+import { MultiItemInput } from '@/components/forms/MultiItemInput';
 
 const TCSelector = ({ label, value, onChange, colorClass }: { label: string, value: number, onChange: (v: number) => void, colorClass: string }) => {
   return (
@@ -185,17 +187,28 @@ export default function DTPanel() {
                         }}
                     />
 
-                    <div className="space-y-4">
-                        <label className="text-[11px] font-black text-slate-500 uppercase tracking-[0.15em] flex items-center gap-2">
-                            <SelectionAll weight="bold" size={18} className="text-sky-500" /> Referensi Blok / No B
-                        </label>
-                        <input 
-                            required 
-                            value={(formData.no_b as string) || ''}
-                            onChange={(e) => updateFormField('no_b', e.target.value.toUpperCase())} 
-                            className="w-full p-4 sm:p-6 border-2 border-slate-100 rounded-[1.5rem] bg-slate-50 text-base sm:text-lg font-black focus:bg-white focus:border-indigo-500 focus:ring-4 sm:focus:ring-8 focus:ring-indigo-500/5 outline-none transition-all placeholder:text-slate-200"
-                            placeholder="MISAL: B1, B2..." 
+                    <MultiItemInput 
+                        label="Referensi Blok / No B"
+                        placeholder="Ketik NO B (misal: B1), lalu Enter..."
+                        value={(formData.no_b as string) || ''}
+                        onChange={(val) => updateFormField('no_b', val)}
+                        icon={<SelectionAll weight="bold" size={18} className="text-sky-500" />}
+                        themeColor="indigo"
+                        required
+                    />
+
+                    <div className="p-6 bg-slate-50/50 rounded-[2rem] border-2 border-slate-100 border-dashed space-y-4">
+                        <MultiItemInput 
+                            label="Gathering Designs (NO JOD)"
+                            placeholder="Ketik NO JOD (misal: J1), lalu Enter..."
+                            value={(formData.gathered_jods as string) || ''}
+                            onChange={(val) => updateFormField('gathered_jods', val)}
+                            icon={<Stack weight="bold" size={18} className="text-indigo-500" />}
+                            themeColor="indigo"
                         />
+                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter leading-tight px-2">
+                            Gunakan kolom ini jika blok <b>{String(formData.no_b || '-')}</b> tersebut <br /> merupakan gabungan dari beberapa Nomor JOD.
+                        </p>
                     </div>
 
                     <div className="grid grid-cols-2 gap-6">
