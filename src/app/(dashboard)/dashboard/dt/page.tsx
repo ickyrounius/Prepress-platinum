@@ -17,7 +17,8 @@ import {
   Monitor,
   Stack,
   ChartBar,
-  Users
+  Users,
+  Cube
 } from '@phosphor-icons/react';
 import TrendChart from '@/components/dashboard/TrendChart';
 import WorkloadChart from '@/components/dashboard/WorkloadChart';
@@ -114,6 +115,22 @@ import { useRoleStats } from '@/hooks/useRoleStats';
 export default function DTDashboard() {
   const { items: rawItems, stats: realStats, trendData, workloadData, loading } = useRoleStats('proses_dt_b');
 
+  // Count JOP with type KARTON_BOX from workflows_jop (source of truth)
+  const [kartonBoxCount, setKartonBoxCount] = useState(0);
+  useEffect(() => {
+    const q = query(collection(db, 'workflows_jop'));
+    const unsub = onSnapshot(q, (snap) => {
+      let count = 0;
+      snap.docs.forEach(d => {
+        const data = d.data();
+        const tipe = (data.tipe_jop || data.TIPE_JOP || '').toString().toUpperCase();
+        if (tipe === 'KARTON_BOX') count++;
+      });
+      setKartonBoxCount(count);
+    });
+    return () => unsub();
+  }, []);
+
   const kanbanItems = useMemo(() => {
     return rawItems.map(item => ({ ...item, sourceType: 'DT' } as unknown as KanbanItem));
   }, [rawItems]);
@@ -127,6 +144,7 @@ export default function DTDashboard() {
     { title: "Total Export", value: realStats.exportCount, icon: Download, color: "sky" },
     { title: "Total Jasa", value: realStats.jasaCount, icon: Archive, color: "rose" },
     { title: "Total Local", value: realStats.localCount, icon: MapPin, color: "teal" },
+    { title: "JOP Karton Box", value: kartonBoxCount, icon: Cube, color: "purple" },
     { title: "Overdue", value: realStats.overdue, icon: Warning, color: "red" },
     { title: "On Time", value: realStats.onTime, icon: CheckCircle, color: "emerald" },
     { title: "Today Active", value: trendData[trendData.length - 1]?.value || 0, icon: Lightning, color: "yellow" },
