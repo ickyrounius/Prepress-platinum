@@ -100,12 +100,10 @@ export function GlobalInputForm({
           payload.TGL_MASUK_JOP = displayDateStr;
           payload.tgl_masuk_jop = displayDateStr;
           payload.ST_WF_JOP = payload.ST_WF_JOP || payload.st_wf_jop || 'OPEN';
-          payload.ST_WORKFLOW = payload.ST_WORKFLOW || payload.status_workflow || 'OPEN';
         } else if (collectionName === 'workflows_jos') {
           payload.TGL_MASUK_JOS = displayDateStr;
           payload.tgl_masuk_jos = displayDateStr;
           payload.ST_WF_JOS = payload.ST_WF_JOS || payload.st_wf_jos || 'OPEN';
-          payload.ST_WORKFLOW = payload.ST_WORKFLOW || payload.status_workflow || 'OPEN';
         }
 
         // 🔥 AUTO CALCULATION INTEGRATION
@@ -118,7 +116,13 @@ export function GlobalInputForm({
           return ['CLOSED', 'CANCEL', 'DONE', 'SELESAI'].includes(upper);
         };
 
-        const workflowStatus = ((payload.ST_WORKFLOW as string) || "").toUpperCase();
+        const workflowStatus = (
+          collectionName === 'workflows_jop'
+            ? (payload.ST_WF_JOP as string)
+            : collectionName === 'workflows_jos'
+              ? (payload.ST_WF_JOS as string)
+              : ((payload.status_workflow as string) || (payload.ST_WORKFLOW as string) || "")
+        ).toUpperCase();
         const isCompleted = isTerminalStatus(workflowStatus);
 
         if (isCompleted) {

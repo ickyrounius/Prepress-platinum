@@ -75,7 +75,7 @@ export const updateJOPData = async (id: string, role: string, payload: Record<st
       }
       if (updates.ST_WF_JOP === 'Layout') updates.ST_WF_JOP = 'On Process';
     } else if (role === 'support') {
-      const workflowStatus = asString(payload.status_workflow || payload.ST_WORKFLOW || 'On Process');
+      const workflowStatus = asString(payload.ST_WF_JOP || payload.status_workflow || payload.ST_WORKFLOW || 'On Process');
       const supportType = asString(payload.type_support || payload.TYPE_SUPPORT);
       
       updates = {
@@ -101,7 +101,7 @@ export const updateJOPData = async (id: string, role: string, payload: Record<st
       }
       await submitLog('logs_blueprint', { ...currentData, ...payload, TGL_LOG: nowStr });
     } else if (role === 'op') {
-      let workflowStatus = asString(payload.ST_WF_JOP || payload.ST_WORKFLOW);
+      let workflowStatus = asString(payload.ST_WF_JOP || payload.status_workflow || payload.ST_WORKFLOW);
       let progressStatus = asString(payload.ST_PRO_NO_B || payload.ST_PRO_JOP);
 
       if (progressStatus.toUpperCase() === "BLUEPRINT") workflowStatus = "Blueprint";
@@ -189,7 +189,7 @@ export const updateJOPData = async (id: string, role: string, payload: Record<st
 
       await submitLog('logs_qc', { ...currentData, ...payload, TGL_LOG: nowStr });
     } else if (role === 'prepress') {
-      const workflowStatus = asString(payload.status_workflow || payload.ST_WORKFLOW || 'On Process');
+      const workflowStatus = asString(payload.ST_WF_JOP || payload.status_workflow || payload.ST_WORKFLOW || 'On Process');
       const prepressStatus = asString(payload.status_prepress || payload.ST_PREPRESS || 'Approved');
       
       updates = {
@@ -209,7 +209,7 @@ export const updateJOPData = async (id: string, role: string, payload: Record<st
     await remove(ref(rtdb, `locks/${id}`));
 
     // 🔥 HYBRID SYNC: Remove from RTDB if status is CLOSED or CANCEL
-    const finalStatus = asString(finalUpdates.ST_WF_JOP || currentData.ST_WF_JOP || finalUpdates.ST_WORKFLOW || currentData.ST_WORKFLOW || "").toUpperCase();
+    const finalStatus = asString(finalUpdates.ST_WF_JOP || currentData.ST_WF_JOP || currentData.ST_WORKFLOW || "").toUpperCase();
     
     if (finalStatus === "CLOSED" || finalStatus === "CANCEL" || finalStatus === "DONE") {
       try {

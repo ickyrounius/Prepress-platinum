@@ -43,11 +43,15 @@ export const saveJOP = async (
     if (!formData.IS_RELAYOUT) {
       const q = query(
         jopsRef,
-        where('NO_JOP', '==', formData.NO_JOP),
-        where('ST_WORKFLOW', '!=', 'Closed')
+        where('NO_JOP', '==', formData.NO_JOP)
       );
       const snap = await getDocs(q);
-      if (!snap.empty) {
+      const hasActiveDuplicate = snap.docs.some((item) => {
+        const data = item.data() as JopData;
+        const status = String(data.ST_WF_JOP || data.ST_WORKFLOW || '').toUpperCase();
+        return !['CLOSED', 'DONE', 'CANCEL'].includes(status);
+      });
+      if (hasActiveDuplicate) {
         throw new Error(
           `Nomor JOP ${formData.NO_JOP} sudah aktif di sistem! ` +
           `Gunakan fitur EDIT atau tandai sebagai RELAYOUT.`
@@ -72,7 +76,7 @@ export const saveJOP = async (
       PIC_UTAMA:   formData.PIC_UTAMA   || '',
       PIC_SUPPORT: formData.PIC_SUPPORT || '',
       LAST_UPDATED: serverTimestamp(),
-      ST_WORKFLOW:  'REVIEW',
+      ST_WF_JOP:    'REVIEW',
       ST_PRO_JOP:   'Not Started',
       LEVEL_TC:     'RINGAN',
       KT: 0, RP: 0, BS: 0, CAD: 0,
@@ -145,22 +149,19 @@ export const unlockJOP = async (id: string) => {
 
 /** Listen ke semua JOP yang belum Closed, diurutkan berdasarkan LAST_UPDATED terbaru. */
 export const listenToMergedData = (callback: (data: JopData[]) => void) => {
-  // CATATAN: query "!=" membutuhkan composite index di Firestore.
-  // SEGERA BUAT INDEX di Firebase Console:
-  // Koleksi: workflows_jop
-  // Field 1: ST_WORKFLOW (Ascending)
-  // Field 2: LAST_UPDATED (Descending)
-  // Query scope: Collection
-  const q = query(
-    collection(db, 'workflows_jop'),
-    where('ST_WORKFLOW', '!=', 'Closed')
-  );
+  const q = query(collection(db, 'workflows_jop'));
 
   return onSnapshot(
     q,
     (snapshot) => {
       const changes: JopData[] = [];
-      snapshot.forEach((d) => changes.push(d.data() as JopData));
+      snapshot.forEach((d) => {
+        const item = d.data() as JopData;
+        const status = String(item.ST_WF_JOP || item.ST_WORKFLOW || '').toUpperCase();
+        if (!['CLOSED', 'DONE', 'CANCEL'].includes(status)) {
+          changes.push(item);
+        }
+      });
 
       // Sort client-side agar tidak perlu index tambahan
       changes.sort((a, b) => {

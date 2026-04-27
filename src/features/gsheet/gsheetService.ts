@@ -49,14 +49,20 @@ export const importDataFromGSheet = async (type: 'JOP' | 'JOS'): Promise<GSheetI
         ID: uniqueId,
         id: uniqueId,
         LAST_UPDATED: serverTimestamp(),
-        ST_WORKFLOW: row.ST_WORKFLOW || 'OPEN',
+        ...(type === 'JOP' ? { ST_WF_JOP: (row.ST_WF_JOP || row.ST_WORKFLOW || 'OPEN') } : {}),
+        ...(type === 'JOS' ? { ST_WF_JOS: (row.ST_WF_JOS || row.ST_WORKFLOW || 'OPEN') } : {}),
         imported_at: Date.now(),
       };
 
       batch.set(docRef, payload, { merge: true });
 
       // Jika statusnya bukan Closed, masukkan juga ke RTDB (Hybrid Sync)
-      if (!['CLOSED', 'DONE', 'CANCEL'].includes((row.ST_WORKFLOW || '').toUpperCase())) {
+      const workflowStatus = String(
+        type === 'JOP'
+          ? (row.ST_WF_JOP || row.ST_WORKFLOW || '')
+          : (row.ST_WF_JOS || row.ST_WORKFLOW || '')
+      ).toUpperCase();
+      if (!['CLOSED', 'DONE', 'CANCEL'].includes(workflowStatus)) {
         await set(ref(rtdb, `active_jobs/${collectionName}/${uniqueId}`), payload);
       }
       
