@@ -92,17 +92,19 @@ export function GlobalInputForm({
           date: dateStr,
           TGL_INPUT: displayDateStr,
           tgl_input: displayDateStr,
+          TGL_MASUK: displayDateStr,
+          tgl_masuk: displayDateStr,
           timestamp_input: now.getTime()
         };
 
         // Add specific entry dates for JOP/JOS as per official schema
         if (collectionName === 'workflows_jop') {
-          payload.TGL_MASUK_JOP = displayDateStr;
-          payload.tgl_masuk_jop = displayDateStr;
+          payload.TGL_MASUK_JOP = dateStr;
+          payload.tgl_masuk_jop = dateStr;
           payload.ST_WF_JOP = payload.ST_WF_JOP || payload.st_wf_jop || 'OPEN';
         } else if (collectionName === 'workflows_jos') {
-          payload.TGL_MASUK_JOS = displayDateStr;
-          payload.tgl_masuk_jos = displayDateStr;
+          payload.TGL_MASUK_JOS = dateStr;
+          payload.tgl_masuk_jos = dateStr;
           payload.ST_WF_JOS = payload.ST_WF_JOS || payload.st_wf_jos || 'OPEN';
         }
 
