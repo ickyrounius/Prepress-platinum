@@ -15,7 +15,7 @@ import { useAuth } from '@/features/auth/AuthContext';
 import { getTCLevelInfo } from '@/features/kpi/kpiStyles';
 import { 
   Palette, Calculator, WarningCircle, SelectionAll, Lightning,
-  Plus, Stack
+  Plus, Stack, Timer
 } from '@phosphor-icons/react';
 import { MultiItemInput } from '@/components/forms/MultiItemInput';
 
@@ -206,8 +206,23 @@ export default function DTPanel() {
                             icon={<Stack weight="bold" size={18} className="text-indigo-500" />}
                             themeColor="indigo"
                         />
-                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter leading-tight px-2">
-                            Gunakan kolom ini jika blok <b>{String(formData.no_b || '-')}</b> tersebut <br /> merupakan gabungan dari beberapa Nomor JOD.
+                        
+                        <div className="pt-2 border-t border-slate-200/50">
+                            <MultiItemInput 
+                                label="JOD MASIH PROSES LAIN (PENDING)"
+                                placeholder="Ketik JOD yang belum siap..."
+                                value={(formData.pending_jods as string) || ''}
+                                onChange={(val) => updateFormField('pending_jods', val)}
+                                icon={<Timer weight="bold" size={18} className="text-rose-500" />}
+                                themeColor="rose"
+                            />
+                            <p className="text-[9px] font-bold text-rose-400 uppercase tracking-tighter leading-tight px-2 mt-2">
+                                Isi jika No B sudah ada tapi ada JOD <br /> yang masih direvisi atau belum selesai di DG.
+                            </p>
+                        </div>
+
+                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter leading-tight px-2 border-t border-slate-100 pt-4">
+                            Informasi ini membantu koordinasi antara <br /> bagian DTP dan Desain.
                         </p>
                     </div>
 
