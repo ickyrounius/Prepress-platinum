@@ -162,7 +162,7 @@ export default function PrepressInternal() {
                 <Stack className="text-indigo-400" weight="fill" size={16} />
                 <span className="text-[10px] font-black text-indigo-100 uppercase tracking-[0.2em]">Assignment & Control Panel</span>
             </div>
-            <h1 className="text-5xl font-black text-white tracking-tighter leading-none">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tighter leading-none">
                 Prepress Production <br />
                 <span className="text-indigo-400">Control Center</span>
             </h1>

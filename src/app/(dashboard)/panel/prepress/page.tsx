@@ -162,7 +162,7 @@ export default function PrepressPanel() {
                 <Stack className="text-indigo-400" weight="fill" size={16} />
                 <span className="text-[10px] font-black text-indigo-100 uppercase tracking-[0.2em]">Assignment & Control Panel</span>
             </div>
-            <h1 className="text-5xl font-black text-white tracking-tighter leading-none">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tighter leading-none">
                 Prepress Production <br />
                 <span className="text-indigo-400">Control Center</span>
             </h1>
@@ -232,7 +232,7 @@ export default function PrepressPanel() {
                                         required 
                                         value={(formData.no_b as string) || ''}
                                         onChange={(e) => updateFormField('no_b', e.target.value.toUpperCase())} 
-                                        className="w-full p-6 border-2 border-slate-100 rounded-[1.5rem] bg-slate-50 text-lg font-black focus:bg-white focus:border-sky-500 focus:ring-8 focus:ring-sky-500/5 outline-none transition-all placeholder:text-slate-200 shadow-inner" 
+                                        className="w-full p-4 sm:p-6 border-2 border-slate-100 rounded-[1.5rem] bg-slate-50 text-base sm:text-lg font-black focus:bg-white focus:border-sky-500 focus:ring-4 sm:focus:ring-8 focus:ring-sky-500/5 outline-none transition-all placeholder:text-slate-200 shadow-inner"
                                         placeholder="MISAL: B1..." 
                                     />
                                     <div className="absolute right-4 top-1/2 -translate-y-1/2 px-3 py-1 bg-sky-100 text-sky-600 rounded-lg text-[9px] font-black uppercase tracking-widest">Wajib</div>
@@ -250,7 +250,7 @@ export default function PrepressPanel() {
                                 <textarea 
                                     value={(formData.gathered_jods as string) || ''}
                                     onChange={(e) => updateFormField('gathered_jods', e.target.value)} 
-                                    className="w-full p-5 border-2 border-white rounded-[1.5rem] bg-white text-xs font-black focus:border-indigo-500 outline-none transition-all h-24 resize-none placeholder:text-slate-200 shadow-sm" 
+                                    className="w-full p-4 sm:p-5 border-2 border-white rounded-[1.5rem] bg-white text-xs font-black focus:border-indigo-500 outline-none transition-all h-24 resize-none placeholder:text-slate-200 shadow-sm"
                                     placeholder="JOD-001, JOD-002, JOD-005..." 
                                 />
                                 {(formData.gathered_jods as string)?.split(/[, \n]+/).filter(Boolean).length > 0 && (
@@ -270,7 +270,7 @@ export default function PrepressPanel() {
                                 <label className="text-[11px] font-black text-slate-500 uppercase tracking-[0.15em] flex items-center gap-2">
                                     <Monitor weight="bold" size={18} className="text-emerald-500" /> Unit Mesin Produksi
                                 </label>
-                                <div className="grid grid-cols-2 gap-3 p-4 bg-slate-50 rounded-[2rem] border-2 border-slate-100 shadow-inner">
+                                <div className="grid grid-cols-2 gap-2 sm:gap-3 p-3 sm:p-4 bg-slate-50 rounded-[2rem] border-2 border-slate-100 shadow-inner">
                                 {['CTP', 'CTCP', 'FLEXO', 'ETCHING', 'SCREEN'].map(tipe => (
                                     <label key={tipe} className={cn(
                                         "flex items-center gap-3 p-4 rounded-2xl border-2 transition-all cursor-pointer group/btn",
@@ -302,7 +302,7 @@ export default function PrepressPanel() {
                                 <label className="text-[11px] font-black text-slate-500 uppercase tracking-[0.15em] flex items-center gap-2">
                                     <User weight="bold" size={18} className="text-indigo-500" /> Operator In Charge
                                 </label>
-                                <div className="w-full p-6 border-2 border-indigo-50 rounded-[2rem] bg-indigo-50/50 text-indigo-900 flex items-center justify-between shadow-sm relative overflow-hidden group">
+                                <div className="w-full p-4 sm:p-6 border-2 border-indigo-50 rounded-[2rem] bg-indigo-50/50 text-indigo-900 flex items-center justify-between shadow-sm relative overflow-hidden group">
                                     <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                                     <div className="flex items-center gap-3 relative z-10">
                                         <div className="w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center text-xs font-black shadow-lg shadow-indigo-200">
@@ -326,7 +326,7 @@ export default function PrepressPanel() {
                                 required 
                                 onChange={(e) => updateFormField('status_prepress', normalizeWorkflowStatusInput(e.target.value))} 
                                 value={(formData.status_prepress as string) || ''}
-                                className="w-full p-6 border-2 border-slate-100 rounded-[2rem] bg-slate-50 text-[11px] font-black appearance-none focus:bg-white focus:border-indigo-500 focus:ring-8 focus:ring-indigo-500/5 outline-none transition-all shadow-inner"
+                                className="w-full p-4 sm:p-6 border-2 border-slate-100 rounded-[2rem] bg-slate-50 text-[11px] font-black appearance-none focus:bg-white focus:border-indigo-500 focus:ring-4 sm:focus:ring-8 focus:ring-indigo-500/5 outline-none transition-all shadow-inner"
                             >
                                 <option value="">- PILIH KEPUTUSAN -</option>
                                 <option value="APPROVED">✅ HASIL BAIK (NORMAL)</option>
@@ -343,7 +343,7 @@ export default function PrepressPanel() {
                                 required 
                                 onChange={(e) => updateFormField('tahapan_prepress', normalizeWorkflowStatusInput(e.target.value))} 
                                 value={(formData.tahapan_prepress as string) || ''}
-                                className="w-full p-6 border-2 border-slate-100 rounded-[2rem] bg-slate-50 text-[11px] font-black appearance-none focus:bg-white focus:border-indigo-500 focus:ring-8 focus:ring-indigo-500/5 outline-none transition-all shadow-inner"
+                                className="w-full p-4 sm:p-6 border-2 border-slate-100 rounded-[2rem] bg-slate-50 text-[11px] font-black appearance-none focus:bg-white focus:border-indigo-500 focus:ring-4 sm:focus:ring-8 focus:ring-indigo-500/5 outline-none transition-all shadow-inner"
                             >
                                 <option value="">- PILIH TAHAPAN -</option>
                                 <option value="PROSES">⚙️ SEDANG PROSES (EXPOSE/RIP)</option>
@@ -359,7 +359,7 @@ export default function PrepressPanel() {
                             <textarea 
                                 onChange={(e) => updateFormField('catatan_prepress', e.target.value)} 
                                 value={(formData.catatan_prepress as string) || ''}
-                                className="w-full p-8 border-2 border-slate-100 rounded-[3rem] bg-slate-50 text-sm font-medium focus:bg-white focus:border-indigo-500 focus:ring-8 focus:ring-indigo-500/5 outline-none transition-all h-44 resize-none placeholder:text-slate-300 shadow-inner" 
+                                className="w-full p-4 sm:p-8 border-2 border-slate-100 rounded-[2rem] sm:rounded-[3rem] bg-slate-50 text-sm font-medium focus:bg-white focus:border-indigo-500 focus:ring-4 sm:focus:ring-8 focus:ring-indigo-500/5 outline-none transition-all h-32 sm:h-44 resize-none placeholder:text-slate-300 shadow-inner"
                                 placeholder="Jelaskan alasan reject jika rusak, atau berikan catatan khusus untuk QC..."
                             />
                         </div>
@@ -371,7 +371,7 @@ export default function PrepressPanel() {
 
         {/* Right Column: Waiting List / Queue */}
         <motion.div variants={itemVariants} className="space-y-6">
-            <div className="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-xl min-h-0 flex flex-col group">
+            <div className="bg-white p-6 sm:p-10 rounded-[2.5rem] sm:rounded-[3.5rem] border border-slate-100 shadow-xl min-h-0 flex flex-col group">
                 <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center gap-4">
                         <div className="w-12 h-12 bg-emerald-50 text-emerald-500 rounded-2xl flex items-center justify-center shadow-inner group-hover:bg-emerald-500 group-hover:text-white transition-all">

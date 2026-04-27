@@ -45,7 +45,7 @@ export default function TopHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-30 flex min-h-16 w-full shrink-0 items-center justify-between gap-3 border-b border-slate-200 bg-white/90 px-4 backdrop-blur-md transition-all dark:border-slate-800 dark:bg-slate-900/90 sm:min-h-20 sm:px-6 lg:px-8 no-print">
+    <header className="sticky top-0 z-30 flex min-h-16 w-full shrink-0 items-center justify-between gap-2 border-b border-slate-200 bg-white/90 px-3 backdrop-blur-md transition-all dark:border-slate-800 dark:bg-slate-900/90 sm:min-h-20 sm:gap-3 sm:px-6 lg:px-8 no-print">
       <div className="flex min-w-0 items-center gap-2 sm:gap-4">
         <button 
           title="Buka Sidebar" 
@@ -59,10 +59,10 @@ export default function TopHeader() {
         </h2>
       </div>
       
-      <div className="flex items-center gap-2 sm:gap-4">
+      <div className="flex items-center gap-1.5 sm:gap-3">
         <button 
           onClick={handleRefresh} 
-          className="flex items-center gap-2 px-2 sm:px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition active:scale-95"
+          className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition active:scale-95"
         >
           <ArrowsClockwise weight="bold" className={isSpinning ? "animate-spin-custom text-indigo-500" : ""} />
           <span className="hidden sm:inline">REFRESH</span>
@@ -70,9 +70,9 @@ export default function TopHeader() {
 
         <ThemeToggle />
 
-        <div className="block h-6 w-[1px] bg-slate-200"></div>
+        <div className="hidden sm:block h-6 w-[1px] bg-slate-200 dark:bg-slate-700"></div>
 
-        <span id="user-display" className="text-[10px] sm:text-xs font-bold bg-indigo-50 text-indigo-600 px-2 sm:px-3 py-1 rounded-full uppercase tracking-widest border border-indigo-100 truncate max-w-[80px] sm:max-w-none">
+        <span id="user-display" className="hidden md:inline-block text-[10px] sm:text-xs font-bold bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-300 px-2 sm:px-3 py-1 rounded-full uppercase tracking-widest border border-indigo-100 dark:border-indigo-800 truncate max-w-[180px]">
           {user?.displayName || user?.email || "USER"}
         </span>
 
@@ -86,7 +86,7 @@ export default function TopHeader() {
               window.location.href = '/login';
             }
           }} 
-          className="flex items-center gap-2 px-2 sm:px-3 py-1.5 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-lg transition border border-transparent hover:border-rose-100"
+          className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 text-xs font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition border border-transparent hover:border-rose-100 dark:hover:border-rose-800"
         >
           <SignOut weight="bold" /> <span className="hidden sm:inline">LOGOUT</span>
         </button>

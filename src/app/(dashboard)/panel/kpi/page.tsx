@@ -211,7 +211,7 @@ export default function KPIPage() {
                 <Trophy className="text-amber-400" weight="fill" size={16} />
                 <span className="text-[10px] font-black text-indigo-100 uppercase tracking-[0.2em]">Performance Leaderboard</span>
             </div>
-            <h1 className="text-5xl font-black text-white tracking-tighter leading-none">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tighter leading-none">
                 KPI Assessment <br />
                 <span className="text-indigo-400">Prepress Platinum</span>
             </h1>

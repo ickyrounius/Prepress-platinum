@@ -131,7 +131,7 @@ export default function DGPanel() {
             
             {/* Left Column: Identitas & Progress */}
             <div className="space-y-10">
-                <div className="bg-white p-8 sm:p-10 rounded-[3rem] border border-slate-100 shadow-xl space-y-8">
+                <div className="bg-white p-6 sm:p-10 rounded-[3rem] border border-slate-100 shadow-xl space-y-8">
                     <div className="flex items-center gap-3 border-b border-slate-50 pb-6">
                         <Info weight="bold" className="text-pink-500" size={24} />
                         <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest">Job Identification</h3>
@@ -168,7 +168,7 @@ export default function DGPanel() {
                             required 
                             value={(formData.no_jod as string) || ''}
                             onChange={(e) => updateFormField('no_jod', e.target.value.toUpperCase())} 
-                            className="w-full p-6 border-2 border-slate-100 rounded-[1.5rem] bg-slate-50 text-lg font-black focus:bg-white focus:border-pink-500 focus:ring-8 focus:ring-pink-500/5 outline-none transition-all placeholder:text-slate-200" 
+                            className="w-full p-4 sm:p-6 border-2 border-slate-100 rounded-[1.5rem] bg-slate-50 text-base sm:text-lg font-black focus:bg-white focus:border-pink-500 focus:ring-4 sm:focus:ring-8 focus:ring-pink-500/5 outline-none transition-all placeholder:text-slate-200"
                             placeholder="MISAL: J1, J2..." 
                         />
                     </div>
@@ -178,7 +178,7 @@ export default function DGPanel() {
                         <select required 
                             onChange={(e) => updateFormField('status_dg', normalizeWorkflowStatusInput(e.target.value))} 
                             value={(formData.status_dg as string) || ''}
-                            className="w-full p-6 border-2 border-slate-100 rounded-[1.5rem] bg-slate-50 text-xs font-black appearance-none focus:bg-white focus:border-pink-500 focus:ring-8 focus:ring-pink-500/5 outline-none transition-all"
+                            className="w-full p-4 sm:p-6 border-2 border-slate-100 rounded-[1.5rem] bg-slate-50 text-xs font-black appearance-none focus:bg-white focus:border-pink-500 focus:ring-4 sm:focus:ring-8 focus:ring-pink-500/5 outline-none transition-all"
                         >
                             <option value="">- PILIH TAHAPAN DESAIN -</option>
                             <option value="PROSES">PENGERJAAN (PROSESS)</option>
@@ -190,7 +190,7 @@ export default function DGPanel() {
                     </div>
                 </div>
 
-                <div className="bg-white p-8 sm:p-10 rounded-[3rem] border border-slate-100 shadow-xl space-y-8">
+                <div className="bg-white p-6 sm:p-10 rounded-[3rem] border border-slate-100 shadow-xl space-y-8">
                     <div className="flex items-center gap-3 border-b border-slate-50 pb-6">
                         <PencilCircle weight="bold" className="text-rose-500" size={24} />
                         <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest">Catatan & Masalah</h3>
@@ -198,7 +198,7 @@ export default function DGPanel() {
                     <textarea 
                         onChange={(e) => updateFormField('catatan_dg', e.target.value)} 
                         value={(formData.catatan_dg as string) || ''}
-                        className="w-full p-6 border-2 border-slate-100 rounded-[2rem] bg-slate-50 text-sm font-medium focus:bg-white focus:border-pink-500 focus:ring-8 focus:ring-pink-500/5 outline-none transition-all h-40 resize-none placeholder:text-slate-300 shadow-inner" 
+                        className="w-full p-4 sm:p-6 border-2 border-slate-100 rounded-[2rem] bg-slate-50 text-sm font-medium focus:bg-white focus:border-pink-500 focus:ring-4 sm:focus:ring-8 focus:ring-pink-500/5 outline-none transition-all h-32 sm:h-40 resize-none placeholder:text-slate-300 shadow-inner"
                         placeholder="Detail revisi, nama file master, atau kendala material..."
                     />
                 </div>
@@ -254,7 +254,7 @@ export default function DGPanel() {
                         <div>
                             <p className="text-[10px] font-black text-pink-400 uppercase tracking-widest mb-1">Total KPI Earnings</p>
                             <div className="flex items-baseline gap-2">
-                                <h4 className="text-5xl font-black text-white tracking-tighter">{totalTc}</h4>
+                                <h4 className="text-4xl sm:text-5xl font-black text-white tracking-tighter">{totalTc}</h4>
                                 <span className="text-xs font-black text-pink-300 uppercase">Points</span>
                             </div>
                         </div>

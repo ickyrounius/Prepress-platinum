@@ -306,7 +306,7 @@ export default function SPVPanel() {
         </div>
 
         <div className="space-y-6">
-            <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm sticky top-8">
+            <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm xl:sticky xl:top-8">
                 <h3 className="text-xs font-black text-slate-800 mb-6 flex items-center gap-2 uppercase tracking-widest">
                     <Users weight="bold" className="text-emerald-500" /> PIC Capacity
                 </h3>

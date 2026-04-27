@@ -148,7 +148,7 @@ export default function DTPanel() {
             
             {/* Left Column: Identitas & Progress */}
             <div className="space-y-10">
-                <div className="bg-white p-8 sm:p-10 rounded-[3rem] border border-slate-100 shadow-xl space-y-8">
+                <div className="bg-white p-6 sm:p-10 rounded-[3rem] border border-slate-100 shadow-xl space-y-8">
                     <div className="flex items-center gap-3 border-b border-slate-50 pb-6">
                         <Palette weight="bold" className="text-indigo-500" size={24} />
                         <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest">Identifikasi Order</h3>
@@ -193,7 +193,7 @@ export default function DTPanel() {
                             required 
                             value={(formData.no_b as string) || ''}
                             onChange={(e) => updateFormField('no_b', e.target.value.toUpperCase())} 
-                            className="w-full p-6 border-2 border-slate-100 rounded-[1.5rem] bg-slate-50 text-lg font-black focus:bg-white focus:border-indigo-500 focus:ring-8 focus:ring-indigo-500/5 outline-none transition-all placeholder:text-slate-200" 
+                            className="w-full p-4 sm:p-6 border-2 border-slate-100 rounded-[1.5rem] bg-slate-50 text-base sm:text-lg font-black focus:bg-white focus:border-indigo-500 focus:ring-4 sm:focus:ring-8 focus:ring-indigo-500/5 outline-none transition-all placeholder:text-slate-200"
                             placeholder="MISAL: B1, B2..." 
                         />
                     </div>
@@ -212,14 +212,14 @@ export default function DTPanel() {
                         </div>
                         <div className="space-y-4">
                             <label className="text-[11px] font-black text-slate-500 uppercase tracking-[0.15em]">Role Terminal</label>
-                            <div className="w-full p-5 border-2 border-slate-100 rounded-[1.5rem] bg-slate-900 text-white text-xs font-black uppercase tracking-widest flex items-center justify-center text-center h-[64px]">
+                            <div className="w-full p-4 sm:p-5 border-2 border-slate-100 rounded-[1.5rem] bg-slate-900 text-white text-[10px] sm:text-xs font-black uppercase tracking-widest flex items-center justify-center text-center h-[56px] sm:h-[64px]">
                                 {role || 'OP'}
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-white p-8 sm:p-10 rounded-[3rem] border border-slate-100 shadow-xl space-y-8">
+                <div className="bg-white p-6 sm:p-10 rounded-[3rem] border border-slate-100 shadow-xl space-y-8">
                     <div className="flex items-center gap-3 border-b border-slate-50 pb-6">
                         <Lightning weight="bold" className="text-amber-500" size={24} />
                         <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest">Progress Update</h3>
@@ -244,7 +244,7 @@ export default function DTPanel() {
                                         setWorkflowStatus(track);
                                     }} 
                                     value={(formData.status_progress as string) || ''}
-                                    className="w-full p-6 border-2 border-slate-100 rounded-[1.5rem] bg-slate-50 text-xs font-black appearance-none focus:bg-white focus:border-indigo-500 focus:ring-8 focus:ring-indigo-500/5 outline-none transition-all"
+                                    className="w-full p-4 sm:p-6 border-2 border-slate-100 rounded-[1.5rem] bg-slate-50 text-xs font-black appearance-none focus:bg-white focus:border-indigo-500 focus:ring-4 sm:focus:ring-8 focus:ring-indigo-500/5 outline-none transition-all"
                                 >
                                     <option value="">- PILIH STATUS DT -</option>
                                     <option value="Not Started">NOT STARTED</option>
@@ -263,7 +263,7 @@ export default function DTPanel() {
                                     required 
                                     onChange={(e) => updateFormField('status_cad', e.target.value)} 
                                     value={(formData.status_cad as string) || ''}
-                                    className="w-full p-6 border-2 border-slate-100 rounded-[1.5rem] bg-slate-50 text-xs font-black appearance-none focus:bg-white focus:border-indigo-500 focus:ring-8 focus:ring-indigo-500/5 outline-none transition-all"
+                                    className="w-full p-4 sm:p-6 border-2 border-slate-100 rounded-[1.5rem] bg-slate-50 text-xs font-black appearance-none focus:bg-white focus:border-indigo-500 focus:ring-4 sm:focus:ring-8 focus:ring-indigo-500/5 outline-none transition-all"
                                 >
                                     <option value="">- PILIH STATUS CAD -</option>
                                     <option value="Proses CAD">PROSES PEMBUATAN</option>
@@ -278,7 +278,7 @@ export default function DTPanel() {
                             <textarea 
                                 onChange={(e) => updateFormField('progress_detail', e.target.value)} 
                                 value={(formData.progress_detail as string) || ''} 
-                                className="w-full p-6 border-2 border-slate-100 rounded-[2rem] bg-slate-50 text-sm font-medium focus:bg-white focus:border-indigo-500 focus:ring-8 focus:ring-indigo-500/5 outline-none transition-all h-32 resize-none placeholder:text-slate-300 shadow-inner" 
+                                className="w-full p-4 sm:p-6 border-2 border-slate-100 rounded-[2rem] bg-slate-50 text-sm font-medium focus:bg-white focus:border-indigo-500 focus:ring-4 sm:focus:ring-8 focus:ring-indigo-500/5 outline-none transition-all h-28 sm:h-32 resize-none placeholder:text-slate-300 shadow-inner"
                                 placeholder="Detail pekerjaan atau tindakan korektif..."
                             />
                         </div>
@@ -336,7 +336,7 @@ export default function DTPanel() {
                         <div>
                             <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">Total Score Achievement</p>
                             <div className="flex items-baseline gap-2">
-                                <h4 className="text-5xl font-black text-white tracking-tighter">{totalTc}</h4>
+                                <h4 className="text-4xl sm:text-5xl font-black text-white tracking-tighter">{totalTc}</h4>
                                 <span className="text-xs font-black text-indigo-300 uppercase">Points</span>
                             </div>
                         </div>
