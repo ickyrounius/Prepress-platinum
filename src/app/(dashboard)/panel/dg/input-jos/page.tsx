@@ -93,31 +93,15 @@ export default function InputJOS() {
                 <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Timeline & Teknis</h3>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tgl JOS Turun</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tanggal Terima JOS-D</label>
                 <input required type="date" onChange={(e) => updateFormField('tgl_jos', e.target.value)} className="w-full p-4 border-2 border-slate-50 rounded-2xl bg-slate-50 focus:bg-white focus:border-emerald-500 outline-none transition-all text-sm font-bold text-slate-700" />
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tgl Target</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tanggal Target JOS-D</label>
                 <input required type="date" onChange={(e) => updateFormField('tgl_target', e.target.value)} className="w-full p-4 border-2 border-slate-50 rounded-2xl bg-slate-50 focus:bg-white focus:border-rose-500 outline-none transition-all text-sm font-bold text-slate-700" />
               </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Jml Warna</label>
-                <input required type="number" onChange={(e) => updateFormField('jml_warna', e.target.value)} className="w-full p-4 border-2 border-slate-50 rounded-2xl bg-slate-50 focus:bg-white focus:border-indigo-500 outline-none transition-all text-sm font-black text-slate-700" placeholder="0" />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Jml Design</label>
-                <input required type="number" onChange={(e) => updateFormField('jml_design', e.target.value)} className="w-full p-4 border-2 border-slate-50 rounded-2xl bg-slate-50 focus:bg-white focus:border-indigo-500 outline-none transition-all text-sm font-black text-slate-700" placeholder="0" />
-              </div>
-            </div>
-
-            <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Jenis Bahan</label>
-                <div className="relative">
-                    <PaintBrush className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" weight="bold" />
-                    <input onChange={(e) => updateFormField('jenis_bahan', e.target.value)} className="w-full pl-12 pr-4 py-4 border-2 border-slate-50 rounded-2xl bg-slate-50 focus:bg-white focus:border-indigo-500 outline-none transition-all text-sm font-bold text-slate-700" placeholder="Contoh: Art Paper 150gr, Ivory, dll" />
-                </div>
             </div>
           </div>
         </div>

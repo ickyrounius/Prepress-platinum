@@ -173,6 +173,22 @@ export default function DGPanel() {
                         />
                     </div>
 
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Jml Warna</label>
+                            <input type="number" onChange={(e) => updateFormField('jml_warna', e.target.value)} className="w-full p-3 border-2 border-slate-100 rounded-xl bg-slate-50 text-sm font-black focus:bg-white focus:border-pink-500 outline-none transition-all placeholder:text-slate-300" placeholder="0" />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Jml Design</label>
+                            <input type="number" onChange={(e) => updateFormField('jml_design', e.target.value)} className="w-full p-3 border-2 border-slate-100 rounded-xl bg-slate-50 text-sm font-black focus:bg-white focus:border-pink-500 outline-none transition-all placeholder:text-slate-300" placeholder="0" />
+                        </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                        <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Jenis Bahan JOD</label>
+                        <input onChange={(e) => updateFormField('jenis_bahan', e.target.value)} className="w-full p-3 border-2 border-slate-100 rounded-xl bg-slate-50 text-sm font-bold focus:bg-white focus:border-pink-500 outline-none transition-all placeholder:text-slate-300" placeholder="Contoh: Art Paper 150gr, Ivory, dll" />
+                    </div>
+
                     <div className="space-y-4">
                         <label className="text-[11px] font-black text-slate-500 uppercase tracking-[0.15em]">Workflow Status (WIP)</label>
                         <select required 
