@@ -68,7 +68,7 @@ export function KanbanBoard({ data }: KanbanBoardProps) {
                   
                   const parentId = isDG 
                     ? (item as JosData).NO_JOS 
-                    : (item as JopData).NO_JOP || item.ID || 'N/A';
+                    : (item as JopData).NO_JOP || (item as any).id || item.ID || 'N/A';
                     
                   const childId = isDG 
                     ? (item as JosData).NO_JOD 
@@ -79,7 +79,7 @@ export function KanbanBoard({ data }: KanbanBoardProps) {
 
                   return (
                     <motion.div
-                      key={item.ID || i}
+                      key={(item as any).id || item.ID || i}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.05 }}

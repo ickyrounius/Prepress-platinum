@@ -151,9 +151,17 @@ export function useDashboardData(collectionsToFetch?: string[]) {
     });
 
     filteredItems.forEach(item => {
-      const dateVal = item.timestamp_input as { toDate?: () => Date } | number | string | undefined;
-      if (dateVal) {
-        const d = new Date(typeof dateVal === 'number' ? dateVal : String(dateVal));
+      let d: Date | null = null;
+      const ts = item.timestamp_input as any;
+      if (typeof ts === 'number' || typeof ts === 'string') {
+        d = new Date(ts);
+      } else if (ts && typeof ts.toDate === 'function') {
+        d = ts.toDate();
+      } else if (ts) {
+        d = new Date(String(ts));
+      }
+      
+      if (d && !isNaN(d.getTime())) {
         const dayMatch = days.find(day => day.dateStr === d.toDateString());
         if (dayMatch) dayMatch.jop++;
       }
