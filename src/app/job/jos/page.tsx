@@ -5,7 +5,7 @@ import { FormField } from "@/components/forms/FormComponents";
 import { useFormStore } from "@/lib/store/useFormStore";
 
 export default function InputJOS() {
-  const { updateFormField } = useFormStore();
+  const { updateFormField, formData } = useFormStore();
 
   return (
     <div className="p-4 sm:p-8 space-y-8 bg-slate-50 min-h-screen">
@@ -25,6 +25,7 @@ export default function InputJOS() {
           <FormField label="Nomor JOS">
             <input 
               required
+              value={(formData.NO_JOS as string) || ''}
               onChange={(e) => updateFormField('NO_JOS', e.target.value)} 
               className="w-full p-3 border rounded-xl bg-slate-50 text-sm font-bold uppercase focus:ring-2 focus:ring-indigo-500 outline-none" 
               placeholder="JOS-XXXX" 
@@ -35,6 +36,7 @@ export default function InputJOS() {
             <FormField label="Customer (Buyer)">
               <input 
                 required
+                value={(formData.BUYER as string) || ''}
                 onChange={(e) => updateFormField('BUYER', e.target.value)} 
                 className="w-full p-3 border rounded-xl bg-slate-50 text-sm" 
                 placeholder="Nama PT / Customer" 
@@ -45,6 +47,7 @@ export default function InputJOS() {
               <input 
                 type="date"
                 required
+                value={(formData.TGL_TARGET_JOS as string) || ''}
                 onChange={(e) => updateFormField('TGL_TARGET_JOS', e.target.value)} 
                 className="w-full p-3 border rounded-xl bg-slate-50 text-sm" 
               />
@@ -54,6 +57,7 @@ export default function InputJOS() {
           <FormField label="Nama Produk / Item">
             <input 
               required
+              value={(formData.NAMA_PRODUK as string) || ''}
               onChange={(e) => updateFormField('NAMA_PRODUK', e.target.value)} 
               className="w-full p-3 border rounded-xl bg-slate-50 text-sm font-semibold" 
               placeholder="Deskripsi Singkat Karya" 
@@ -62,6 +66,7 @@ export default function InputJOS() {
 
           <FormField label="Kebutuhan Desain / Brief">
             <textarea 
+              value={(formData.JENIS_PRODUK as string) || ''}
               onChange={(e) => updateFormField('JENIS_PRODUK', e.target.value)} 
               className="w-full p-3 border rounded-xl bg-slate-50 text-sm h-32 resize-none" 
               placeholder="Detail revisi, spesifikasi layout, warna khusus..."

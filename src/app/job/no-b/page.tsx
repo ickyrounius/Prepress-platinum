@@ -5,7 +5,7 @@ import { GlobalInputForm } from '@/components/forms/GlobalInputForm';
 import { useFormStore } from '@/lib/store/useFormStore';
 
 export default function NoBPanel() {
-  const { updateFormField } = useFormStore();
+  const { updateFormField, formData } = useFormStore();
 
   return (
     <div className="p-4 sm:p-8 space-y-6">
@@ -22,11 +22,11 @@ export default function NoBPanel() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1">
             <label className="text-[10px] font-bold text-slate-400 uppercase">REFF JOP</label>
-            <input required onChange={(e) => updateFormField('no_jop', e.target.value)} className="w-full p-3 border rounded-xl bg-slate-50 text-sm outline-none font-bold uppercase" placeholder="Masukkan ID/No JOP" />
+            <input required value={(formData.no_jop as string) || ''} onChange={(e) => updateFormField('no_jop', e.target.value)} className="w-full p-3 border rounded-xl bg-slate-50 text-sm outline-none font-bold uppercase" placeholder="Masukkan ID/No JOP" />
           </div>
           <div className="space-y-1">
             <label className="text-[10px] font-bold text-slate-400 uppercase">Tipe File</label>
-            <select required onChange={(e) => updateFormField('file_type', e.target.value)} className="w-full p-3 border rounded-xl bg-slate-50 text-sm outline-none">
+            <select required value={(formData.file_type as string) || ''} onChange={(e) => updateFormField('file_type', e.target.value)} className="w-full p-3 border rounded-xl bg-slate-50 text-sm outline-none">
               <option value="">- Pilih Tipe -</option>
               <option value="CTTP">CTTP</option>
               <option value="CTP">CTP</option>
