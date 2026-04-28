@@ -14,7 +14,7 @@ import { auth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
 
 export default function TopHeader() {
-  const { user } = useAuth();
+  const { user, name } = useAuth();
   const pathname = usePathname();
   const { toggleSidebar } = useLayoutStore();
   const [isSpinning, setIsSpinning] = useState(false);
@@ -73,7 +73,7 @@ export default function TopHeader() {
         <div className="hidden sm:block h-6 w-[1px] bg-slate-200 dark:bg-slate-700"></div>
 
         <span id="user-display" className="hidden md:inline-block text-[10px] sm:text-xs font-bold bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-300 px-2 sm:px-3 py-1 rounded-full uppercase tracking-widest border border-indigo-100 dark:border-indigo-800 truncate max-w-[180px]">
-          {user?.displayName || user?.email || "USER"}
+          {name || user?.email || "USER"}
         </span>
 
         <button 

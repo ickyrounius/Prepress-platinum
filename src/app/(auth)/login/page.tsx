@@ -5,8 +5,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { Lock, Mail, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "@/lib/firebase";
+import { useNotification } from "@/features/notification/NotificationContext";
 
 interface AuthError {
   code?: string;
@@ -14,10 +15,36 @@ interface AuthError {
 
 export default function LoginPage() {
   const router = useRouter();
+  const { notify } = useNotification();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setErrorMsg("Silakan masukkan email Anda terlebih dahulu untuk reset password.");
+      return;
+    }
+    
+    setIsLoading(true);
+    try {
+      await sendPasswordResetEmail(auth, email);
+      notify("Link reset password telah dikirim ke email Anda. Silakan cek inbox/spam.", "success");
+      setErrorMsg("");
+    } catch (error: any) {
+      console.error(error);
+      if (error.code === 'auth/user-not-found') {
+        setErrorMsg("Email tidak ditemukan dalam sistem.");
+      } else if (error.code === 'auth/invalid-email') {
+        setErrorMsg("Format email tidak valid.");
+      } else {
+        setErrorMsg("Gagal mengirim email reset. Pastikan koneksi stabil.");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,7 +131,13 @@ export default function LoginPage() {
                 <input type="checkbox" className="rounded text-primary focus:ring-primary" />
                 <span className="text-sm text-muted-foreground">Remember me</span>
               </label>
-              <a href="#" className="text-sm text-primary hover:underline">Forgot password?</a>
+              <button 
+                type="button"
+                onClick={handleForgotPassword}
+                className="text-sm text-primary font-semibold hover:underline bg-transparent border-none p-0 cursor-pointer"
+              >
+                Forgot password?
+              </button>
             </div>
 
             <button 
