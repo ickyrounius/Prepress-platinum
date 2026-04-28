@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, query, onSnapshot, orderBy } from 'firebase/firestore';
 import { 
@@ -14,16 +14,21 @@ import {
   ArrowUpDown,
   Download
 } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { JopData as WorkflowJop } from '@/features/job/jobTypes';
 import { resolveWorkflowStatus } from '@/lib/workflow';
 
-export default function MasterDataPage() {
+function MasterDataContent() {
+  const searchParams = useSearchParams();
+  const initialSearch = searchParams.get('search') || '';
+  const initialStatus = searchParams.get('status') || 'aktif';
+
   const [data, setData] = useState<WorkflowJop[]>([]);
   const [filteredData, setFilteredData] = useState<WorkflowJop[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState<'aktif' | 'closed'>('aktif');
+  const [searchTerm, setSearchTerm] = useState(initialSearch);
+  const [activeTab, setActiveTab] = useState<'aktif' | 'closed'>(initialStatus === 'closed' ? 'closed' : 'aktif');
   const [totalAktif, setTotalAktif] = useState(0);
   const [totalClosed, setTotalClosed] = useState(0);
   const [picFilter, setPicFilter] = useState('');
@@ -249,5 +254,13 @@ function StatusBadge({ status }: { status: string }) {
       <Icon size={12} strokeWidth={3} />
       <span className="text-[10px] font-black uppercase tracking-widest">{status}</span>
     </div>
+  );
+}
+
+export default function MasterDataPage() {
+  return (
+    <Suspense fallback={<div className="p-20 text-center animate-pulse font-black text-slate-400">LOADING DATA MONITOR...</div>}>
+      <MasterDataContent />
+    </Suspense>
   );
 }

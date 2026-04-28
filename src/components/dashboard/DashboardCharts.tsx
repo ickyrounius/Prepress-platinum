@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
   LineChart, Line,
@@ -27,11 +28,12 @@ const itemVariants = {
 };
 
 export default function DashboardCharts({ stats, productivityData, trendData }: DashboardChartsProps) {
+  const router = useRouter();
   const workflowStatusData = [
-    { name: 'Selesai', value: stats.closed, color: '#10b981' },
-    { name: 'Review/BP', value: stats.blueprint, color: '#0ea5e9' },
-    { name: 'Proses', value: stats.process, color: '#3b82f6' },
-    { name: 'Tertunda', value: stats.hold, color: '#f59e0b' },
+    { name: 'Selesai', value: stats.closed, color: '#10b981', status: 'closed' },
+    { name: 'Review/BP', value: stats.blueprint, color: '#0ea5e9', status: 'aktif' },
+    { name: 'Proses', value: stats.process, color: '#3b82f6', status: 'aktif' },
+    { name: 'Tertunda', value: stats.hold, color: '#f59e0b', status: 'aktif' },
   ].filter(d => d.value > 0);
 
   return (
@@ -69,7 +71,12 @@ export default function DashboardCharts({ stats, productivityData, trendData }: 
                   stroke="none"
                 >
                   {workflowStatusData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={entry.color} 
+                      onClick={() => router.push(`/dashboard/data?status=${entry.status}`)}
+                      style={{ cursor: 'pointer' }}
+                    />
                   ))}
                 </Pie>
                 <RechartsTooltip
@@ -105,8 +112,30 @@ export default function DashboardCharts({ stats, productivityData, trendData }: 
                   contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
                 />
                 <Legend iconType="circle" wrapperStyle={{ fontSize: '11px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.05em' }} />
-                <Bar dataKey="tcUtama" name="Poin Utama" stackId="a" fill="#6366f1" radius={[0, 0, 8, 8]} barSize={28} isAnimationActive={true} animationDuration={2000} />
-                <Bar dataKey="tcSupport" name="Poin Help" stackId="a" fill="#c7d2fe" radius={[8, 8, 0, 0]} barSize={28} isAnimationActive={true} animationDuration={2500} />
+                <Bar 
+                  dataKey="tcUtama" 
+                  name="Poin Utama" 
+                  stackId="a" 
+                  fill="#6366f1" 
+                  radius={[0, 0, 8, 8]} 
+                  barSize={28} 
+                  isAnimationActive={true} 
+                  animationDuration={2000}
+                  onClick={(data) => router.push(`/dashboard/data?search=${data.name}`)}
+                  style={{ cursor: 'pointer' }}
+                />
+                <Bar 
+                  dataKey="tcSupport" 
+                  name="Poin Help" 
+                  stackId="a" 
+                  fill="#c7d2fe" 
+                  radius={[8, 8, 0, 0]} 
+                  barSize={28} 
+                  isAnimationActive={true} 
+                  animationDuration={2500}
+                  onClick={(data) => router.push(`/dashboard/data?search=${data.name}`)}
+                  style={{ cursor: 'pointer' }}
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -133,7 +162,11 @@ export default function DashboardCharts({ stats, productivityData, trendData }: 
               .map((pic, idx) => {
                 const total = pic.tcUtama + pic.tcSupport;
                 return (
-                  <div key={pic.name} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-transparent hover:border-amber-200 hover:bg-amber-50/30 transition-all">
+                  <div 
+                    key={pic.name} 
+                    onClick={() => router.push(`/dashboard/data?search=${pic.name}`)}
+                    className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-transparent hover:border-amber-200 hover:bg-amber-50/30 transition-all cursor-pointer group/item"
+                  >
                     <div className="flex items-center gap-4">
                       <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px] font-black">
                         #{idx + 1}

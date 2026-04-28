@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { JopData, JosData } from '@/features/job/jobTypes';
@@ -78,13 +79,16 @@ export function KanbanBoard({ data }: KanbanBoardProps) {
                   const buyer = item.BUYER || '-';
 
                   return (
-                    <motion.div
+                    <Link 
+                      href={`/dashboard/data?search=${parentId}`}
                       key={(item as any).id || item.ID || i}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.05 }}
-                      className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:border-indigo-200 transition-all cursor-pointer group relative overflow-hidden"
                     >
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.05 }}
+                        className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:border-indigo-200 transition-all cursor-pointer group relative overflow-hidden"
+                      >
                       {/* Decorative indicator */}
                       <div className={cn(
                         "absolute top-0 left-0 w-1 h-full",
@@ -135,6 +139,7 @@ export function KanbanBoard({ data }: KanbanBoardProps) {
                         </div>
                       </div>
                     </motion.div>
+                  </Link>
                   );
                 })
               )}

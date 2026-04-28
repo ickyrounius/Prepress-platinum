@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { db } from '@/lib/firebase';
 import { collection, onSnapshot, query } from 'firebase/firestore';
@@ -83,31 +84,34 @@ const StatCard = ({ title, value, icon: Icon, colorClass }: StatCardProps) => {
     return () => clearInterval(timer);
   }, [value]);
 
+  const href = title.toLowerCase().includes('closed') ? '/dashboard/data?status=closed' : '/dashboard/data?status=aktif';
   return (
-    <motion.div
-      variants={itemVariants}
-      whileHover={{ y: -5, scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-      className="bg-white dark:bg-slate-800 p-5 rounded-[2rem] border border-slate-100 dark:border-slate-700 shadow-sm relative overflow-hidden group hover:shadow-xl hover:border-indigo-100 dark:hover:border-indigo-700 transition-all cursor-default"
-    >
-      <div className={cn(
-        "absolute top-0 right-0 w-16 h-16 rounded-full -mr-8 -mt-8 opacity-10 transition-transform group-hover:scale-150 group-hover:opacity-20",
-        styles.orb
-      )} />
-      
-      <div className="flex justify-between items-center relative z-10">
+    <Link href={href}>
+      <motion.div
+        variants={itemVariants}
+        whileHover={{ y: -5, scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className="bg-white dark:bg-slate-800 p-5 rounded-[2rem] border border-slate-100 dark:border-slate-700 shadow-sm relative overflow-hidden group hover:shadow-xl hover:border-indigo-100 dark:hover:border-indigo-700 transition-all cursor-pointer"
+      >
         <div className={cn(
-          "w-10 h-10 rounded-xl flex items-center justify-center transition-all shadow-inner",
-          styles.icon
-        )}>
-          <Icon weight="bold" size={20} />
+          "absolute top-0 right-0 w-16 h-16 rounded-full -mr-8 -mt-8 opacity-10 transition-transform group-hover:scale-150 group-hover:opacity-20",
+          styles.orb
+        )} />
+        
+        <div className="flex justify-between items-center relative z-10">
+          <div className={cn(
+            "w-10 h-10 rounded-xl flex items-center justify-center transition-all shadow-inner",
+            styles.icon
+          )}>
+            <Icon weight="bold" size={20} />
+          </div>
+          <div className="text-right">
+              <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">{displayValue.toLocaleString()}</h3>
+              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{title}</p>
+          </div>
         </div>
-        <div className="text-right">
-            <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">{displayValue.toLocaleString()}</h3>
-            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{title}</p>
-        </div>
-      </div>
-    </motion.div>
+      </motion.div>
+    </Link>
   );
 };
 

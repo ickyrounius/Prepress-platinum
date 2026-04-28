@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Files, CheckCircle, PencilCircle, Gear, HandPalm, Pulse } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
@@ -50,14 +51,15 @@ export default function StatsGrid({ stats }: StatsGridProps) {
       >
         {statCards.map((card) => {
           const colors = getKPIColorClasses(card.color);
+          const href = card.id === 'Closed' ? '/dashboard/data?status=closed' : '/dashboard/data?status=aktif';
           return (
-            <motion.div
-              key={card.id}
-              variants={itemVariants}
-              whileHover={{ y: -8, scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="relative overflow-hidden bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-100 transition-all hover:shadow-2xl hover:border-indigo-100 group cursor-default"
-            >
+            <Link href={href} key={card.id}>
+              <motion.div
+                variants={itemVariants}
+                whileHover={{ y: -8, scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="relative overflow-hidden bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-100 transition-all hover:shadow-2xl hover:border-indigo-100 group cursor-pointer h-full"
+              >
               <div className={cn(
                 "absolute top-0 right-0 w-24 h-24 rounded-full -mr-12 -mt-12 transition-all group-hover:scale-150 group-hover:opacity-40 opacity-20",
                 colors.lightBg
@@ -82,6 +84,7 @@ export default function StatsGrid({ stats }: StatsGridProps) {
                 </div>
               </div>
             </motion.div>
+          </Link>
           );
         })}
       </motion.div>
