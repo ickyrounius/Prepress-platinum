@@ -188,6 +188,7 @@ const StaticSection = ({ label, items, pathname, closeSidebar, color = 'text-sla
 
 const COMMON_MENU: MenuItem[] = [
   { name: 'Dashboard',      href: '/',             icon: House },
+  { name: 'Data Monitor',   href: '/dashboard/data', icon: LayoutDashboard },
   { name: 'Analytics',      href: '/analytics',    icon: BarChart },
   { name: 'SOP Wiki',       href: '/docs/sop',     icon: Book },
 ];
