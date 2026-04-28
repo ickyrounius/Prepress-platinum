@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, query, onSnapshot, orderBy } from 'firebase/firestore';
 import { 
@@ -14,15 +14,21 @@ import {
   ArrowUpDown,
   Download
 } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { WorkflowJop } from '@/lib/types/schema';
+import { JopData as WorkflowJop } from '@/features/job/jobTypes';
+import { resolveWorkflowStatus } from '@/lib/workflow';
 
-export default function MasterDataPage() {
+function MasterDataContent() {
+  const searchParams = useSearchParams();
+  const initialSearch = searchParams.get('search') || '';
+  const initialStatus = searchParams.get('status') || 'aktif';
+
   const [data, setData] = useState<WorkflowJop[]>([]);
   const [filteredData, setFilteredData] = useState<WorkflowJop[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState<'aktif' | 'closed'>('aktif');
+  const [searchTerm, setSearchTerm] = useState(initialSearch);
+  const [activeTab, setActiveTab] = useState<'aktif' | 'closed'>(initialStatus === 'closed' ? 'closed' : 'aktif');
   const [totalAktif, setTotalAktif] = useState(0);
   const [totalClosed, setTotalClosed] = useState(0);
   const [picFilter, setPicFilter] = useState('');
@@ -33,13 +39,13 @@ export default function MasterDataPage() {
     
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const allData = snapshot.docs.map(doc => ({
-        id: doc.id,
+        ID: doc.id,
         ...doc.data()
       })) as unknown as WorkflowJop[];
       
       setData(allData);
-      setTotalAktif(allData.filter((item) => item.ST_WORKFLOW !== 'Closed').length);
-      setTotalClosed(allData.filter((item) => item.ST_WORKFLOW === 'Closed').length);
+      setTotalAktif(allData.filter((item) => resolveWorkflowStatus(item as Record<string, unknown>, 'DT').toUpperCase() !== 'CLOSED').length);
+      setTotalClosed(allData.filter((item) => resolveWorkflowStatus(item as Record<string, unknown>, 'DT').toUpperCase() === 'CLOSED').length);
       setLoading(false);
     });
 
@@ -48,12 +54,20 @@ export default function MasterDataPage() {
 
   useEffect(() => {
     const result = data.filter((item) => {
-      const matchesTab = activeTab === 'aktif' ? item.ST_WORKFLOW !== 'Closed' : item.ST_WORKFLOW === 'Closed';
+      const status = resolveWorkflowStatus(item as Record<string, unknown>, 'DT').toUpperCase() || 'OPEN';
+      const matchesTab = activeTab === 'aktif' ? status !== 'CLOSED' : status === 'CLOSED';
+      
+      const noJop = item.NO_JOP || item.no_jop || item.ID || '';
+      const buyer = item.BUYER || item.buyer || '';
+      const product = item.NAMA_JOP || item.produk || item.nama_produk || '';
+      
       const matchesSearch = !searchTerm || 
-        (item.NO_JOP?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (item.BUYER?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (item.NAMA_JOP?.toLowerCase().includes(searchTerm.toLowerCase()));
-      const matchesPIC = !picFilter || item.PIC_UTAMA === picFilter;
+        (String(noJop).toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (String(buyer).toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (String(product).toLowerCase().includes(searchTerm.toLowerCase()));
+        
+      const pic = item.PIC_UTAMA || item.pic_utama || '';
+      const matchesPIC = !picFilter || pic === picFilter;
       
       return matchesTab && matchesSearch && matchesPIC;
     });
@@ -168,39 +182,42 @@ export default function MasterDataPage() {
                 ) : (
                   filteredData.map((item, idx) => (
                     <motion.tr 
-                      key={item.id}
+                      key={item.ID || idx}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: idx * 0.03 }}
                       className="group hover:bg-slate-50/50 transition-colors"
                     >
                       <td className="px-6 py-5">
-                        <StatusBadge status={item.ST_WORKFLOW || 'OPEN'} />
+                        <StatusBadge status={resolveWorkflowStatus(item as Record<string, unknown>, 'DT') || 'OPEN'} />
                       </td>
                       <td className="px-6 py-5">
                         <div className="flex flex-col">
-                          <span className="text-sm font-black text-slate-800 tracking-tight">{item.NO_JOP}</span>
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{item.TIPE_JOP}</span>
+                          <span className="text-sm font-black text-slate-800 tracking-tight">{(item.NO_JOP || item.no_jop || item.ID) as string}</span>
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{(item.TIPE_JOP || item.tipe_jop) as string}</span>
                         </div>
                       </td>
                       <td className="px-6 py-5">
                         <div className="flex flex-col">
-                          <span className="text-sm font-bold text-slate-700">{item.BUYER}</span>
-                          <span className="text-xs text-slate-400 line-clamp-1">{item.NAMA_JOP}</span>
+                          <span className="text-sm font-bold text-slate-700">{(item.BUYER || item.buyer) as string}</span>
+                          <span className="text-xs text-slate-400 line-clamp-1">
+                            {(item.NAMA_JOP || item.produk || item.nama_produk) as string}
+                            {item.TOTAL_KARTON_BOX || item.total_karton_box ? ` - ${item.TOTAL_KARTON_BOX || item.total_karton_box} Box` : ''}
+                          </span>
                         </div>
                       </td>
                       <td className="px-6 py-5">
                         <div className="flex items-center gap-2">
                           <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-500 uppercase">
-                            {item.PIC_UTAMA?.substring(0, 2) || '--'}
+                            {String(item.PIC_UTAMA || item.pic_utama || '--').substring(0, 2)}
                           </div>
-                          <span className="text-xs font-bold text-slate-600 uppercase tracking-widest">{item.PIC_UTAMA || 'Not Assigned'}</span>
+                          <span className="text-xs font-bold text-slate-600 uppercase tracking-widest">{(item.PIC_UTAMA || item.pic_utama || 'Not Assigned') as string}</span>
                         </div>
                       </td>
                       <td className="px-6 py-5">
                         <div className="flex items-center gap-2 text-slate-500">
                           <Clock size={14} className="text-slate-300" />
-                          <span className="text-xs font-medium">{item.TGL_TARGET}</span>
+                          <span className="text-xs font-medium">{(item.TGL_TARGET || item.tgl_target || item.TGL_TARGET_JOP) as string}</span>
                         </div>
                       </td>
                       <td className="px-6 py-5 text-right">
@@ -237,5 +254,13 @@ function StatusBadge({ status }: { status: string }) {
       <Icon size={12} strokeWidth={3} />
       <span className="text-[10px] font-black uppercase tracking-widest">{status}</span>
     </div>
+  );
+}
+
+export default function MasterDataPage() {
+  return (
+    <Suspense fallback={<div className="p-20 text-center animate-pulse font-black text-slate-400">LOADING DATA MONITOR...</div>}>
+      <MasterDataContent />
+    </Suspense>
   );
 }

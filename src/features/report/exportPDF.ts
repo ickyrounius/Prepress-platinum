@@ -1,17 +1,15 @@
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 // Reusable function to export standard table data to PDF with official branding
-export async function exportToPDF(
+export function exportToPDF(
   title: string, 
   columns: string[], 
   data: (string | number | boolean | null)[][], 
   filename: string = 'Laporan.pdf',
   metadata?: Record<string, string>
 ) {
-  // Lazy load jspdf to avoid circular structure errors during build
-  const { default: jsPDF } = await import('jspdf');
-  const { default: autoTable } = await import('jspdf-autotable');
-
-  const doc = new jsPDF('landscape') as any;
+  const doc = new jsPDF('landscape') as jsPDF & { lastAutoTable: { finalY: number } };
   const pageWidth = doc.internal.pageSize.getWidth();
   
   // 1. ADD BRANDING & HEADER

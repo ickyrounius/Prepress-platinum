@@ -37,6 +37,8 @@ const PlateCounter = ({ label, value, name, colorClass, icon: Icon }: PlateCount
       <div className="flex items-center justify-between gap-4">
          <button 
             type="button"
+            title="Kurangi"
+            aria-label="Kurangi Jumlah"
             onClick={() => updateFormField(name, Math.max(0, val - 1))}
             className="w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center text-slate-400 hover:bg-slate-50 transition-colors"
          >
@@ -44,12 +46,16 @@ const PlateCounter = ({ label, value, name, colorClass, icon: Icon }: PlateCount
          </button>
          <input 
             type="number"
+            title={label}
+            aria-label={label}
             value={val}
             onChange={(e) => updateFormField(name, Number(e.target.value))}
             className="w-full text-center text-xl font-black text-slate-700 outline-none"
          />
          <button 
             type="button"
+            title="Tambah"
+            aria-label="Tambah Jumlah"
             onClick={() => updateFormField(name, val + 1)}
             className={`w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-md transition-all active:scale-90 ${colorClass.replace('text-', 'bg-')}`}
          >
@@ -71,7 +77,7 @@ export default function ETCHINGPanel() {
   }, [role, updateFormField]);
 
   return (
-    <div className="p-4 sm:p-8 space-y-8 animate-in fade-in duration-700">
+    <div className="space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col gap-2 mb-4">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 bg-amber-500 text-white rounded-[1.25rem] flex items-center justify-center shadow-lg shadow-amber-200">
@@ -87,7 +93,9 @@ export default function ETCHINGPanel() {
       <GlobalInputForm
         title="Update Progress ETCHING"
         collectionName="proses_etching_b"
-        autoGenPrefix="ETC-PROC"
+        autoGenPrefix="PP-ETC"
+        isProgressUpdate={true}
+        syncRole="prepress"
       >
         <div className="space-y-8">
           <div className="bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100 space-y-6">
@@ -119,6 +127,7 @@ export default function ETCHINGPanel() {
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 text-amber-600">Status Prepress</label>
                 <select 
                   required 
+                  title="Status Prepress"
                   onChange={(e) => updateFormField('status_workflow', normalizeWorkflowStatusInput(e.target.value))} 
                   value={(formData.status_workflow as string) || ''}
                   className="w-full p-4 border-2 border-amber-100 rounded-2xl bg-white text-sm font-black text-amber-600 focus:border-amber-500 outline-none transition-all cursor-pointer shadow-sm"

@@ -1,0 +1,53 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "description": "Canonical user document schema for T_USERS collection."
+  },
+  "collection": "T_USERS",
+  "document_id": "firebase_auth_uid",
+  "roles": [
+    "ADMIN",
+    "DEVELOPER",
+    "MANAGER",
+    "ADMIN DT",
+    "ADMIN DG",
+    "ADMIN PREPRESS",
+    "SPV DT",
+    "DT",
+    "CAD",
+    "SPV DG",
+    "DG",
+    "DS",
+    "SPV PREPRESS",
+    "KOORDINATOR",
+    "PRODUCTION",
+    "OP CTP",
+    "OP CTCP",
+    "OP FLEXO",
+    "OP SCREEN",
+    "OP ETCHING",
+    "QC",
+    "SUPPORT DESIGN",
+    "GMG",
+    "CNC",
+    "BLUEPRINT"
+  ],
+  "document_shape": {
+    "UID": "string",
+    "NAMA": "string",
+    "EMAIL": "string",
+    "KATEGORI": "one_of_roles",
+    "ACTIVE": "boolean",
+    "CREATED_AT": "ISO-8601 string",
+    "UPDATED_AT": "epoch milliseconds"
+  },
+  "example": {
+    "UID": "auth_uid_123",
+    "NAMA": "Ricky",
+    "EMAIL": "ricky@company.com",
+    "KATEGORI": "ADMIN DT",
+    "ACTIVE": true,
+    "CREATED_AT": "2026-04-14T08:00:00.000Z",
+    "UPDATED_AT": 1776153600000
+  }
+}

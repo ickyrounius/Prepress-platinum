@@ -8,7 +8,7 @@ import { db } from '@/lib/firebase';
 import { useAuth } from '@/features/auth/AuthContext';
 import { recordAuditLog } from '@/features/audit-log/auditLogService';
 import { collection, query, onSnapshot } from 'firebase/firestore';
-import { normalizeWorkflowStatusInput } from '@/lib/workflow';
+import { normalizeWorkflowStatusInput, resolveWorkflowStatus } from '@/lib/workflow';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Stack, 
@@ -85,7 +85,7 @@ export default function PrepressInternal() {
             }> = [];
             snapshot.forEach(doc => {
                 const data = doc.data();
-                const status = (data.status_dg || data.ST_WORKFLOW || data.status_dt || '').toUpperCase();
+                const status = resolveWorkflowStatus(data as Record<string, unknown>, col.name === 'proses_jod' ? 'DG' : 'DT').toUpperCase();
                 
                 // Only show jobs that are DONE but not yet in prepress (logic check simplified for demo)
                 if (['DONE', 'CLOSED', 'SELESAI', 'SELESAI LAYOUT', 'SELESAI CAD'].includes(status)) {
@@ -162,7 +162,7 @@ export default function PrepressInternal() {
                 <Stack className="text-indigo-400" weight="fill" size={16} />
                 <span className="text-[10px] font-black text-indigo-100 uppercase tracking-[0.2em]">Assignment & Control Panel</span>
             </div>
-            <h1 className="text-5xl font-black text-white tracking-tighter leading-none">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tighter leading-none">
                 Prepress Production <br />
                 <span className="text-indigo-400">Control Center</span>
             </h1>
@@ -329,7 +329,7 @@ export default function PrepressInternal() {
 
         {/* Right Column: Waiting List / Queue */}
         <motion.div variants={itemVariants} className="space-y-6">
-            <div className="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-xl min-h-[600px] flex flex-col group">
+            <div className="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-xl min-h-0 flex flex-col group">
                 <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center gap-4">
                         <div className="w-12 h-12 bg-emerald-50 text-emerald-500 rounded-2xl flex items-center justify-center shadow-inner group-hover:bg-emerald-500 group-hover:text-white transition-all">
@@ -342,7 +342,7 @@ export default function PrepressInternal() {
                     </div>
                 </div>
 
-                <div className="flex-1 space-y-4 overflow-y-auto pr-2 custom-scrollbar">
+                <div className="space-y-4 pr-2 custom-scrollbar">
                     {loading ? (
                         <div className="h-full flex flex-col items-center justify-center gap-4 opacity-50">
                             <Pulse size={48} className="text-emerald-500 animate-pulse" />

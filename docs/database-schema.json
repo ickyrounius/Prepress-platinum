@@ -1,0 +1,176 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "description": "Prepress relational schema for Firestore (main) + Realtime Database (notifications/active workload)."
+  },
+  "firestore": {
+    "workflows_jos": {
+      "{NO_JOS}": {
+        "id": "NO_JOS",
+        "tipe_jos": "Jasa|Local|Export",
+        "tgl_no_jos": "YYYY-MM-DD",
+        "tgl_target_no_jos": "YYYY-MM-DD",
+        "buyer": "string",
+        "jumlah_warna": 0,
+        "jumlah_design": 0,
+        "jenis_bahan": "string",
+        "workflow_stage": "WORKFLOW",
+        "status_workflow": "On Process|Hold|Overdue|Closed",
+        "child_jod_ids": [
+          "NO_JOD"
+        ],
+        "created_by": "uid",
+        "created_at": 0,
+        "updated_at": 0
+      }
+    },
+    "proses_jod": {
+      "{NO_JOD}": {
+        "id": "NO_JOD",
+        "no_jos_id": "NO_JOS",
+        "process_stage": "PROSES",
+        "pic_utama_uid": "uid",
+        "pic_support_uid": "uid",
+        "status_dg": "prosess|preview|revisi|selesai",
+        "status_qc": "approved|reject|pending",
+        "catatan_spv_dg_dt": "string",
+        "catatan_dg": "string",
+        "catatan_qc": "string",
+        "operator_uid": "uid",
+        "timestamp_input": 0
+      }
+    },
+    "workflows_jop": {
+      "{NO_JOP}": {
+        "id": "NO_JOP",
+        "source_jos_ids": [
+          "NO_JOS"
+        ],
+        "tipe_jop": "Export|Jasa|Local|SMS|Karton_Box",
+        "tgl_no_jop": "YYYY-MM-DD",
+        "tgl_target_no_jop": "YYYY-MM-DD",
+        "buyer": "string",
+        "nama_produk": "string",
+        "jenis_input": "Baru|ReLayout",
+        "workflow_stage": "WORKFLOW",
+        "status_workflow": "On Process|Hold|Overdue|Closed",
+        "child_no_b_ids": [
+          "NO_B"
+        ],
+        "created_by": "uid",
+        "created_at": 0,
+        "updated_at": 0
+      }
+    },
+    "proses_b": {
+      "{NO_JOP}_{NO_B}": {
+        "id": "NO_JOP_NO_B",
+        "no_jop_id": "NO_JOP",
+        "no_b": "NO_B",
+        "process_stage": "PROSES",
+        "status_no_b": "Baru|Ganti",
+        "proses_pengerjaan": "CTP|CTCP|FLEXO|ETCHING|SCREEN",
+        "status_dt": "prosess|blueprint|revisi|selesai",
+        "status_cad": "prosess|revisi|selesai",
+        "status_prepress": "Baik|Rusak|Ganti",
+        "status_tahapan_prepress": "RIP|Expose & Drying|QC|Selesai",
+        "catatan_dt": "string",
+        "catatan_cad": "string",
+        "catatan_prepress": "string",
+        "catatan_qc": "string",
+        "operator_uid": "uid",
+        "timestamp_input": 0
+      }
+    },
+    "T_USERS": {
+      "{uid}": {
+        "NAMA": "string",
+        "email": "string",
+        "KATEGORI": "SPV DT|DT|QC|CAD|SPV DG|DG|DS|CTP|CTCP|FLEXO|ETCHING|SCREEN|GMG|CNC|Blueprint|Admin",
+        "role": "SPV DT|DT|QC|CAD|SPV DG|DG|DS|CTP|CTCP|FLEXO|ETCHING|SCREEN|GMG|CNC|Blueprint|Admin",
+        "permissions": [
+          "string"
+        ],
+        "active": true,
+        "updated_at": 0
+      }
+    },
+    "audit_logs": {
+      "{logId}": {
+        "actor_uid": "uid",
+        "action": "create|update|delete|approve|reject|export_pdf",
+        "entity_type": "workflows_jos|workflows_jop|proses_jod|proses_b|users",
+        "entity_id": "string",
+        "before": {},
+        "after": {},
+        "timestamp": 0
+      }
+    }
+  },
+  "realtime_database": {
+    "notifications": {
+      "{uid}": {
+        "{notificationId}": {
+          "message": "string",
+          "read": false,
+          "entity_type": "JOS|JOP|JOD|NO_B|SYSTEM",
+          "entity_id": "string",
+          "timestamp": 0
+        }
+      }
+    },
+    "active_jobs": {
+      "workflows_jos": {
+        "{NO_JOS}": {
+          "status_workflow": "On Process|Hold|Overdue",
+          "updated_at": 0
+        }
+      },
+      "workflows_jop": {
+        "{NO_JOP}": {
+          "status_workflow": "On Process|Hold|Overdue",
+          "updated_at": 0
+        }
+      },
+      "proses_jod": {
+        "{NO_JOD}": {
+          "status_dg": "prosess|preview|revisi",
+          "status_qc": "pending|reject|approved",
+          "updated_at": 0
+        }
+      },
+      "proses_b": {
+        "{NO_JOP}_{NO_B}": {
+          "status_dt": "prosess|blueprint|revisi|selesai",
+          "status_prepress": "Baik|Rusak|Ganti",
+          "updated_at": 0
+        }
+      }
+    }
+  },
+  "reporting_indexes": {
+    "dashboard_stats_daily": {
+      "{YYYY-MM-DD}": {
+        "jop_closed": 0,
+        "jop_export": 0,
+        "jop_jasa": 0,
+        "jop_local": 0,
+        "jop_on_process": 0,
+        "jop_hold": 0,
+        "jop_overdue": 0,
+        "jop_on_time": 0
+      }
+    },
+    "operator_workload_daily": {
+      "{YYYY-MM-DD}_{operatorUid}": {
+        "operator_uid": "uid",
+        "operator_name": "string",
+        "department": "DG|DT|PREPRESS",
+        "count_main": 0,
+        "count_support": 0,
+        "count_closed": 0,
+        "updated_at": 0
+      }
+    }
+  }
+}

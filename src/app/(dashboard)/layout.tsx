@@ -31,7 +31,7 @@ export default function DashboardLayout({
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-900 w-full relative z-[999]">
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 w-full relative z-[999]">
         <div className="animate-spin rounded-full h-12 w-12 border-4 border-indigo-100 border-t-indigo-600"></div>
       </div>
     );
@@ -42,21 +42,13 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="flex bg-background min-h-screen text-foreground relative w-full overflow-hidden">
+    <div className="relative flex min-h-screen w-full items-start bg-background text-foreground">
       <Sidebar />
       
-      {/* Mobile Backdrop Overlay */}
-      {isSidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 lg:hidden transition-opacity" 
-          onClick={closeSidebar}
-        />
-      )}
-
-      <div className="flex-1 flex flex-col min-w-0 w-full">
+      <div className="flex min-h-screen w-full min-w-0 flex-1 flex-col">
         <TopHeader />
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
-          <div className="max-w-7xl mx-auto w-full animate-fade-in">
+        <main className="flex-1 px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+          <div className="mx-auto w-full max-w-[1400px] animate-fade-in">
             {children}
           </div>
         </main>

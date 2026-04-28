@@ -97,13 +97,13 @@ export async function generateProductionReport(type: ProductionType, dateRange?:
         return format(val.toDate(), 'dd/MM/yyyy');
       }
       return val ?? '-';
-    });
+    }) as (string | number | boolean | null)[];
   });
 
   exportToPDF(
     `Laporan Produksi ${type}`,
     columns,
-    tableData as any[][],
+    tableData,
     `Log_${type}_${format(new Date(), 'yyyyMMdd_HHmm')}.pdf`
   );
 }

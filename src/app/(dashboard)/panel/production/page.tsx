@@ -19,11 +19,19 @@ const departments = [
   { name: 'SCREEN', href: '/panel/production/screen', icon: MonitorPlay, color: 'sky' },
 ];
 
+const DEPT_ICON_STYLES: Record<string, string> = {
+  indigo: "bg-indigo-500 shadow-lg shadow-indigo-100",
+  emerald: "bg-emerald-500 shadow-lg shadow-emerald-100",
+  amber: "bg-amber-500 shadow-lg shadow-amber-100",
+  rose: "bg-rose-500 shadow-lg shadow-rose-100",
+  sky: "bg-sky-500 shadow-lg shadow-sky-100",
+};
+
 export default function ProductionPanelPage() {
   return (
-    <div className="p-8 space-y-8">
+    <div className="space-y-8">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-black text-slate-800 tracking-tight">Production Panels</h1>
+        <h1 className="text-3xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Production Panels</h1>
         <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Select department for production input</p>
       </div>
 
@@ -35,12 +43,12 @@ export default function ProductionPanelPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
               whileHover={{ y: -5, scale: 1.02 }}
-              className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col items-center gap-6 hover:shadow-xl transition-all cursor-pointer group"
+              className="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-700 shadow-sm flex flex-col items-center gap-6 hover:shadow-xl transition-all cursor-pointer group"
             >
-              <div className={`w-20 h-20 rounded-[2rem] flex items-center justify-center text-white bg-${dept.color}-500 shadow-lg shadow-${dept.color}-100 group-hover:scale-110 transition-transform`}>
+              <div className={`w-20 h-20 rounded-[2rem] flex items-center justify-center text-white group-hover:scale-110 transition-transform ${DEPT_ICON_STYLES[dept.color] || DEPT_ICON_STYLES.indigo}`}>
                 <dept.icon weight="bold" size={40} />
               </div>
-              <h2 className="text-xl font-black text-slate-800 uppercase tracking-widest">{dept.name}</h2>
+              <h2 className="text-xl font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest">{dept.name}</h2>
             </motion.div>
           </Link>
         ))}

@@ -3,6 +3,7 @@ import { AuthProvider } from "@/features/auth/AuthContext";
 import { NotificationProvider } from "@/features/notification/NotificationContext";
 import { ThemeProvider } from "@/features/theme/ThemeContext";
 import "./globals.css";
+import Script from "next/script";
 
 import { Outfit } from "next/font/google";
 
@@ -40,17 +41,31 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <Script id="theme-init" strategy="beforeInteractive">
+          {`
+            (function () {
+              try {
+                var stored = localStorage.getItem('theme');
+                var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                var theme = stored || (prefersDark ? 'dark' : 'light');
+                document.documentElement.classList.toggle('dark', theme === 'dark');
+                document.documentElement.style.colorScheme = theme;
+              } catch (e) {}
+            })();
+          `}
+        </Script>
+      </head>
       <body
-        suppressHydrationWarning
-        className={`${outfit.variable} font-sans antialiased text-slate-800 bg-slate-50 dark:text-slate-200 dark:bg-slate-900 transition-colors duration-300`}
+        className={`${outfit.variable} font-sans antialiased text-slate-800 bg-slate-50 dark:text-slate-200 dark:bg-slate-900`}
       >
-        <AuthProvider>
-          <NotificationProvider>
+        <NotificationProvider>
+          <AuthProvider>
             <ThemeProvider>
               {children}
             </ThemeProvider>
-          </NotificationProvider>
-        </AuthProvider>
+          </AuthProvider>
+        </NotificationProvider>
       </body>
     </html>
   );

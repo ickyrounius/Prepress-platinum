@@ -1,9 +1,11 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { JopData, JosData } from '@/features/job/jobTypes';
+import { resolveWorkflowStatus } from '@/lib/workflow';
 import { 
   FileText,
   Circle, Clock, CheckCircle, 
@@ -11,34 +13,23 @@ import {
   Stack
 } from '@phosphor-icons/react';
 
-type KanbanItem = (JopData | JosData) & { sourceType?: 'DG' | 'DT' | 'PROD' };
+export type KanbanItem = (JopData | JosData) & { sourceType?: 'DG' | 'DT' | 'PROD' };
 
 interface KanbanBoardProps {
   data: KanbanItem[];
 }
 
-export function KanbanBoard({ data }: KanbanBoardProps) {
-  const COLUMN_CONFIG = [
-    { id: 'pending', title: 'Pending / Assigned', statuses: ['ASSIGNED', 'REVIEW'], color: 'bg-slate-500', icon: Clock },
-    { id: 'prosess', title: 'On Progress', statuses: ['LAYOUT', 'PROSESS', 'PROSES'], color: 'bg-blue-500', icon: Clock },
-    { id: 'review', title: 'Waiting Review', statuses: ['BLUEPRINT', 'ACC DG&MARKETING', 'PREVIEW', 'ACC DG', 'ACC'], color: 'bg-purple-500', icon: WarningCircle },
-    { id: 'hold', title: 'Hold / Revisi', statuses: ['HOLD', 'REVISI', 'REJECT'], color: 'bg-amber-500', icon: PauseCircle },
-    { id: 'closed', title: 'Closed / Done', statuses: ['CLOSED', 'DONE', 'SELESAI'], color: 'bg-emerald-500', icon: CheckCircle },
-  ];
+const COLUMN_CONFIG = [
+  { id: 'pending', title: 'Pending / Assigned', statuses: ['ASSIGNED', 'REVIEW'], color: 'bg-slate-500', icon: Clock },
+  { id: 'prosess', title: 'On Progress', statuses: ['LAYOUT', 'PROSESS', 'PROSES'], color: 'bg-blue-500', icon: Clock },
+  { id: 'review', title: 'Waiting Review', statuses: ['BLUEPRINT', 'ACC DG&MARKETING', 'PREVIEW', 'ACC DG', 'ACC'], color: 'bg-purple-500', icon: WarningCircle },
+  { id: 'hold', title: 'Hold / Revisi', statuses: ['HOLD', 'REVISI', 'REJECT'], color: 'bg-amber-500', icon: PauseCircle },
+  { id: 'closed', title: 'Closed / Done', statuses: ['CLOSED', 'DONE', 'SELESAI'], color: 'bg-emerald-500', icon: CheckCircle },
+];
 
+export function KanbanBoard({ data }: KanbanBoardProps) {
   const getStatusValue = (item: KanbanItem) => {
-    const status = (
-      item.ST_WORKFLOW ||
-      item.ST_WF_JOP ||
-      item.ST_WF_JOS ||
-      item.st_workflow ||
-      item.status_workflow ||
-      item.status_dg ||
-      item.status_dt ||
-      item.status_cad ||
-      item.tahapan_prepress ||
-      ''
-    ) as string;
+    const status = resolveWorkflowStatus(item as Record<string, unknown>, item.sourceType);
     return status.toUpperCase();
   };
 
@@ -58,14 +49,14 @@ export function KanbanBoard({ data }: KanbanBoardProps) {
             <div className="flex items-center justify-between px-2">
               <div className="flex items-center gap-2">
                 <div className={cn("w-2 h-2 rounded-full", col.color)}></div>
-                <h3 className="text-[10px] font-black text-slate-700 dark:text-slate-200 uppercase tracking-widest">{col.title}</h3>
+                <h3 className="text-[10px] font-black text-slate-700 uppercase tracking-widest">{col.title}</h3>
               </div>
-              <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 rounded-full text-[10px] font-black">
+              <span className="px-2 py-0.5 bg-slate-100 text-slate-500 rounded-full text-[10px] font-black">
                 {items.length}
               </span>
             </div>
 
-            <div className="flex-1 bg-slate-50/50 dark:bg-slate-800/50 p-3 rounded-[2.5rem] border border-slate-100 dark:border-slate-700 space-y-4 min-h-[500px]">
+            <div className="flex-1 bg-slate-50/50 p-3 rounded-[2.5rem] border border-slate-100 space-y-4 min-h-[500px]">
               {items.length === 0 ? (
                 <div className="h-40 flex flex-col items-center justify-center text-slate-300 gap-2">
                    <Circle className="w-8 h-8 opacity-20" />
@@ -78,7 +69,7 @@ export function KanbanBoard({ data }: KanbanBoardProps) {
                   
                   const parentId = isDG 
                     ? (item as JosData).NO_JOS 
-                    : (item as JopData).NO_JOP || item.ID || 'N/A';
+                    : (item as JopData).NO_JOP || (item as any).id || item.ID || 'N/A';
                     
                   const childId = isDG 
                     ? (item as JosData).NO_JOD 
@@ -88,13 +79,16 @@ export function KanbanBoard({ data }: KanbanBoardProps) {
                   const buyer = item.BUYER || '-';
 
                   return (
-                    <motion.div
-                      key={item.ID || i}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.05 }}
-                      className="bg-white dark:bg-slate-800 p-5 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-xl hover:border-indigo-200 dark:hover:border-indigo-800 transition-all cursor-pointer group relative overflow-hidden"
+                    <Link 
+                      href={`/dashboard/data?search=${parentId}`}
+                      key={(item as any).id || item.ID || i}
                     >
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.05 }}
+                        className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:border-indigo-200 transition-all cursor-pointer group relative overflow-hidden"
+                      >
                       {/* Decorative indicator */}
                       <div className={cn(
                         "absolute top-0 left-0 w-1 h-full",
@@ -115,10 +109,10 @@ export function KanbanBoard({ data }: KanbanBoardProps) {
                              </div>
                              <div className="flex items-center gap-1 mt-0.5">
                                 <Stack size={14} weight="bold" className="text-slate-300" />
-                                <h4 className="text-[11px] font-black text-slate-800 dark:text-slate-100 uppercase line-clamp-1">{childId || 'NO-CHILD'}</h4>
+                                <h4 className="text-[11px] font-black text-slate-800 uppercase line-clamp-1">{childId || 'NO-CHILD'}</h4>
                              </div>
                           </div>
-                          <div className="w-8 h-8 bg-slate-50 dark:bg-slate-700 rounded-xl flex items-center justify-center text-slate-300 group-hover:bg-slate-100 dark:group-hover:bg-slate-600 transition-colors">
+                          <div className="w-8 h-8 bg-slate-50 rounded-xl flex items-center justify-center text-slate-300 group-hover:bg-slate-100 transition-colors">
                              <FileText size={16} weight="bold" />
                           </div>
                         </div>
@@ -127,9 +121,9 @@ export function KanbanBoard({ data }: KanbanBoardProps) {
                             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tight line-clamp-1">{String(buyer)}</p>
                         </div>
 
-                        <div className="pt-3 border-t border-slate-50 dark:border-slate-700 flex items-center justify-between">
+                        <div className="pt-3 border-t border-slate-50 flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                             <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-[8px] font-black text-slate-400">
+                             <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[8px] font-black text-slate-400">
                                 {picUtama.substring(0, 2).toUpperCase()}
                              </div>
                              <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">{picUtama}</span>
@@ -145,6 +139,7 @@ export function KanbanBoard({ data }: KanbanBoardProps) {
                         </div>
                       </div>
                     </motion.div>
+                  </Link>
                   );
                 })
               )}

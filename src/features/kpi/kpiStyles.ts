@@ -1,3 +1,5 @@
+import { calcLevelTC } from '@/lib/calculations';
+
 export type KPIColor = 'indigo' | 'emerald' | 'sky' | 'blue' | 'amber' | 'rose' | 'cyan' | 'slate';
 
 export interface KPIStyle {
@@ -72,22 +74,26 @@ export interface TCLevelInfo {
   color: string;
 }
 
+/** Presentation-layer wrapper around canonical calcLevelTC().
+ *  Adds "EMPTY" state for near-zero TC and maps levels to CSS colors. */
+const TC_LEVEL_COLORS: Record<string, string> = {
+  EMPTY: 'bg-slate-400',
+  RINGAN: 'bg-emerald-500',
+  STANDARD: 'bg-blue-500',
+  ADVANCED: 'bg-indigo-500',
+  COMPLEX: 'bg-amber-500',
+  CRITICAL: 'bg-rose-600',
+};
+
 export const getTCLevelInfo = (total: number): TCLevelInfo => {
   if (total <= 2) {
-    return { label: 'EMPTY', color: 'bg-slate-400' };
-  } else if (total <= 8) {
-    return { label: 'RINGAN', color: 'bg-emerald-500' };
-  } else if (total <= 13) {
-    return { label: 'STANDARD', color: 'bg-blue-500' };
-  } else if (total <= 18) {
-    return { label: 'ADVANCED', color: 'bg-indigo-500' };
-  } else if (total <= 23) {
-    return { label: 'COMPLEX', color: 'bg-amber-500' };
-  } else {
-    return { label: 'CRITICAL', color: 'bg-rose-600' };
+    return { label: 'EMPTY', color: TC_LEVEL_COLORS.EMPTY };
   }
+  const label = calcLevelTC(total);
+  return { label, color: TC_LEVEL_COLORS[label] || TC_LEVEL_COLORS.RINGAN };
 };
 
 export const getKPIColorClasses = (color: string): KPIStyle => {
   return KPI_COLOR_MAPPING[color] || KPI_COLOR_MAPPING.indigo;
 };
+

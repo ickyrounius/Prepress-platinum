@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore";
 import { getDatabase } from "firebase/database";
 import { getAuth } from "firebase/auth";
 import { getAnalytics } from "firebase/analytics";
@@ -18,10 +18,23 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-// Guard service initialization for build-time/SSR safety
-const db = firebaseConfig.projectId ? getFirestore(app) : (null as any);
-const rtdb = firebaseConfig.databaseURL ? getDatabase(app) : (null as any);
-const auth = firebaseConfig.apiKey ? getAuth(app) : (null as any);
+const db = getFirestore(app);
+
+// Enable offline persistence
+if (typeof window !== "undefined") {
+  enableIndexedDbPersistence(db).catch((err) => {
+    if (err.code === 'failed-precondition') {
+      // Multiple tabs open, persistence can only be enabled in one tab at a time.
+      console.warn('Firestore persistence failed: multiple tabs open');
+    } else if (err.code === 'unimplemented') {
+      // The current browser does not support all of the features required to enable persistence
+      console.warn('Firestore persistence is not supported by this browser');
+    }
+  });
+}
+
+const rtdb = getDatabase(app);
+const auth = getAuth(app);
 
 // Guard analytics for client side only
 let analytics;

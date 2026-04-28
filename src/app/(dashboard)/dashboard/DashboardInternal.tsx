@@ -21,7 +21,7 @@ import { cn } from '@/lib/utils';
 import { KanbanBoard } from '@/components/dashboard/KanbanBoard';
 import { useAuth } from '@/features/auth/AuthContext';
 import { recordAuditLog } from '@/features/audit-log/auditLogService';
-import { classifyWorkflowStatus, detectJopType, detectJosType, type JopType, type JosType } from '@/lib/workflow';
+import { classifyWorkflowStatus, detectJopType, detectJosType, resolveWorkflowStatus, type JopType, type JosType } from '@/lib/workflow';
 import { getKPIColorClasses } from '@/features/kpi/kpiStyles';
 
 interface DashboardItem extends Record<string, unknown> {
@@ -32,128 +32,34 @@ interface DashboardItem extends Record<string, unknown> {
 type JosTypeFilter = 'ALL' | JosType;
 type JopTypeFilter = 'ALL' | JopType;
 
+import { useDashboardData } from '@/hooks/useDashboardData';
+
 export default function DashboardInternal() {
   const { user } = useAuth();
-  // States
   const [viewMode, setViewMode] = useState<'overview' | 'kanban'>('overview');
-  const [rawItems, setRawItems] = useState<DashboardItem[]>([]);
-  const [josTypeFilter, setJosTypeFilter] = useState<JosTypeFilter>('ALL');
-  const [jopTypeFilter, setJopTypeFilter] = useState<JopTypeFilter>('ALL');
-  const [dateRange, setDateRange] = useState({
-    start: '',
-    end: ''
-  });
-  const filteredItems = useMemo(() => {
-    return rawItems.filter((item) => {
-      const matchedJos = josTypeFilter === 'ALL' || detectJosType(item.tipe_jos || item.TIPE_JOS) === josTypeFilter;
-      const matchedJop = jopTypeFilter === 'ALL' || detectJopType(item.no_jop || item.NO_JOP || item.id) === jopTypeFilter;
-      return matchedJos && matchedJop;
-    });
-  }, [rawItems, josTypeFilter, jopTypeFilter]);
+  
+  const {
+    filteredItems,
+    stats,
+    productivityData,
+    trendData,
+    josTypeFilter,
+    setJosTypeFilter,
+    jopTypeFilter,
+    setJopTypeFilter,
+    dateRange,
+    setDateRange,
+    resetFilters
+  } = useDashboardData();
 
-  const stats = useMemo(() => {
-    let totalLoad = 0;
-    let closedCount = 0;
-    let reviewCount = 0;
-    let processCount = 0;
-    let holdCount = 0;
-
-    filteredItems.forEach((item) => {
-      totalLoad++;
-      const bucket = classifyWorkflowStatus(
-        item.ST_WORKFLOW || item.status_dg || item.status_dt || item.status_workflow,
-        item.ST_PRO_JOP
-      );
-      if (bucket === 'closed') closedCount++;
-      else if (bucket === 'review') reviewCount++;
-      else if (bucket === 'hold') holdCount++;
-      else processCount++;
-    });
-
-    return {
-      total: totalLoad,
-      closed: closedCount,
-      blueprint: reviewCount,
-      process: processCount,
-      hold: holdCount,
-    };
-  }, [filteredItems]);
+  const workflowStatusData = useMemo(() => [
+    { name: 'Selesai', value: stats.closed, color: '#10b981' },
+    { name: 'Review/BP', value: stats.blueprint, color: '#0ea5e9' },
+    { name: 'Proses', value: stats.process, color: '#3b82f6' },
+    { name: 'Tertunda', value: stats.hold, color: '#f59e0b' },
+  ].filter(d => d.value > 0), [stats]);
 
 
-  // Derived Data & Mocking
-  const productivityData = [
-    { name: 'RK', tcUtama: 45, tcSupport: 12 },
-    { name: 'STB', tcUtama: 60, tcSupport: 5 },
-    { name: 'YD', tcUtama: 30, tcSupport: 20 },
-    { name: 'ARK', tcUtama: 70, tcSupport: 0 },
-    { name: 'TONI', tcUtama: 40, tcSupport: 15 },
-  ];
-
-  const trendData = [
-    { name: 'Mon', jop: 12 },
-    { name: 'Tue', jop: 19 },
-    { name: 'Wed', jop: 25 },
-    { name: 'Thu', jop: 22 },
-    { name: 'Fri', jop: 30 },
-    { name: 'Sat', jop: 10 },
-  ];
-
-  const workflowStatusData = [
-    { name: 'Selesai', value: stats.closed > 0 ? stats.closed : 30, color: '#10b981' },
-    { name: 'Review/BP', value: stats.blueprint > 0 ? stats.blueprint : 20, color: '#0ea5e9' },
-    { name: 'Proses', value: stats.process > 0 ? stats.process : 35, color: '#3b82f6' },
-    { name: 'Tertunda', value: stats.hold > 0 ? stats.hold : 15, color: '#f59e0b' },
-  ];
-
-  useEffect(() => {
-    const dbCollections = [
-      'proses_dt_b',
-      'proses_jod',
-      'proses_ctp_b',
-      'proses_ctcp_b',
-      'proses_flexo_b',
-      'proses_etching_b',
-      'proses_screen_b',
-    ];
-    const activeUnsubscribes: (() => void)[] = [];
-    const combinedItemsMap: Record<string, DashboardItem[]> = {
-      proses_dt_b: [],
-      proses_jod: [],
-      proses_ctp_b: [],
-      proses_ctcp_b: [],
-      proses_flexo_b: [],
-      proses_etching_b: [],
-      proses_screen_b: [],
-    };
-
-    dbCollections.forEach(colName => {
-        const q = query(
-          collection(db, colName),
-          orderBy('timestamp_input', 'desc'),
-          limit(50)
-        );
-        const unsub = onSnapshot(q, (snapshot) => {
-            const items: DashboardItem[] = [];
-            snapshot.forEach(doc => {
-                const sourceType = colName === 'proses_dt_b' ? 'DT' : colName === 'proses_jod' ? 'DG' : 'PROD';
-                items.push({ id: doc.id, sourceType, ...doc.data() } as DashboardItem);
-            });
-            combinedItemsMap[colName] = items;
-            setRawItems(Object.values(combinedItemsMap).flat());
-        }, (err) => {
-          console.error(`Error streaming ${colName}:`, err);
-        });
-        activeUnsubscribes.push(unsub);
-    });
-
-    return () => activeUnsubscribes.forEach(unsub => unsub());
-  }, []);
-
-  const resetFilters = () => {
-    setDateRange({ start: '', end: '' });
-    setJosTypeFilter('ALL');
-    setJopTypeFilter('ALL');
-  };
   const exportDashboardPDF = async () => {
     const { exportToPDF } = await import('@/features/report/exportPDF');
     const columns = ['ID', 'Type', 'Buyer', 'Status', 'Sub Status'];
@@ -161,7 +67,7 @@ export default function DashboardInternal() {
       String(item.id || '-'),
       String(item.sourceType || '-'),
       String(item.buyer || '-'),
-      String(item.status_workflow || item.status_dg || item.status_dt || item.ST_WORKFLOW || '-'),
+      resolveWorkflowStatus(item as Record<string, unknown>, String(item.sourceType || '')) || '-',
       String(item.ST_PRO_JOP || '-'),
     ]);
     await exportToPDF('Prepress Dashboard Report', columns, rows, `prepress-dashboard-${Date.now()}.pdf`);
@@ -341,7 +247,7 @@ export default function DashboardInternal() {
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 group-hover:text-indigo-500 transition-colors">{card.title}</p>
                         <h3 className={cn(
                         "text-4xl font-black transition-all group-hover:scale-110 origin-left",
-                        card.id === 'Total' ? "text-slate-800 dark:text-slate-100" : `text-${card.color}-600`
+                        card.id === 'Total' ? "text-slate-800 dark:text-slate-100" : colors.text
                         )}>{card.value}</h3>
                         <div className="mt-4 flex items-center gap-1.5 overflow-hidden">
                            <Pulse className={cn("w-3 h-3 group-hover:animate-pulse", colors.text)} weight="bold" />

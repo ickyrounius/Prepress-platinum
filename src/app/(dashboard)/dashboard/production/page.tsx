@@ -1,133 +1,92 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { db } from '@/lib/firebase';
-import { collection, onSnapshot, query } from 'firebase/firestore';
+import React, { useMemo } from 'react';
+import { motion } from 'framer-motion';
 import { 
+  Printer, 
+  Stack, 
   CheckCircle, 
-  Warning, 
-  Stack,
-  ArrowsCounterClockwise,
-  Printer,
+  Clock, 
+  Warning,
   ChartBar,
-  Users
+  Users,
+  Lightning
 } from '@phosphor-icons/react';
 import TrendChart from '@/components/dashboard/TrendChart';
 import WorkloadChart from '@/components/dashboard/WorkloadChart';
+import { KanbanBoard, type KanbanItem } from '@/components/dashboard/KanbanBoard';
+import { useDashboardData } from '@/hooks/useDashboardData';
 import { cn } from '@/lib/utils';
-import type { Icon } from '@phosphor-icons/react';
-import { KanbanBoard } from '@/components/dashboard/KanbanBoard';
+import { resolveWorkflowStatus } from '@/lib/workflow';
 
 const containerVariants = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.1,
+      staggerChildren: 0.05,
       delayChildren: 0.1
     }
   }
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } }
+  hidden: { opacity: 0, scale: 0.9, y: 10 },
+  show: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
 };
 
-interface StatCardProps {
-  title: string;
-  value: number;
-  icon: Icon;
-  colorClass: string;
-}
+const COLOR_STYLES: Record<string, { orb: string; icon: string }> = {
+  indigo: { orb: "bg-indigo-500/20", icon: "bg-indigo-50 text-indigo-500 group-hover:bg-indigo-500 group-hover:text-white dark:bg-indigo-900/40 dark:text-indigo-300" },
+  emerald: { orb: "bg-emerald-500/20", icon: "bg-emerald-50 text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white dark:bg-emerald-900/40 dark:text-emerald-300" },
+  blue: { orb: "bg-blue-500/20", icon: "bg-blue-50 text-blue-500 group-hover:bg-blue-500 group-hover:text-white dark:bg-blue-900/40 dark:text-blue-300" },
+  amber: { orb: "bg-amber-500/20", icon: "bg-amber-50 text-amber-500 group-hover:bg-amber-500 group-hover:text-white dark:bg-amber-900/40 dark:text-amber-300" },
+};
 
-const StatCard = ({ title, value, icon: Icon, colorClass }: StatCardProps) => {
-  const [displayValue, setDisplayValue] = useState(0);
-
-  useEffect(() => {
-    let start = 0;
-    const end = parseInt(value.toString());
-    if (start === end) return;
-
-    const totalMiliseconds = 1500;
-    const incrementTime = (totalMiliseconds / end);
-
-    const timer = setInterval(() => {
-      start += Math.ceil(end / 100);
-      if (start >= end) {
-        setDisplayValue(end);
-        clearInterval(timer);
-      } else {
-        setDisplayValue(start);
-      }
-    }, Math.max(incrementTime, 20));
-
-    return () => clearInterval(timer);
-  }, [value]);
-
-  return (
-    <motion.div
-      variants={itemVariants}
-      whileHover={{ y: -5, scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-xl hover:border-indigo-100 transition-all cursor-default"
-    >
+const StatCard = ({ title, value, icon: Icon, colorClass }: any) => (
+  <motion.div
+    variants={itemVariants}
+    whileHover={{ y: -5, scale: 1.05 }}
+    className="bg-white dark:bg-slate-800 p-5 rounded-[2rem] border border-slate-100 dark:border-slate-700 shadow-sm relative overflow-hidden group hover:shadow-xl transition-all cursor-default"
+  >
+    <div className={cn(
+      "absolute top-0 right-0 w-16 h-16 rounded-full -mr-8 -mt-8 opacity-10 transition-transform group-hover:scale-150 group-hover:opacity-20",
+      (COLOR_STYLES[colorClass] ?? COLOR_STYLES.indigo).orb
+    )} />
+    <div className="flex justify-between items-center relative z-10">
       <div className={cn(
-        "absolute top-0 right-0 w-24 h-24 rounded-full -mr-12 -mt-12 opacity-10 transition-transform group-hover:scale-150 group-hover:opacity-20",
-        `bg-${colorClass}-500/20`
-      )} />
-      
-      <div className="flex justify-between items-start relative z-10">
-        <div className={cn(
-          "w-12 h-12 rounded-2xl flex items-center justify-center transition-all shadow-inner",
-          `bg-${colorClass}-50 text-${colorClass}-500 group-hover:bg-${colorClass}-500 group-hover:text-white`
-        )}>
-          <Icon weight="bold" size={24} />
-        </div>
-        <div className="text-right">
-            <motion.p className="text-3xl font-black text-slate-800 tracking-tight">{displayValue.toLocaleString()}</motion.p>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{title}</p>
-        </div>
+        "w-10 h-10 rounded-xl flex items-center justify-center transition-all shadow-inner",
+        (COLOR_STYLES[colorClass] ?? COLOR_STYLES.indigo).icon
+      )}>
+        <Icon weight="bold" size={20} />
       </div>
-    </motion.div>
-  );
-};
-
-const departments = ["CTCP", "CTP", "FLEXO", "ETCHING", "SCREEN"];
+      <div className="text-right">
+          <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight">{value.toLocaleString()}</h3>
+          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{title}</p>
+      </div>
+    </div>
+  </motion.div>
+);
 
 export default function ProductionDashboard() {
-  const [activeDept, setActiveDept] = useState("CTCP");
-  const [kanbanItems, setKanbanItems] = useState<Array<Record<string, unknown>>>([]);
+  const { filteredItems, stats, trendData, productivityData } = useDashboardData(['proses_ctp_b', 'proses_ctcp_b', 'proses_flexo_b', 'proses_etching_b', 'proses_screen_b']);
 
-  useEffect(() => {
-    const deptCollectionMap: Record<string, string> = {
-      CTCP: 'proses_ctcp_b',
-      CTP: 'proses_ctp_b',
-      FLEXO: 'proses_flexo_b',
-      ETCHING: 'proses_etching_b',
-      SCREEN: 'proses_screen_b',
-    };
-    const targetCollection = deptCollectionMap[activeDept] || 'proses_prepress_b';
-    const q = query(collection(db, targetCollection));
-    const unsub = onSnapshot(q, (snapshot) => {
-      const items: Array<Record<string, unknown>> = [];
-      snapshot.forEach((doc) => {
-        items.push({ id: doc.id, sourceType: 'PROD', ...doc.data() });
-      });
-      setKanbanItems(items);
-    });
-    return () => unsub();
-  }, [activeDept]);
+  // Filter only production items (CTP, CTCP, FLEXO, etc.)
+  const prodItems = useMemo(() => {
+    return filteredItems.filter(item => item.sourceType === 'PROD');
+  }, [filteredItems]);
 
-  // Mock data scaling based on department
-  const multiplier = activeDept === "CTCP" ? 1 : activeDept === "CTP" ? 1.5 : activeDept === "FLEXO" ? 0.3 : activeDept === "ETCHING" ? 0.8 : 2.5;
+  const kanbanItems = useMemo(() => {
+    return prodItems.map(item => ({ ...item, sourceType: 'PROD' } as unknown as KanbanItem));
+  }, [prodItems]);
 
-  const stats = [
-    { title: `Total ${activeDept === 'SCREEN' ? 'Screen' : 'Plate'}`, value: Math.round(5420 * multiplier), icon: Stack, color: "indigo" },
-    { title: `Good ${activeDept === 'SCREEN' ? 'Screen' : 'Plate'}`, value: Math.round(5100 * multiplier), icon: CheckCircle, color: "emerald" },
-    { title: `Bad ${activeDept === 'SCREEN' ? 'Screen' : 'Plate'}`, value: Math.round(180 * multiplier), icon: Warning, color: "rose" },
-    { title: "Replacement (Gantian)", value: Math.round(140 * multiplier), icon: ArrowsCounterClockwise, color: "amber" },
+  // Recalculate stats for production only if needed, 
+  // but for now let's show overall production context if the user is in this view.
+  
+  const displayStats = [
+    { title: "Production Total", value: prodItems.length, icon: Stack, color: "indigo" },
+    { title: "Completed", value: prodItems.filter((i) => ['DONE', 'SELESAI', 'CLOSED'].includes(resolveWorkflowStatus(i as Record<string, unknown>, 'PROD').toUpperCase())).length, icon: CheckCircle, color: "emerald" },
+    { title: "On Process", value: prodItems.filter((i) => ['PROSESS', 'PROSES', 'ON PROCESS'].includes(resolveWorkflowStatus(i as Record<string, unknown>, 'PROD').toUpperCase())).length, icon: Clock, color: "blue" },
+    { title: "Hold/Pending", value: prodItems.filter((i) => resolveWorkflowStatus(i as Record<string, unknown>, 'PROD').toUpperCase() === 'HOLD').length, icon: Warning, color: "amber" },
   ];
 
   return (
@@ -137,101 +96,63 @@ export default function ProductionDashboard() {
       variants={containerVariants}
       className="space-y-8 pb-20"
     >
-      <motion.div variants={itemVariants} className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 bg-white p-6 rounded-[3rem] border border-slate-100 shadow-sm">
+      <motion.div variants={itemVariants} className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white dark:bg-slate-800 p-6 rounded-[2.5rem] border border-slate-100 dark:border-slate-700 shadow-sm transition-all hover:shadow-md">
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 rounded-3xl bg-indigo-600 text-white flex justify-center items-center shadow-xl shadow-indigo-100">
             <Printer weight="bold" size={28} />
           </div>
           <div>
-            <h1 className="text-3xl font-black tracking-tight text-slate-800">Production Dashboard</h1>
-            <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Monitoring Output {activeDept}</span>
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            </div>
+            <h1 className="text-3xl font-black tracking-tight text-slate-800 dark:text-slate-100">Production Dashboard</h1>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Overall Production Department Performance</p>
           </div>
-        </div>
-        
-        {/* Department Switcher */}
-        <div className="flex p-1.5 bg-slate-100 border border-slate-200 rounded-[1.5rem] shadow-inner">
-          {departments.map(dept => (
-            <button
-              key={dept}
-              onClick={() => setActiveDept(dept)}
-              className={cn(
-                "px-5 py-2.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all",
-                activeDept === dept 
-                  ? "bg-white text-indigo-600 shadow-md scale-105 z-10"
-                  : "text-slate-400 hover:text-slate-600"
-              )}
-            >
-              {dept}
-            </button>
-          ))}
         </div>
       </motion.div>
 
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeDept}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.3 }}
-          className="space-y-8"
-        >
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {stats.map((stat, i) => (
-              <StatCard 
-                key={i} 
-                title={stat.title} 
-                value={stat.value} 
-                icon={stat.icon} 
-                colorClass={stat.color} 
-              />
-            ))}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {displayStats.map((stat, i) => (
+          <StatCard key={i} {...stat} />
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <motion.div variants={itemVariants} className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-[3rem] p-10 shadow-sm hover:shadow-md transition-shadow group">
+          <div className="flex items-center gap-4 mb-8">
+              <div className="w-12 h-12 bg-indigo-50 text-indigo-500 rounded-2xl flex items-center justify-center shadow-inner group-hover:bg-indigo-500 group-hover:text-white transition-all">
+                  <ChartBar weight="bold" size={24} />
+              </div>
+              <div>
+                <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 uppercase tracking-tight">Tren Produksi</h3>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Aktivitas Output Kolektif</p>
+              </div>
           </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <motion.div variants={itemVariants} className="bg-white border border-slate-100 rounded-[3rem] p-10 shadow-sm hover:shadow-md transition-shadow group">
-              <div className="flex items-center gap-4 mb-8">
-                  <div className="w-12 h-12 bg-indigo-50 text-indigo-500 rounded-2xl flex items-center justify-center shadow-inner group-hover:bg-indigo-500 group-hover:text-white transition-all">
-                      <ChartBar weight="bold" size={24} />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">Tren JOP Masuk</h3>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Aktivitas Mingguan {activeDept}</p>
-                  </div>
-              </div>
-              <div className="h-80">
-                <TrendChart />
-              </div>
-            </motion.div>
-
-            <motion.div variants={itemVariants} className="bg-white border border-slate-100 rounded-[3rem] p-10 shadow-sm hover:shadow-md transition-shadow group">
-              <div className="flex items-center gap-4 mb-8">
-                  <div className="w-12 h-12 bg-emerald-50 text-emerald-500 rounded-2xl flex items-center justify-center shadow-inner group-hover:bg-emerald-500 group-hover:text-white transition-all">
-                      <Users weight="bold" size={24} />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">Workload Operator</h3>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kapasitas Produksi {activeDept}</p>
-                  </div>
-              </div>
-              <div className="h-80">
-                <WorkloadChart />
-              </div>
-            </motion.div>
+          <div className="h-80">
+            <TrendChart data={trendData.map(d => ({ date: d.name, value: d.jop }))} label="Jobs" color="#6366f1" />
           </div>
-
-          <motion.div variants={itemVariants} className="bg-white border border-slate-100 rounded-[3rem] p-8 shadow-sm">
-            <div className="mb-6">
-              <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">Kanban Proses {activeDept}</h3>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Board khusus proses divisi produksi {activeDept}</p>
-            </div>
-            <KanbanBoard data={kanbanItems as any[]} />
-          </motion.div>
         </motion.div>
-      </AnimatePresence>
+
+        <motion.div variants={itemVariants} className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-[3rem] p-10 shadow-sm hover:shadow-md transition-shadow group">
+          <div className="flex items-center gap-4 mb-8">
+              <div className="w-12 h-12 bg-emerald-50 text-emerald-500 rounded-2xl flex items-center justify-center shadow-inner group-hover:bg-emerald-500 group-hover:text-white transition-all">
+                  <Users weight="bold" size={24} />
+              </div>
+              <div>
+                <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 uppercase tracking-tight">Beban Kerja Produksi</h3>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kapasitas Operator Terintegrasi</p>
+              </div>
+          </div>
+          <div className="h-80">
+            <WorkloadChart data={productivityData.map(d => ({ name: d.name, jobs: d.tcUtama + d.tcSupport }))} label="Total TC" color="#10b981" />
+          </div>
+        </motion.div>
+      </div>
+
+      <motion.div variants={itemVariants} className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-[3rem] p-8 shadow-sm">
+        <div className="mb-6">
+          <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 uppercase tracking-tight">Production Kanban Board</h3>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Real-time status tracking across all production lines</p>
+        </div>
+        <KanbanBoard data={kanbanItems} />
+      </motion.div>
     </motion.div>
   );
 }
