@@ -54,7 +54,7 @@ export const saveJOP = async (formData: Partial<JopData> & { IS_RELAYOUT?: boole
       BUYER: formData.BUYER || '',
       NAMA_JOP: formData.NAMA_JOP || '',
       LAST_UPDATED: serverTimestamp(),
-      ST_WORKFLOW: "REVIEW",
+      ST_WORKFLOW: "Review",
       ST_PRO_JOP: "Not Started",
       LEVEL_TC: "RINGAN",
       KT: 0, RP: 0, BS: 0, CAD: 0, LA: 0, DP: 0, TOTAL_TC: 0, REVISI_KE: 0, TC_UTAMA: 0, TC_SUPPORT: 0

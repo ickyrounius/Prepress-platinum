@@ -122,7 +122,7 @@ export function Sidebar({ className }: { className?: string }) {
       case 'SPV': return spv;
       case 'DT': return dt;
       case 'DG': return dg;
-      case 'SUPPORT_DESIGN': return ds;
+      case 'SUPPORT DESIGN': return ds;
       case 'PREPRESS': return prepress;
       case 'PRODUCTION': return production;
       case 'QC':

@@ -1,42 +1,33 @@
 import { JopData, JosData } from '../job/jobTypes';
+import { calculateDeadlinePressureScore, calculateTotalTc, DEFAULT_TC_FORMULA, type TCFormulaConfig } from '../../lib/tcFormula';
 
-export const calculateKPI = (item: JopData): Partial<JopData> => {
+export const calculateKPI = (item: JopData, tcFormula: TCFormulaConfig = DEFAULT_TC_FORMULA): Partial<JopData> => {
   const revisi = typeof item.REVISI_KE === 'number' ? item.REVISI_KE : (parseInt(String(item.REVISI_KE)) || 0);
   const laValue = Math.min(revisi + 1, 5);
-  let dpValue = 1;
   
   const ingressDate = item.TGL_MASUK_JOP || item.TGL_MASUK;
   const targetDate = item.TGL_TARGET_JOP || item.TGL_TARGET;
   const startDate = item.TGL_MULAI_B || item.TGL_MULAI;
   const finishDate = item.TGL_SELESAI_JOP || item.TGL_SELESAI_B || item.TGL_SELESAI;
 
-  if (ingressDate && targetDate) {
-    const t1 = new Date(ingressDate);
-    const t2 = new Date(targetDate);
-    if (!isNaN(t1.getTime()) && !isNaN(t2.getTime())) {
-      const diffDays = Math.ceil((t2.getTime() - t1.getTime()) / (1000 * 60 * 60 * 24));
-      if (diffDays <= 1) dpValue = 5;      
-      else if (diffDays === 2) dpValue = 4;
-      else if (diffDays === 3) dpValue = 3;
-      else if (diffDays === 4) dpValue = 2;
-      else dpValue = 1;
-    }
-  }
+  // Use shared DP calculation from tcFormula.ts (single source of truth)
+  const dpValue = calculateDeadlinePressureScore(targetDate as string | undefined, ingressDate as string | undefined);
 
-  const totalTC = Math.floor(
-    (parseFloat(String(item.KT))||0) + 
-    (parseFloat(String(item.RP))||0) + 
-    (parseFloat(String(item.BS))||0) + 
-    (parseFloat(String(item.CAD))||0) + 
-    laValue + dpValue
-  );
+  // Use shared TC calculation from tcFormula.ts with configurable weights
+  const tcValues = {
+    kt: parseFloat(String(item.KT)) || 0,
+    rp: parseFloat(String(item.RP)) || 0,
+    bs: parseFloat(String(item.BS)) || 0,
+    cad: parseFloat(String(item.CAD)) || 0,
+  };
+  const totalTC = calculateTotalTc(tcValues, laValue, dpValue, tcFormula);
 
   const levelTC = totalTC <= 8 ? "RINGAN" : (totalTC <= 13 ? "STANDARD" : (totalTC <= 18 ? "ADVANCED" : (totalTC <= 23 ? "COMPLEX" : "CRITICAL")));
   const hasSupport = !!(item.PIC_SUPPORT && item.PIC_SUPPORT !== "-");
   
   let tcUtama = totalTC;
   let tcSupport = 0;
-  const faseDT = String(item.FASE_DT || item.FAASE_DT || "").toUpperCase();
+  const faseDT = String(item.FASE_DT || "").toUpperCase();
 
   if (hasSupport) {
     if (faseDT === "FULL") {

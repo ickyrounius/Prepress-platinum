@@ -24,7 +24,7 @@ export interface JopData {
   ST_PRO_NO_B?: string;
   
   // Team
-  FAASE_DT?: string;
+  FASE_DT?: string;
   PIC_UTAMA?: string;
   PIC_SUPPORT?: string;
   
