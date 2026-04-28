@@ -41,7 +41,8 @@ const ROUTE_ACCESS_RULES: RouteAccessRule[] = [
   { prefix: "/panel/production", allow: [...ADMIN_ROLES, ...ROLE_GROUPS.prepress] },
   { prefix: "/panel/support", allow: [...ADMIN_ROLES, ...ROLE_GROUPS.support] },
   { prefix: "/panel/admin", allow: [...ADMIN_ROLES] },
-  { prefix: "/users", allow: [...ADMIN_ROLES] },
+  { prefix: "/users/performance", allow: ["*"] },
+  { prefix: "/users", allow: [...ALL_ADMIN_ROLES] },
   { prefix: "/audit-log", allow: [...ALL_ADMIN_ROLES] },
 ];
 
