@@ -19,6 +19,8 @@ import WorkloadChart from '@/components/dashboard/WorkloadChart';
 import { cn } from '@/lib/utils';
 import type { Icon } from '@phosphor-icons/react';
 import { KanbanBoard, type KanbanItem } from '@/components/dashboard/KanbanBoard';
+import { useAuth } from '@/features/auth/AuthContext';
+import { resolveWorkflowStatus, classifyWorkflowStatus } from '@/lib/workflow';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -108,6 +110,8 @@ const departments = ["CTCP", "CTP", "FLEXO", "ETCHING", "SCREEN"];
 import { useRoleStats } from '@/hooks/useRoleStats';
 
 export default function ProductionDashboard() {
+  const { user } = useAuth();
+  const [showOnlyMe, setShowOnlyMe] = useState(false);
   const [activeDept, setActiveDept] = useState("CTCP");
   
   const deptCollectionMap: Record<string, string> = {
@@ -118,18 +122,68 @@ export default function ProductionDashboard() {
     SCREEN: 'proses_screen_b',
   };
 
-  const { items: rawItems, stats: realStats, trendData, workloadData, loading } = useRoleStats(deptCollectionMap[activeDept] || 'proses_prepress_b');
+  const { items: rawItems, stats: realStats, trendData: rawTrend, workloadData, loading } = useRoleStats(deptCollectionMap[activeDept] || 'proses_prepress_b');
+
+  const filteredItems = useMemo(() => {
+    if (!showOnlyMe || !user?.displayName) return rawItems;
+    return rawItems.filter(item => 
+      String(item.pic_utama || item.PIC_UTAMA || item.operator_id || '').toUpperCase() === user.displayName?.toUpperCase()
+    );
+  }, [rawItems, showOnlyMe, user?.displayName]);
+
+  const stats = useMemo(() => {
+    if (!showOnlyMe) {
+      return [
+        { title: `Total ${activeDept === 'SCREEN' ? 'Screen' : 'Plate'}`, value: realStats.total, icon: Stack, color: "indigo" },
+        { title: `Closed`, value: realStats.closed, icon: CheckCircle, color: "emerald" },
+        { title: `On Process`, value: realStats.process, icon: Clock, color: "blue" },
+        { title: "Hold/Overdue", value: realStats.hold + realStats.overdue, icon: Warning, color: "rose" },
+      ];
+    }
+    
+    let closed = 0, process = 0, hold = 0;
+    filteredItems.forEach(item => {
+      const status = resolveWorkflowStatus(item as Record<string, unknown>, 'PROD');
+      const bucket = classifyWorkflowStatus(status, String(item.ST_PRO_JOP || item.ST_PRO_JOS || ''));
+      if (bucket === 'closed') closed++;
+      else if (bucket === 'hold') hold++;
+      else process++;
+    });
+
+    return [
+      { title: "My Total", value: filteredItems.length, icon: Stack, color: "indigo" },
+      { title: "My Closed", value: closed, icon: CheckCircle, color: "emerald" },
+      { title: "My Process", value: process, icon: Clock, color: "blue" },
+      { title: "My Hold", value: hold, icon: Warning, color: "rose" },
+    ];
+  }, [filteredItems, realStats, showOnlyMe, activeDept]);
+
+  const trendData = useMemo(() => {
+    if (!showOnlyMe) return rawTrend;
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (6 - i));
+      return { 
+        date: d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }),
+        value: 0 
+      };
+    });
+
+    filteredItems.forEach(item => {
+      const dateVal = item.DATE || item.timestamp_input;
+      if (dateVal) {
+        const d = new Date(dateVal);
+        const dayStr = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+        const point = last7Days.find(p => p.date === dayStr);
+        if (point) point.value++;
+      }
+    });
+    return last7Days;
+  }, [filteredItems, rawTrend, showOnlyMe]);
 
   const kanbanItems = useMemo(() => {
-    return rawItems.map(item => ({ ...item, sourceType: 'PROD' } as unknown as KanbanItem));
-  }, [rawItems]);
-
-  const stats = [
-    { title: `Total ${activeDept === 'SCREEN' ? 'Screen' : 'Plate'}`, value: realStats.total, icon: Stack, color: "indigo" },
-    { title: `Closed`, value: realStats.closed, icon: CheckCircle, color: "emerald" },
-    { title: `On Process`, value: realStats.process, icon: Clock, color: "blue" },
-    { title: "Hold/Overdue", value: realStats.hold + realStats.overdue, icon: Warning, color: "rose" },
-  ];
+    return filteredItems.map(item => ({ ...item, sourceType: 'PROD' } as unknown as KanbanItem));
+  }, [filteredItems]);
 
   return (
     <motion.div 
@@ -152,22 +206,43 @@ export default function ProductionDashboard() {
           </div>
         </div>
         
-        {/* Department Switcher */}
-        <div className="flex p-1.5 bg-slate-100 border border-slate-200 rounded-[1.5rem] shadow-inner">
-          {departments.map(dept => (
-            <button
-              key={dept}
-              onClick={() => setActiveDept(dept)}
+        <div className="flex flex-col sm:flex-row items-center gap-4">
+          <div className="flex items-center p-1.5 bg-slate-100 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
+            <button 
+              onClick={() => setShowOnlyMe(false)}
               className={cn(
-                "px-5 py-2.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all",
-                activeDept === dept 
-                  ? "bg-white text-indigo-600 shadow-md scale-105 z-10"
-                  : "text-slate-400 hover:text-slate-600"
+                "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                !showOnlyMe ? "bg-white dark:bg-slate-800 text-indigo-600 shadow-sm" : "text-slate-400 hover:text-slate-600"
               )}
             >
-              {dept}
+              Team View
             </button>
-          ))}
+            <button 
+              onClick={() => setShowOnlyMe(true)}
+              className={cn(
+                "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                showOnlyMe ? "bg-white dark:bg-slate-800 text-indigo-600 shadow-sm" : "text-slate-400 hover:text-slate-600"
+              )}
+            >
+              My Jobs
+            </button>
+          </div>
+          <div className="flex p-1.5 bg-slate-100 border border-slate-200 rounded-[1.5rem] shadow-inner">
+            {departments.map(dept => (
+              <button
+                key={dept}
+                onClick={() => setActiveDept(dept)}
+                className={cn(
+                  "px-5 py-2.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all",
+                  activeDept === dept 
+                    ? "bg-white text-indigo-600 shadow-md scale-105 z-10"
+                    : "text-slate-400 hover:text-slate-600"
+                )}
+              >
+                {dept}
+              </button>
+            ))}
+          </div>
         </div>
       </motion.div>
 

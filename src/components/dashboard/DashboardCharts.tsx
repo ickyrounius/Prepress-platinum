@@ -127,7 +127,7 @@ export default function DashboardCharts({ stats, productivityData, trendData }: 
             </div>
           </div>
           <div className="space-y-4">
-            {productivityData
+            {[...productivityData]
               .sort((a, b) => (b.tcUtama + b.tcSupport) - (a.tcUtama + a.tcSupport))
               .slice(0, 5)
               .map((pic, idx) => {

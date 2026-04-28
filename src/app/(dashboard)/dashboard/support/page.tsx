@@ -1,7 +1,9 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { useAuth } from '@/features/auth/AuthContext';
+import { resolveWorkflowStatus, classifyWorkflowStatus } from '@/lib/workflow';
 import { 
   Wrench, 
   Stack, 
@@ -17,7 +19,6 @@ import WorkloadChart from '@/components/dashboard/WorkloadChart';
 import { KanbanBoard, type KanbanItem } from '@/components/dashboard/KanbanBoard';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { cn } from '@/lib/utils';
-import { resolveWorkflowStatus } from '@/lib/workflow';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -68,23 +69,52 @@ const StatCard = ({ title, value, icon: Icon, colorClass }: any) => (
 );
 
 export default function SupportDashboard() {
+  const { user } = useAuth();
+  const [showOnlyMe, setShowOnlyMe] = useState(false);
   const { filteredItems, trendData, productivityData } = useDashboardData(['proses_support_b']);
 
   // Filter only support items
-  const supportItems = useMemo(() => {
+  const baseSupportItems = useMemo(() => {
     return filteredItems.filter(item => item.sourceType === 'SUPPORT');
   }, [filteredItems]);
+
+  const supportItems = useMemo(() => {
+    if (!showOnlyMe || !user?.displayName) return baseSupportItems;
+    return baseSupportItems.filter(item => 
+      String(item.pic_utama || item.PIC_UTAMA || item.operator_id || '').toUpperCase() === user.displayName?.toUpperCase()
+    );
+  }, [baseSupportItems, showOnlyMe, user?.displayName]);
 
   const kanbanItems = useMemo(() => {
     return supportItems.map(item => ({ ...item, sourceType: 'SUPPORT' } as unknown as KanbanItem));
   }, [supportItems]);
 
-  const displayStats = [
-    { title: "Support Total", value: supportItems.length, icon: Stack, color: "indigo" },
-    { title: "Completed", value: supportItems.filter((i) => ['DONE', 'SELESAI', 'CLOSED'].includes(resolveWorkflowStatus(i as Record<string, unknown>, 'SUPPORT').toUpperCase())).length, icon: CheckCircle, color: "emerald" },
-    { title: "On Process", value: supportItems.filter((i) => ['PROSESS', 'PROSES', 'ON PROCESS'].includes(resolveWorkflowStatus(i as Record<string, unknown>, 'SUPPORT').toUpperCase())).length, icon: Clock, color: "blue" },
-    { title: "Hold/Pending", value: supportItems.filter((i) => resolveWorkflowStatus(i as Record<string, unknown>, 'SUPPORT').toUpperCase() === 'HOLD').length, icon: Warning, color: "amber" },
-  ];
+  const displayStats = useMemo(() => {
+    if (!showOnlyMe) {
+      return [
+        { title: "Support Total", value: baseSupportItems.length, icon: Stack, color: "indigo" },
+        { title: "Completed", value: baseSupportItems.filter((i) => classifyWorkflowStatus(resolveWorkflowStatus(i as Record<string, unknown>, 'SUPPORT'), String(i.status || '')) === 'closed').length, icon: CheckCircle, color: "emerald" },
+        { title: "On Process", value: baseSupportItems.filter((i) => classifyWorkflowStatus(resolveWorkflowStatus(i as Record<string, unknown>, 'SUPPORT'), String(i.status || '')) === 'process').length, icon: Clock, color: "blue" },
+        { title: "Hold/Pending", value: baseSupportItems.filter((i) => classifyWorkflowStatus(resolveWorkflowStatus(i as Record<string, unknown>, 'SUPPORT'), String(i.status || '')) === 'hold').length, icon: Warning, color: "amber" },
+      ];
+    }
+
+    let closed = 0, process = 0, hold = 0;
+    supportItems.forEach(item => {
+      const status = resolveWorkflowStatus(item as Record<string, unknown>, 'SUPPORT');
+      const bucket = classifyWorkflowStatus(status, String(item.status || ''));
+      if (bucket === 'closed') closed++;
+      else if (bucket === 'hold') hold++;
+      else process++;
+    });
+
+    return [
+      { title: "My Total", value: supportItems.length, icon: Stack, color: "indigo" },
+      { title: "My Completed", value: closed, icon: CheckCircle, color: "emerald" },
+      { title: "My Process", value: process, icon: Clock, color: "blue" },
+      { title: "My Hold", value: hold, icon: Warning, color: "amber" },
+    ];
+  }, [baseSupportItems, supportItems, showOnlyMe]);
 
   return (
     <motion.div 
@@ -101,6 +131,28 @@ export default function SupportDashboard() {
           <div>
             <h1 className="text-3xl font-black tracking-tight text-slate-800 dark:text-slate-100">Support Dashboard</h1>
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Monitoring GMG, CNC & Blueprint Operations</p>
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row items-center gap-4">
+          <div className="flex items-center p-1.5 bg-slate-100 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
+            <button 
+              onClick={() => setShowOnlyMe(false)}
+              className={cn(
+                "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                !showOnlyMe ? "bg-white dark:bg-slate-800 text-indigo-600 shadow-sm" : "text-slate-400 hover:text-slate-600"
+              )}
+            >
+              Team View
+            </button>
+            <button 
+              onClick={() => setShowOnlyMe(true)}
+              className={cn(
+                "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                showOnlyMe ? "bg-white dark:bg-slate-800 text-indigo-600 shadow-sm" : "text-slate-400 hover:text-slate-600"
+              )}
+            >
+              My Jobs
+            </button>
           </div>
         </div>
       </motion.div>

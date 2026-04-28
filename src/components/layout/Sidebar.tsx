@@ -28,6 +28,7 @@ import {
   ChevronRight,
   Cpu,
   Zap,
+  LineChart,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
@@ -186,9 +187,9 @@ const StaticSection = ({ label, items, pathname, closeSidebar, color = 'text-sla
 // ─────────────────────────────────────────────────────────────────────────────
 
 const COMMON_MENU: MenuItem[] = [
-  { name: 'Dashboard',  href: '/',             icon: House },
-  { name: 'Analytics',  href: '/analytics',    icon: BarChart },
-  { name: 'SOP Wiki',   href: '/docs/sop',     icon: Book },
+  { name: 'Dashboard',      href: '/',             icon: House },
+  { name: 'Analytics',      href: '/analytics',    icon: BarChart },
+  { name: 'SOP Wiki',       href: '/docs/sop',     icon: Book },
 ];
 
 const ADMIN_MENU: MenuItem[] = [
@@ -306,7 +307,7 @@ function getOperationalMenu(role: string | null): MenuItem[] {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function Sidebar({ className }: { className?: string }) {
-  const { role, loading } = useAuth();
+  const { user, role, loading } = useAuth();
   const { isSidebarOpen, closeSidebar } = useLayoutStore();
   const pathname = usePathname();
 
@@ -385,7 +386,10 @@ export function Sidebar({ className }: { className?: string }) {
               {/* Main Menu — always visible */}
               <StaticSection
                 label="Main Menu"
-                items={COMMON_MENU}
+                items={[
+                  ...COMMON_MENU,
+                  { name: 'My Performance', href: `/users/${user?.uid}`, icon: LineChart }
+                ]}
                 pathname={pathname}
                 closeSidebar={closeSidebar}
               />

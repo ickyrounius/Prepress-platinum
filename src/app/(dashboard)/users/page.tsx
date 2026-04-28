@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, onSnapshot, doc, updateDoc, query, orderBy, limit } from 'firebase/firestore';
+import { collection, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy, limit } from 'firebase/firestore';
 import { UserTable } from '@/components/dashboard/UserTable';
 import { exportToPDF } from '@/features/report/exportPDF';
 import { useAuth } from '@/features/auth/AuthContext';
@@ -20,6 +20,7 @@ interface UserItem {
   displayName?: string;
   email?: string;
   lastLogin?: string;
+  ACTIVE?: boolean;
 }
 
 export default function UsersPage() {
@@ -41,7 +42,8 @@ export default function UsersPage() {
             displayName: d.NAMA || d.displayName || 'No Name',
             email: d.EMAIL || d.email || '-',
             KATEGORI: d.KATEGORI || d.role || 'GUEST',
-            lastLogin: d.LAST_LOGIN || d.lastLogin || '-'
+            lastLogin: d.LAST_LOGIN || d.lastLogin || '-',
+            ACTIVE: d.ACTIVE !== false // Default to true if undefined
           } as UserItem);
         });
         setUsers(usersList);
@@ -84,6 +86,51 @@ export default function UsersPage() {
     }
   };
 
+  const handleToggleStatus = async (uid: string, currentStatus: boolean) => {
+    try {
+      const userRef = doc(db, "T_USERS", uid);
+      await updateDoc(userRef, {
+        ACTIVE: !currentStatus,
+        UPDATED_AT: Date.now()
+      });
+      if (user?.uid) {
+        await recordAuditLog({
+          actorUid: user.uid,
+          action: "toggle_user_status",
+          entityType: "users",
+          entityId: uid,
+          metadata: { newStatus: !currentStatus },
+        });
+      }
+    } catch (err) {
+      console.error("Error toggling status:", err);
+      alert("Gagal mengubah status user.");
+    }
+  };
+
+  const handleDeleteUser = async (uid: string, name: string) => {
+    if (!window.confirm(`Apakah Anda yakin ingin menghapus user "${name}"? Tindakan ini tidak dapat dibatalkan.`)) {
+      return;
+    }
+
+    try {
+      await deleteDoc(doc(db, "T_USERS", uid));
+      if (user?.uid) {
+        await recordAuditLog({
+          actorUid: user.uid,
+          action: "delete_user",
+          entityType: "users",
+          entityId: uid,
+          metadata: { name },
+        });
+      }
+      alert("User berhasil dihapus.");
+    } catch (err) {
+      console.error("Error deleting user:", err);
+      alert("Gagal menghapus user. Periksa izin akses Anda.");
+    }
+  };
+
   const handleExportUsers = () => {
     const columns = ['UID', 'Display Name', 'Email', 'Role', 'Last Login'];
     const rows = users.map((u) => [u.id, u.displayName || '-', u.email || '-', u.KATEGORI || '-', u.lastLogin || '-']);
@@ -123,7 +170,7 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700 pb-10">
+    <div className="space-y-8 animate-in fade-in duration-700 pb-64">
       {/* Header Panel */}
       <div className="bg-slate-900 p-8 sm:p-12 rounded-[2.5rem] relative overflow-hidden shadow-2xl shadow-slate-200">
         <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
@@ -163,7 +210,12 @@ export default function UsersPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
       >
-        <UserTable users={users} onUpdateRole={handleUpdateRole} />
+        <UserTable 
+          users={users} 
+          onUpdateRole={handleUpdateRole} 
+          onDelete={handleDeleteUser}
+          onToggleStatus={handleToggleStatus}
+        />
       </motion.div>
 
       <div className="bg-slate-50 p-6 rounded-[2rem] border border-slate-100 flex items-center gap-4">

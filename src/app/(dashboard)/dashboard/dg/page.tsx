@@ -23,6 +23,8 @@ import WorkloadChart from '@/components/dashboard/WorkloadChart';
 import { cn } from '@/lib/utils';
 import type { Icon } from '@phosphor-icons/react';
 import { KanbanBoard, type KanbanItem } from '@/components/dashboard/KanbanBoard';
+import { resolveWorkflowStatus, classifyWorkflowStatus } from '@/lib/workflow';
+import { useAuth } from '@/features/auth/AuthContext';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -110,24 +112,71 @@ const StatCard = ({ title, value, icon: Icon, colorClass }: StatCardProps) => {
 import { useRoleStats } from '@/hooks/useRoleStats';
 
 export default function DGDashboard() {
-  const { items: rawItems, stats: realStats, trendData, workloadData, loading } = useRoleStats('proses_jod');
+  const { user } = useAuth();
+  const [showOnlyMe, setShowOnlyMe] = useState(false);
+  const { items: rawItems, stats: realStats, trendData: rawTrend, workloadData, loading } = useRoleStats('proses_jod');
+
+  const filteredItems = useMemo(() => {
+    if (!showOnlyMe || !user?.displayName) return rawItems;
+    return rawItems.filter(item => 
+      String(item.pic_utama || item.PIC_UTAMA || item.operator_id || '').toUpperCase() === user.displayName?.toUpperCase()
+    );
+  }, [rawItems, showOnlyMe, user?.displayName]);
+
+  const stats = useMemo(() => {
+    if (!showOnlyMe) {
+      return [
+        { title: "Total JOS", value: realStats.total, icon: FileText, color: "indigo" },
+        { title: "Closed", value: realStats.closed, icon: CheckCircle, color: "emerald" },
+        { title: "On Process", value: realStats.process, icon: Clock, color: "blue" },
+        { title: "Hold/Pending", value: realStats.hold, icon: WarningCircle, color: "amber" },
+        { title: "Active Today", value: rawTrend[rawTrend.length - 1]?.value || 0, icon: Lightning, color: "yellow" },
+      ];
+    }
+    
+    let closed = 0, process = 0, hold = 0;
+    filteredItems.forEach(item => {
+      const status = resolveWorkflowStatus(item as Record<string, unknown>, 'DG');
+      const bucket = classifyWorkflowStatus(status, String(item.ST_PRO_JOS || ''));
+      if (bucket === 'closed') closed++;
+      else if (bucket === 'hold') hold++;
+      else process++;
+    });
+
+    return [
+      { title: "My Total JOS", value: filteredItems.length, icon: FileText, color: "indigo" },
+      { title: "My Closed", value: closed, icon: CheckCircle, color: "emerald" },
+      { title: "My Process", value: process, icon: Clock, color: "blue" },
+      { title: "My Hold", value: hold, icon: WarningCircle, color: "amber" },
+    ];
+  }, [filteredItems, realStats, showOnlyMe, rawTrend]);
+
+  const trendData = useMemo(() => {
+    if (!showOnlyMe) return rawTrend;
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (6 - i));
+      return { 
+        date: d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }),
+        value: 0 
+      };
+    });
+
+    filteredItems.forEach(item => {
+      const dateVal = item.DATE || item.timestamp_input;
+      if (dateVal) {
+        const d = new Date(dateVal);
+        const dayStr = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+        const point = last7Days.find(p => p.date === dayStr);
+        if (point) point.value++;
+      }
+    });
+    return last7Days;
+  }, [filteredItems, rawTrend, showOnlyMe]);
 
   const kanbanItems = useMemo(() => {
-    return rawItems.map(item => ({ ...item, sourceType: 'DG' } as unknown as KanbanItem));
-  }, [rawItems]);
-
-  const stats = [
-    { title: "Total JOS", value: realStats.total, icon: FileText, color: "indigo" },
-    { title: "Closed", value: realStats.closed, icon: CheckCircle, color: "emerald" },
-    { title: "On Process", value: realStats.process, icon: Clock, color: "blue" },
-    { title: "Hold/Pending", value: realStats.hold, icon: WarningCircle, color: "amber" },
-    { title: "Total Export", value: realStats.exportCount, icon: Download, color: "sky" },
-    { title: "Total Jasa", value: realStats.jasaCount, icon: Archive, color: "rose" },
-    { title: "Total Local", value: realStats.localCount, icon: MapPin, color: "teal" },
-    { title: "Overdue", value: realStats.overdue, icon: Warning, color: "red" },
-    { title: "On Time", value: realStats.onTime, icon: CheckCircle, color: "emerald" },
-    { title: "Active Today", value: trendData[trendData.length - 1]?.value || 0, icon: Lightning, color: "yellow" },
-  ];
+    return filteredItems.map(item => ({ ...item, sourceType: 'DG' } as unknown as KanbanItem));
+  }, [filteredItems]);
 
   return (
     <motion.div 
@@ -146,9 +195,31 @@ export default function DGDashboard() {
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Design Graphic Monitoring Performance</p>
           </div>
         </div>
-        <button className="px-8 py-3 bg-slate-900 hover:bg-black text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg active:scale-95 flex items-center gap-2">
-          <Download weight="bold" /> Generate Report
-        </button>
+        <div className="flex flex-col sm:flex-row items-center gap-4">
+          <div className="flex items-center p-1.5 bg-slate-100 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
+            <button 
+              onClick={() => setShowOnlyMe(false)}
+              className={cn(
+                "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                !showOnlyMe ? "bg-white dark:bg-slate-800 text-indigo-600 shadow-sm" : "text-slate-400 hover:text-slate-600"
+              )}
+            >
+              Team View
+            </button>
+            <button 
+              onClick={() => setShowOnlyMe(true)}
+              className={cn(
+                "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                showOnlyMe ? "bg-white dark:bg-slate-800 text-indigo-600 shadow-sm" : "text-slate-400 hover:text-slate-600"
+              )}
+            >
+              My Jobs
+            </button>
+          </div>
+          <button className="px-8 py-3 bg-slate-900 hover:bg-black text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg active:scale-95 flex items-center gap-2">
+            <Download weight="bold" /> Generate Report
+          </button>
+        </div>
       </motion.div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
