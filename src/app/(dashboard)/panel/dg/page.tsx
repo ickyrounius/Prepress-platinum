@@ -153,6 +153,12 @@ export default function DGPanel() {
                                     updateFormField('revisi_ke', rev);
                                     setLaValue(Math.min(rev + 1, 5));
                                 }
+                                
+                                // Autofill newly added JOS fields
+                                if (data.jml_warna) updateFormField('jml_warna', data.jml_warna);
+                                if (data.jml_design) updateFormField('jml_design', data.jml_design);
+                                if (data.jenis_bahan) updateFormField('jenis_bahan', data.jenis_bahan);
+
                                 const dp = calculateDeadlinePressureScore(
                                     data.tgl_target_no_jos ?? data.TGL_TARGET_JOS ?? data.tgl_target,
                                     data.tgl_no_jos ?? data.TGL_MASUK_JOS ?? data.tgl_masuk
@@ -175,17 +181,26 @@ export default function DGPanel() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Jml Warna</label>
-                            <input type="number" onChange={(e) => updateFormField('jml_warna', e.target.value)} className="w-full p-3 border-2 border-slate-100 rounded-xl bg-slate-50 text-sm font-black focus:bg-white focus:border-pink-500 outline-none transition-all placeholder:text-slate-300" placeholder="0" />
+                            <input type="number" 
+                                value={(formData.jml_warna as string) || ''}
+                                onChange={(e) => updateFormField('jml_warna', e.target.value)} 
+                                className="w-full p-3 border-2 border-slate-100 rounded-xl bg-slate-50 text-sm font-black focus:bg-white focus:border-pink-500 outline-none transition-all placeholder:text-slate-300" placeholder="0" />
                         </div>
                         <div className="space-y-2">
                             <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Jml Design</label>
-                            <input type="number" onChange={(e) => updateFormField('jml_design', e.target.value)} className="w-full p-3 border-2 border-slate-100 rounded-xl bg-slate-50 text-sm font-black focus:bg-white focus:border-pink-500 outline-none transition-all placeholder:text-slate-300" placeholder="0" />
+                            <input type="number" 
+                                value={(formData.jml_design as string) || ''}
+                                onChange={(e) => updateFormField('jml_design', e.target.value)} 
+                                className="w-full p-3 border-2 border-slate-100 rounded-xl bg-slate-50 text-sm font-black focus:bg-white focus:border-pink-500 outline-none transition-all placeholder:text-slate-300" placeholder="0" />
                         </div>
                     </div>
                     
                     <div className="space-y-2">
                         <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Jenis Bahan JOD</label>
-                        <input onChange={(e) => updateFormField('jenis_bahan', e.target.value)} className="w-full p-3 border-2 border-slate-100 rounded-xl bg-slate-50 text-sm font-bold focus:bg-white focus:border-pink-500 outline-none transition-all placeholder:text-slate-300" placeholder="Contoh: Art Paper 150gr, Ivory, dll" />
+                        <input 
+                            value={(formData.jenis_bahan as string) || ''}
+                            onChange={(e) => updateFormField('jenis_bahan', e.target.value)} 
+                            className="w-full p-3 border-2 border-slate-100 rounded-xl bg-slate-50 text-sm font-bold focus:bg-white focus:border-pink-500 outline-none transition-all placeholder:text-slate-300" placeholder="Contoh: Art Paper 150gr, Ivory, dll" />
                     </div>
 
                     <div className="space-y-4">
