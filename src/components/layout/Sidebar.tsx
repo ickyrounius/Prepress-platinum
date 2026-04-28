@@ -388,7 +388,7 @@ export function Sidebar({ className }: { className?: string }) {
                 label="Main Menu"
                 items={[
                   ...COMMON_MENU,
-                  { name: 'My Performance', href: `/users/${user?.uid}`, icon: LineChart }
+                  { name: 'My Performance', href: `/users/performance?id=${user?.uid}`, icon: LineChart }
                 ]}
                 pathname={pathname}
                 closeSidebar={closeSidebar}

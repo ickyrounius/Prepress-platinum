@@ -170,7 +170,7 @@ export const UserTable = ({ users, onUpdateRole, onDelete, onToggleStatus }: Use
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-1.5">
                         <Link 
-                          href={`/users/${user.id}`}
+                          href={`/users/performance?id=${user.id}`}
                           className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all group/perf"
                           title="Lihat Performa"
                         >

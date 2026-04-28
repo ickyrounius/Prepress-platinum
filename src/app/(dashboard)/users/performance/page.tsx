@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import React, { useState, useEffect, useMemo, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, collection, query, onSnapshot } from 'firebase/firestore';
 import { motion } from 'framer-motion';
@@ -20,8 +20,9 @@ import { cn } from '@/lib/utils';
 import { resolveWorkflowStatus, classifyWorkflowStatus } from '@/lib/workflow';
 import type { DashboardItem } from '@/lib/types';
 
-export default function UserPerformancePage() {
-  const { id } = useParams();
+function UserPerformanceContent() {
+  const searchParams = useSearchParams();
+  const id = searchParams.get('id');
   const router = useRouter();
   const [userData, setUserData] = useState<any>(null);
   const [rawItems, setRawItems] = useState<DashboardItem[]>([]);
@@ -31,7 +32,7 @@ export default function UserPerformancePage() {
   useEffect(() => {
     if (!id) return;
     const fetchUser = async () => {
-      const userRef = doc(db, "T_USERS", id as string);
+      const userRef = doc(db, "T_USERS", id);
       const userSnap = await getDoc(userRef);
       if (userSnap.exists()) {
         setUserData(userSnap.data());
@@ -311,6 +312,19 @@ export default function UserPerformancePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function UserPerformancePage() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col items-center justify-center min-h-[70vh] gap-6">
+        <div className="w-16 h-16 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin" />
+        <p className="text-xs font-black text-slate-400 uppercase tracking-widest animate-pulse">Inisialisasi Halaman...</p>
+      </div>
+    }>
+      <UserPerformanceContent />
+    </Suspense>
   );
 }
 
