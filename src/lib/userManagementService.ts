@@ -5,8 +5,8 @@ import {
   getAuth,
   signOut,
 } from "firebase/auth";
-import { doc, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { doc, getDoc, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
+import { auth, db } from "@/lib/firebase";
 import { isValidUserRole } from "@/lib/userRoles";
 
 interface CreateUserInput {
@@ -21,7 +21,24 @@ interface SetUserRoleInput {
   role: string;
 }
 
+const INTERNAL_ADMIN_ROLES = new Set(["ADMIN", "DEVELOPER", "MANAGER"]);
+
+async function assertInternalAdmin() {
+  const currentUser = auth.currentUser;
+  if (!currentUser) {
+    throw new Error("Anda harus login sebagai admin internal.");
+  }
+
+  const currentUserDoc = await getDoc(doc(db, "T_USERS", currentUser.uid));
+  const actorRole = String(currentUserDoc.data()?.KATEGORI || "").toUpperCase();
+  if (!INTERNAL_ADMIN_ROLES.has(actorRole)) {
+    throw new Error("Aksi ini hanya diizinkan untuk admin internal.");
+  }
+}
+
 export const createUserByAdmin = async (payload: CreateUserInput) => {
+  await assertInternalAdmin();
+
   const email = payload.email.trim().toLowerCase();
   const name = payload.name.trim();
   const role = payload.role.trim().toUpperCase();
@@ -91,6 +108,8 @@ export const createUserByAdmin = async (payload: CreateUserInput) => {
 };
 
 export const setUserRoleByAdmin = async (payload: SetUserRoleInput) => {
+  await assertInternalAdmin();
+
   const uid = payload.uid.trim();
   const role = payload.role.trim().toUpperCase();
   if (!uid || !isValidUserRole(role)) {
