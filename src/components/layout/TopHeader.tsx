@@ -15,6 +15,40 @@ import { signOut } from "firebase/auth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
+const ROUTE_TITLES: Array<{ prefix: string; title: string }> = [
+  { prefix: "/dashboard/data", title: "DATA MONITOR" },
+  { prefix: "/dashboard/dt", title: "DASHBOARD DESIGN TEKNIK" },
+  { prefix: "/dashboard/dg", title: "DASHBOARD DESIGN GRAFIS" },
+  { prefix: "/dashboard/prepress", title: "DASHBOARD PREPRESS" },
+  { prefix: "/dashboard/production", title: "DASHBOARD PRODUKSI" },
+  { prefix: "/dashboard/support", title: "DASHBOARD SUPPORT" },
+  { prefix: "/dashboard", title: "DASHBOARD" },
+  { prefix: "/panel/admin/settings/kpi", title: "PENGATURAN KPI" },
+  { prefix: "/panel/admin", title: "ADMIN CONSOLE" },
+  { prefix: "/panel/dt/input-jop", title: "INPUT JOP BARU" },
+  { prefix: "/panel/dg/input-jos", title: "INPUT JOS BARU" },
+  { prefix: "/panel/prepress/request", title: "PERMINTAAN PREPRESS" },
+  { prefix: "/panel/prepress", title: "PANEL PREPRESS" },
+  { prefix: "/panel/production/ctp", title: "PANEL PRODUKSI CTP" },
+  { prefix: "/panel/production/ctcp", title: "PANEL PRODUKSI CTCP" },
+  { prefix: "/panel/production/flexo", title: "PANEL PRODUKSI FLEXO" },
+  { prefix: "/panel/production/screen", title: "PANEL PRODUKSI SCREEN" },
+  { prefix: "/panel/production/etching", title: "PANEL PRODUKSI ETCHING" },
+  { prefix: "/panel/production", title: "PANEL PRODUKSI" },
+  { prefix: "/panel/dt", title: "PANEL DESIGN TEKNIK" },
+  { prefix: "/panel/dg", title: "PANEL DESIGN GRAFIS" },
+  { prefix: "/panel/qc", title: "PANEL QUALITY CONTROL" },
+  { prefix: "/panel/spv", title: "PANEL SPV / KOORDINATOR" },
+  { prefix: "/panel/support", title: "PANEL SUPPORT" },
+  { prefix: "/panel/kpi", title: "PERFORMA KPI" },
+  { prefix: "/users/performance", title: "PERFORMA SAYA" },
+  { prefix: "/users", title: "MANAJEMEN PENGGUNA" },
+  { prefix: "/audit-log", title: "RIWAYAT LOG" },
+  { prefix: "/analytics", title: "ANALYTICS" },
+  { prefix: "/docs/sop", title: "SOP WIKI" },
+  { prefix: "/settings", title: "PENGATURAN APLIKASI" },
+];
+
 export default function TopHeader() {
   const { user, name } = useAuth();
   const pathname = usePathname();
@@ -24,20 +58,13 @@ export default function TopHeader() {
 
   const getPageTitle = () => {
     if (!pathname || pathname === "/") return "DASHBOARD";
-    
-    // Auto-generate title from path parts efficiently
-    const parts = pathname.split('/').filter(Boolean);
-    if (parts.length > 0) {
-      const lastPart = parts[parts.length - 1].replace(/-/g, ' ');
-      // Contextual title based on parent department
-      if (parts.includes('dg')) return `DG: ${lastPart}`;
-      if (parts.includes('dt')) return `DT: ${lastPart}`;
-      if (parts.includes('production')) return `PROD: ${lastPart}`;
-      if (parts.includes('support')) return `SUP: ${lastPart}`;
-      
-      return lastPart;
-    }
-    return "FLOWORKS PREPRESS";
+
+    const matched = ROUTE_TITLES.find((item) => pathname.startsWith(item.prefix));
+    if (matched) return matched.title;
+
+    const parts = pathname.split("/").filter(Boolean);
+    const lastPart = parts[parts.length - 1];
+    return lastPart ? lastPart.replace(/-/g, " ").toUpperCase() : "PREPRESS PLATINUM";
   };
 
   const handleRefresh = () => {

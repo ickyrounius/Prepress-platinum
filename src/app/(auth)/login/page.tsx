@@ -96,7 +96,7 @@ export default function LoginPage() {
             <div className="flex justify-center mb-4">
               <Image src="/logo.png" alt="Prepress Platinum Logo" width={180} height={80} className="h-20 w-auto object-contain drop-shadow-sm" />
             </div>
-            <p className="text-muted-foreground text-sm">Sign in to your account</p>
+            <p className="text-muted-foreground text-sm">Masuk ke akun Anda</p>
           </div>
 
           {errorMsg && (
@@ -152,14 +152,14 @@ export default function LoginPage() {
                   onChange={(e) => setRememberMe(e.target.checked)}
                   className="rounded text-primary focus:ring-primary"
                 />
-                <span className="text-sm text-muted-foreground">Remember me</span>
+                <span className="text-sm text-muted-foreground">Ingat saya</span>
               </label>
               <button 
                 type="button"
                 onClick={handleForgotPassword}
                 className="text-sm text-primary font-semibold hover:underline bg-transparent border-none p-0 cursor-pointer"
               >
-                Forgot password?
+                Lupa password?
               </button>
             </div>
 
@@ -169,8 +169,8 @@ export default function LoginPage() {
               disabled={isLoading}
               className="w-full"
             >
-              {isLoading ? "Signing in..." : (
-                <>Sign In <ArrowRight className="w-4 h-4 ml-1" /></>
+              {isLoading ? "Sedang masuk..." : (
+                <>Masuk <ArrowRight className="w-4 h-4 ml-1" /></>
               )}
             </Button>
           </form>

@@ -6,7 +6,8 @@ import { useLayoutStore } from "@/lib/store/useLayoutStore";
 import { useAuth } from "@/features/auth/AuthContext";
 import { hasRouteAccess } from "@/lib/accessControl";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import { useNotification } from "@/features/notification/NotificationContext";
 
 export default function DashboardLayout({
   children,
@@ -15,8 +16,10 @@ export default function DashboardLayout({
 }) {
   const { isSidebarOpen, closeSidebar } = useLayoutStore();
   const { user, role, loading } = useAuth();
+  const { notify } = useNotification();
   const router = useRouter();
   const pathname = usePathname();
+  const deniedPathRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -25,9 +28,13 @@ export default function DashboardLayout({
     }
 
     if (!loading && user && !hasRouteAccess(pathname || "/", role)) {
+      if (deniedPathRef.current !== pathname) {
+        notify("Akses ditolak untuk halaman ini. Anda diarahkan ke dashboard utama.", "warning");
+        deniedPathRef.current = pathname || "/";
+      }
       router.replace("/");
     }
-  }, [user, role, loading, pathname, router]);
+  }, [user, role, loading, pathname, router, notify]);
 
   if (loading) {
     return (
