@@ -4,16 +4,7 @@ import { ref, set } from 'firebase/database';
 import { generateUniqueId, DEPT_CODES } from '@/lib/types/schema';
 
 // URL Google Apps Script yang berfungsi sebagai fetcher data
-if (!process.env.NEXT_PUBLIC_GSHEET_FETCH_URL) {
-  if (typeof window !== 'undefined') {
-    console.error('NEXT_PUBLIC_GSHEET_FETCH_URL is not configured in environment variables');
-  }
-}
 const GSHEET_FETCH_URL = process.env.NEXT_PUBLIC_GSHEET_FETCH_URL || "";
-
-if (!GSHEET_FETCH_URL) {
-  throw new Error('GSheet fetcher not configured. Please set NEXT_PUBLIC_GSHEET_FETCH_URL environment variable');
-}
 
 export interface GSheetImportResult {
   success: boolean;
@@ -26,6 +17,14 @@ export interface GSheetImportResult {
  */
 export const importDataFromGSheet = async (type: 'JOP' | 'JOS'): Promise<GSheetImportResult> => {
   try {
+    if (!GSHEET_FETCH_URL) {
+      return {
+        success: false,
+        importedCount: 0,
+        error: "NEXT_PUBLIC_GSHEET_FETCH_URL belum dikonfigurasi.",
+      };
+    }
+
     const response = await fetch(`${GSHEET_FETCH_URL}?type=${type}`, {
       method: 'GET',
     });
@@ -43,6 +42,7 @@ export const importDataFromGSheet = async (type: 'JOP' | 'JOS'): Promise<GSheetI
     const batch = writeBatch(db);
     const collectionName = type === 'JOP' ? 'workflows_jop' : 'workflows_jos';
     const deptCode = type === 'JOP' ? DEPT_CODES.DT : DEPT_CODES.DG;
+    const activePayloads: Array<{ id: string; payload: Record<string, unknown> }> = [];
 
     let count = 0;
     for (const row of rows) {
@@ -72,13 +72,18 @@ export const importDataFromGSheet = async (type: 'JOP' | 'JOS'): Promise<GSheetI
           : (row.ST_WF_JOS || row.ST_WORKFLOW || '')
       ).toUpperCase();
       if (!['CLOSED', 'DONE', 'CANCEL'].includes(workflowStatus)) {
-        await set(ref(rtdb, `active_jobs/${collectionName}/${uniqueId}`), payload);
+        activePayloads.push({ id: uniqueId, payload: payload as Record<string, unknown> });
       }
       
       count++;
     }
 
     await batch.commit();
+    await Promise.all(
+      activePayloads.map((item) =>
+        set(ref(rtdb, `active_jobs/${collectionName}/${item.id}`), item.payload)
+      )
+    );
     return { success: true, importedCount: count };
 
   } catch (error: unknown) {

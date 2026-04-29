@@ -2,6 +2,7 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore";
 import { getDatabase } from "firebase/database";
 import { getAuth } from "firebase/auth";
+import { getFunctions } from "firebase/functions";
 import { getAnalytics } from "firebase/analytics";
 
 const firebaseConfig = {
@@ -35,6 +36,7 @@ if (typeof window !== "undefined") {
 
 const rtdb = getDatabase(app);
 const auth = getAuth(app);
+const functions = getFunctions(app, "asia-southeast1");
 
 // Guard analytics for client side only - properly typed to handle undefined
 let analytics: ReturnType<typeof getAnalytics> | null = null;
@@ -46,4 +48,4 @@ if (typeof window !== "undefined") {
   }
 }
 
-export { app, db, rtdb, auth, analytics };
+export { app, db, rtdb, auth, functions, analytics };

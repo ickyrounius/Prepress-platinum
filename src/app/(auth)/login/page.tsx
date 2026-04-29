@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import Image from "next/image";
 import { Lock, Mail, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -152,10 +151,7 @@ export default function LoginPage() {
           </form>
 
           <p className="text-center text-sm text-muted-foreground mt-6">
-            Don&apos;t have an account?{" "}
-            <Link href="/register" className="text-primary font-semibold hover:underline">
-              Request Access
-            </Link>
+            Akun dibuat oleh admin internal. Hubungi administrator untuk akses.
           </p>
         </div>
       </div>

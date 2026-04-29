@@ -12,8 +12,8 @@
     "locks": {
       ".read": "auth != null",
       "$jobId": {
-        ".write": "auth != null",
-        ".validate": "newData.hasChildren(['activeUser', 'timestamp'])"
+        ".write": "auth != null && ((!data.exists() && newData.exists() && newData.child('activeUser/uid').val() === auth.uid) || (data.exists() && !newData.exists() && data.child('activeUser/uid').val() === auth.uid))",
+        ".validate": "newData.hasChildren(['activeUser', 'timestamp']) && newData.child('activeUser/uid').isString() && newData.child('timestamp').isNumber()"
       }
     },
     "active_jobs": {

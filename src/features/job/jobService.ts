@@ -13,7 +13,7 @@ import {
   orderBy,
   Timestamp
 } from 'firebase/firestore';
-import { ref, set, onValue, remove } from 'firebase/database';
+import { ref, set, onValue, remove, runTransaction } from 'firebase/database';
 import { JopData, BlueprintLog, QCLog, UserLock } from './jobTypes';
 import { generateUniqueId, DEPT_CODES } from '@/lib/types/schema';
 
@@ -148,14 +148,36 @@ export const lockJOP = async (
   id: string,
   userDetails: UserLock['activeUser']
 ) => {
-  await set(ref(rtdb, `locks/${id}`), {
-    activeUser: userDetails,
-    timestamp: Date.now(),
+  const lockRef = ref(rtdb, `locks/${id}`);
+  const result = await runTransaction(lockRef, (current) => {
+    if (current && current.activeUser?.uid && current.activeUser.uid !== userDetails.uid) {
+      return;
+    }
+    return {
+      activeUser: userDetails,
+      timestamp: Date.now(),
+    };
   });
+  if (!result.committed) {
+    throw new Error('JOP sedang dikunci oleh user lain.');
+  }
 };
 
-export const unlockJOP = async (id: string) => {
-  await remove(ref(rtdb, `locks/${id}`));
+export const unlockJOP = async (id: string, userUid?: string) => {
+  const lockRef = ref(rtdb, `locks/${id}`);
+  if (!userUid) {
+    await remove(lockRef);
+    return;
+  }
+
+  const result = await runTransaction(lockRef, (current) => {
+    if (!current) return null;
+    if (current.activeUser?.uid !== userUid) return;
+    return null;
+  });
+  if (!result.committed) {
+    throw new Error('Lock hanya bisa dibuka oleh pemilik lock.');
+  }
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

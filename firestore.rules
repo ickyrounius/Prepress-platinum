@@ -37,11 +37,23 @@ service cloud.firestore {
       return isSignedIn() && request.resource.data.operator_id == request.auth.uid;
     }
 
+    function isSelf(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function hasImmutableUserSecurityFields(uid) {
+      return request.resource.data.UID == resource.data.UID
+        && request.resource.data.UID == uid
+        && request.resource.data.EMAIL == resource.data.EMAIL
+        && request.resource.data.KATEGORI == resource.data.KATEGORI
+        && request.resource.data.ACTIVE == resource.data.ACTIVE;
+    }
+
     // ── T_USERS ─────────────────────────────────────────────────────────────
     match /T_USERS/{uid} {
-      allow read: if isAdminLike() || (isSignedIn() && request.auth.uid == uid);
-      allow create: if isSignedIn() && request.auth.uid == uid;
-      allow update: if isAdminLike() || request.auth.uid == uid;
+      allow read: if isAdminLike() || isSelf(uid);
+      allow create: if isAdminLike();
+      allow update: if isAdminLike() || (isSelf(uid) && hasImmutableUserSecurityFields(uid));
       allow delete: if isAdminLike();
     }
 

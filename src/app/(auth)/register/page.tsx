@@ -5,21 +5,22 @@ import Link from "next/link";
 import Image from "next/image";
 import { Lock, Mail, Users, User, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase";
+import { useAuth } from "@/features/auth/AuthContext";
+import { createUserByAdmin } from "@/lib/userManagementService";
 import { ROLE_SELECT_GROUPS, isValidUserRole } from "@/lib/userRoles";
 
 interface AuthError {
   code?: string;
+  message?: string;
 }
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { user, role: currentUserRole, loading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [role, setRole] = useState("MANAGER");
+  const [selectedRole, setSelectedRole] = useState("MANAGER");
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -29,41 +30,56 @@ export default function RegisterPage() {
     setErrorMsg("");
 
     try {
-      if (!isValidUserRole(role)) {
+      if (!user || !["ADMIN", "DEVELOPER", "MANAGER"].includes((currentUserRole || "").toUpperCase())) {
+        throw new Error("Halaman ini hanya bisa digunakan oleh admin internal.");
+      }
+
+      if (!isValidUserRole(selectedRole)) {
         throw new Error("Role user tidak valid.");
       }
 
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-
-      // Create a user document in Firestore to store their role and name
-      await setDoc(doc(db, "T_USERS", user.uid), {
-        NAMA: name,
-        EMAIL: email,
-        KATEGORI: role,
-        UID: user.uid,
-        ACTIVE: true,
-        UPDATED_AT: Date.now(),
-        CREATED_AT: new Date().toISOString()
+      await createUserByAdmin({
+        email,
+        password,
+        name,
+        role: selectedRole,
       });
 
-      // Redirect to dashboard after successful registration
+      setEmail("");
+      setPassword("");
+      setName("");
       setTimeout(() => {
-        router.push("/");
+        router.push("/users");
       }, 500);
     } catch (error: unknown) {
       console.error("Registration error:", error);
       const authError = error as AuthError;
-      if (authError.code === 'auth/email-already-in-use') {
+      if (authError.code === "auth/email-already-in-use") {
         setErrorMsg("Email sudah terdaftar. Silakan login.");
-      } else if (authError.code === 'auth/weak-password') {
+      } else if (authError.code === "auth/weak-password") {
         setErrorMsg("Password terlalu lemah (minimal 6 karakter).");
       } else {
-        setErrorMsg("Gagal melakukan registrasi. Silakan coba lagi.");
+        setErrorMsg(authError.message || "Gagal melakukan registrasi. Silakan coba lagi.");
       }
       setIsLoading(false);
     }
   };
+
+  if (!loading && (!user || !["ADMIN", "DEVELOPER", "MANAGER"].includes((currentUserRole || "").toUpperCase()))) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-tr from-background via-background to-primary/20">
+        <div className="w-full max-w-md glass rounded-2xl p-8 border border-border/50 shadow-2xl text-center space-y-4">
+          <h1 className="text-xl font-bold">Internal Access Only</h1>
+          <p className="text-sm text-muted-foreground">
+            Halaman pembuatan akun hanya tersedia untuk admin internal.
+          </p>
+          <Link href="/login" className="inline-flex items-center justify-center h-10 px-4 rounded-xl bg-primary text-primary-foreground font-semibold">
+            Kembali ke Login
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-tr from-background via-background to-primary/20 relative overflow-hidden">
@@ -121,8 +137,8 @@ export default function RegisterPage() {
               <div className="relative">
                 <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <select
-                  value={role}
-                  onChange={e => setRole(e.target.value)}
+                  value={selectedRole}
+                  onChange={e => setSelectedRole(e.target.value)}
                   className="w-full h-11 bg-background border border-border rounded-xl pl-10 pr-4 focus:ring-2 focus:ring-primary/50 outline-none transition-all appearance-none"
                 >
                   {ROLE_SELECT_GROUPS.map((group) => (
