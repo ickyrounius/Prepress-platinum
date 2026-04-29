@@ -4,7 +4,16 @@ import { ref, set } from 'firebase/database';
 import { generateUniqueId, DEPT_CODES } from '@/lib/types/schema';
 
 // URL Google Apps Script yang berfungsi sebagai fetcher data
-const GSHEET_FETCH_URL = process.env.NEXT_PUBLIC_GSHEET_FETCH_URL || "https://script.google.com/macros/s/AKfycby-IMPORT-XXX/exec";
+if (!process.env.NEXT_PUBLIC_GSHEET_FETCH_URL) {
+  if (typeof window !== 'undefined') {
+    console.error('NEXT_PUBLIC_GSHEET_FETCH_URL is not configured in environment variables');
+  }
+}
+const GSHEET_FETCH_URL = process.env.NEXT_PUBLIC_GSHEET_FETCH_URL || "";
+
+if (!GSHEET_FETCH_URL) {
+  throw new Error('GSheet fetcher not configured. Please set NEXT_PUBLIC_GSHEET_FETCH_URL environment variable');
+}
 
 export interface GSheetImportResult {
   success: boolean;

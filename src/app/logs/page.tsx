@@ -31,12 +31,16 @@ export default function LogHistoryPage() {
     
     setLoading(true);
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const logData = snapshot.docs.map(doc => ({
+      const logData: LogEntry[] = snapshot.docs.map(doc => ({
         id: doc.id,
         type: activeType,
         ...doc.data()
-      }));
-      setLogs(logData as unknown as LogEntry[]);
+      })) as LogEntry[];
+      
+      if (!Array.isArray(logData)) {
+        console.warn('Invalid log data structure received');
+      }
+      setLogs(logData);
       setLoading(false);
     });
 

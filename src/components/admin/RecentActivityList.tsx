@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
+import { collection, query, orderBy, limit, onSnapshot, Timestamp } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Clock, User, Tag, 
@@ -11,14 +11,21 @@ import {
 } from '@phosphor-icons/react';
 import { formatDistanceToNow } from 'date-fns';
 
+interface AuditLogMetadata {
+  status?: string;
+  previousValue?: string;
+  newValue?: string;
+  [key: string]: any;
+}
+
 interface AuditLog {
   id: string;
   actor_uid: string;
   action: string;
   entity_type: string;
   entity_id: string;
-  timestamp: any;
-  metadata?: any;
+  timestamp: Timestamp | Date | number;
+  metadata?: AuditLogMetadata;
 }
 
 export const RecentActivityList = () => {

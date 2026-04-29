@@ -90,8 +90,18 @@ export function useDashboardData(collectionsToFetch?: string[]) {
     const dbCollections = collectionsToFetch && collectionsToFetch.length > 0 ? collectionsToFetch : defaultCollections;
     const activeUnsubscribes: (() => void)[] = [];
     const combinedItemsMap: Record<string, DashboardItem[]> = {};
+    let updateTimeout: NodeJS.Timeout;
     
     dbCollections.forEach(col => { combinedItemsMap[col] = []; });
+
+    // Debounced update function to prevent excessive state updates
+    const scheduleUpdate = () => {
+      clearTimeout(updateTimeout);
+      updateTimeout = setTimeout(() => {
+        const allItems = Object.values(combinedItemsMap).flat();
+        setRawItems(allItems);
+      }, 300); // Batch updates every 300ms instead of on every listener change
+    };
 
     dbCollections.forEach(colName => {
         const q = query(
@@ -106,14 +116,17 @@ export function useDashboardData(collectionsToFetch?: string[]) {
                 items.push({ id: doc.id, sourceType, ...doc.data() } as DashboardItem);
             });
             combinedItemsMap[colName] = items;
-            setRawItems(Object.values(combinedItemsMap).flat());
+            scheduleUpdate();
         }, (err) => {
           console.error(`Error streaming ${colName}:`, err);
         });
         activeUnsubscribes.push(unsub);
     });
 
-    return () => activeUnsubscribes.forEach(unsub => unsub());
+    return () => {
+      clearTimeout(updateTimeout);
+      activeUnsubscribes.forEach(unsub => unsub());
+    };
   }, [collectionsToFetch]);
 
   const productivityData = useMemo(() => {

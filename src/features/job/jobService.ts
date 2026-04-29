@@ -33,8 +33,23 @@ export const saveJOP = async (
   formData: Partial<JopData> & { IS_RELAYOUT?: boolean }
 ): Promise<{ status: string; message: string }> => {
   try {
+    // Comprehensive field validation
     if (!formData.NO_JOP && !formData.IS_RELAYOUT) {
       throw new Error('JOP No wajib diisi!');
+    }
+    
+    // Validate required fields to prevent incomplete records
+    const requiredFields = ['TIPE_JOP', 'BUYER', 'NAMA_JOP'];
+    const missingFields = requiredFields.filter(
+      field => !formData[field as keyof typeof formData]?.toString().trim()
+    );
+    if (missingFields.length > 0) {
+      throw new Error(`Fields wajib diisi: ${missingFields.join(', ')}`);
+    }
+    
+    // Validate input data types and values
+    if (formData.NO_JOP && (typeof formData.NO_JOP !== 'string' || !formData.NO_JOP.trim())) {
+      throw new Error('NO_JOP harus berupa string yang tidak kosong');
     }
 
     const jopsRef = collection(db, 'workflows_jop');

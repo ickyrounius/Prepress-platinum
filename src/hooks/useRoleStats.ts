@@ -5,6 +5,7 @@ import { db } from '@/lib/firebase';
 import { collection, onSnapshot, query, where, Timestamp } from 'firebase/firestore';
 import { format, subDays, startOfDay, endOfDay, isSameDay } from 'date-fns';
 import { classifyWorkflowStatus, detectJosType, resolveWorkflowStatus } from '@/lib/workflow';
+import type { DashboardItem } from '@/lib/types';
 
 export interface StatSummary {
   total: number;
@@ -30,7 +31,7 @@ export interface WorkloadDataPoint {
 }
 
 export function useRoleStats(collectionName: string) {
-  const [items, setItems] = useState<any[]>([]);
+  const [items, setItems] = useState<DashboardItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

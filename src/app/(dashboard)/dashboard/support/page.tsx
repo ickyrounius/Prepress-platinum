@@ -86,7 +86,13 @@ export default function SupportDashboard() {
   }, [baseSupportItems, showOnlyMe, user?.displayName]);
 
   const kanbanItems = useMemo(() => {
-    return supportItems.map(item => ({ ...item, sourceType: 'SUPPORT' } as unknown as KanbanItem));
+    return supportItems.map(item => {
+      const transformedItem: KanbanItem = {
+        ...item,
+        sourceType: 'SUPPORT'
+      } as KanbanItem;
+      return transformedItem;
+    });
   }, [supportItems]);
 
   const displayStats = useMemo(() => {

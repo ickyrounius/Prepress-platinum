@@ -328,7 +328,9 @@ export default function UserPerformancePage() {
   );
 }
 
-function KPICard({ title, value, icon: Icon, color }: { title: string, value: string | number, icon: any, color: string }) {
+type IconComponent = React.ComponentType<{ weight?: string; size?: number; [key: string]: any }>;
+
+function KPICard({ title, value, icon: Icon, color }: { title: string, value: string | number, icon: IconComponent, color: string }) {
   return (
     <motion.div 
       whileHover={{ y: -5 }}

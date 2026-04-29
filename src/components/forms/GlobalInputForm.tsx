@@ -137,14 +137,25 @@ export function GlobalInputForm({
             metadata: { status: workflowStatus }
           });
         } else {
-          await set(ref(rtdb, `active_jobs/${collectionName}/${targetId}`), payload);
-          await recordAuditLog({
-            actorUid: user.uid,
-            action: 'upsert_active_workflow',
-            entityType: collectionName,
-            entityId: targetId,
-            metadata: { status: workflowStatus }
-          });
+          try {
+            await set(ref(rtdb, `active_jobs/${collectionName}/${targetId}`), payload);
+          } catch (rtdbErr) {
+            console.error("RTDB update failed:", rtdbErr);
+            notify("Data disimpan ke Firestore tapi RTDB update gagal", "warning");
+          }
+
+          try {
+            await recordAuditLog({
+              actorUid: user.uid,
+              action: 'upsert_active_workflow',
+              entityType: collectionName,
+              entityId: targetId,
+              metadata: { status: workflowStatus }
+            });
+          } catch (auditErr) {
+            console.error("Audit log failed:", auditErr);
+            notify("Data tersimpan tapi audit log gagal dicatat", "warning");
+          }
         }
         
         // 🔥 SYNC MASTER JOP if this is a progress update
@@ -152,8 +163,12 @@ export function GlobalInputForm({
         if (isProgressUpdate && masterId) {
             // Hanya jalankan jika bukan sedang menulis ke koleksi master itu sendiri
             if (collectionName !== 'workflows_jop' && collectionName !== 'workflows_jos') {
-                console.log(`[GlobalInputForm] Syncing master ${masterId} with role ${syncRole}`);
-                await updateJOPData(masterId, syncRole, payload);
+                try {
+                  await updateJOPData(masterId, syncRole, payload);
+                } catch (syncErr) {
+                  console.error("Failed to sync master JOP data:", syncErr);
+                  notify("Data tersimpan tapi sinkronisasi master JOP gagal", "warning");
+                }
             }
         }
         

@@ -30,31 +30,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { notify } = useNotification();
 
   useEffect(() => {
+    let isMounted = true;
+
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
-      if (currentUser) {
-        try {
-          const userDocInfo = await getDoc(doc(db, "T_USERS", currentUser.uid));
-          if (userDocInfo.exists()) {
-            const data = userDocInfo.data();
-            setRole(data.KATEGORI);
-            setName(data.NAMA || data.displayName || null);
-          } else {
-            setRole("GUEST");
-            setName(currentUser.displayName || null);
+      try {
+        setUser(currentUser);
+        
+        if (currentUser) {
+          try {
+            const userDocInfo = await getDoc(doc(db, "T_USERS", currentUser.uid));
+            if (isMounted) {
+              if (userDocInfo.exists()) {
+                const data = userDocInfo.data();
+                setRole(data.KATEGORI);
+                setName(data.NAMA || data.displayName || null);
+              } else {
+                setRole("GUEST");
+                setName(currentUser.displayName || null);
+              }
+            }
+          } catch (error) {
+            console.error("Error fetching user role", error);
+            if (isMounted) {
+              notify("Gagal mengambil data role pengguna", "error");
+              setRole("GUEST");
+            }
           }
-        } catch (error) {
-          console.error("Error fetching user role", error);
-          notify("Gagal mengambil data role pengguna", "error");
+        } else {
+          if (isMounted) {
+            setRole(null);
+            setName(null);
+          }
         }
-      } else {
-        setRole(null);
-        setName(null);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
       }
-      setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
   }, [notify]);
 
   return (

@@ -78,10 +78,17 @@ export function KanbanBoard({ data }: KanbanBoardProps) {
                   const picUtama = (isDG ? (item as JosData).DESIGNER : (item as JopData).PIC_UTAMA) || 'Unassigned';
                   const buyer = item.BUYER || '-';
 
+                  // Ensure stable unique key for React reconciliation
+                  const uniqueKey = (item as any).id || item.ID;
+                  if (!uniqueKey) {
+                    console.warn('KanbanBoard: Item missing stable ID for React key', { parentId, childId, i });
+                  }
+                  const stableKey = uniqueKey ? `${uniqueKey}-${parentId}` : `kanban-item-${parentId}-${childId}`;
+
                   return (
                     <Link 
                       href={`/dashboard/data?search=${parentId}`}
-                      key={(item as any).id || item.ID || i}
+                      key={stableKey}
                     >
                       <motion.div
                         initial={{ opacity: 0, y: 10 }}
