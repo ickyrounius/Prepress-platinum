@@ -2,11 +2,19 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Lock, Mail, ArrowRight } from "lucide-react";
+import { Lock, Mail, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
+import {
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail,
+  setPersistence,
+  browserLocalPersistence,
+  browserSessionPersistence,
+} from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useNotification } from "@/features/notification/NotificationContext";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 interface AuthError {
   code?: string;
@@ -19,6 +27,8 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [rememberMe, setRememberMe] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleForgotPassword = async () => {
     if (!email) {
@@ -51,6 +61,7 @@ export default function LoginPage() {
     setErrorMsg("");
     
     try {
+      await setPersistence(auth, rememberMe ? browserLocalPersistence : browserSessionPersistence);
       await signInWithEmailAndPassword(auth, email, password);
       // Wait briefly for auth context to catch up
       setTimeout(() => {
@@ -99,12 +110,12 @@ export default function LoginPage() {
               <label className="text-sm font-medium ml-1">Email</label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                <input 
+                <Input
                   type="email" 
                   required
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  className="w-full h-11 bg-background border border-border rounded-xl pl-10 pr-4 focus:ring-2 focus:ring-primary/50 outline-none transition-all"
+                  className="pl-10 pr-4"
                   placeholder="operator@prepress.com"
                 />
               </div>
@@ -114,20 +125,33 @@ export default function LoginPage() {
               <label className="text-sm font-medium ml-1">Password</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                <input 
-                  type="password" 
+                <Input
+                  type={showPassword ? "text" : "password"}
                   required
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  className="w-full h-11 bg-background border border-border rounded-xl pl-10 pr-4 focus:ring-2 focus:ring-primary/50 outline-none transition-all"
+                  className="pl-10 pr-11"
                   placeholder="••••••••"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
               </div>
             </div>
 
             <div className="flex items-center justify-between">
               <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" className="rounded text-primary focus:ring-primary" />
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="rounded text-primary focus:ring-primary"
+                />
                 <span className="text-sm text-muted-foreground">Remember me</span>
               </label>
               <button 
@@ -139,15 +163,16 @@ export default function LoginPage() {
               </button>
             </div>
 
-            <button 
-              type="submit" 
+            <Button
+              type="submit"
+              size="lg"
               disabled={isLoading}
-              className="w-full h-11 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 disabled:opacity-70"
+              className="w-full"
             >
               {isLoading ? "Signing in..." : (
                 <>Sign In <ArrowRight className="w-4 h-4 ml-1" /></>
               )}
-            </button>
+            </Button>
           </form>
 
           <p className="text-center text-sm text-muted-foreground mt-6">

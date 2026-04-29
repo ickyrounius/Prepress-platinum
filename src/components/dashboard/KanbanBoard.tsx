@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { JopData, JosData } from '@/features/job/jobTypes';
 import { resolveWorkflowStatus } from '@/lib/workflow';
+import { Badge } from '@/components/ui/badge';
 import { 
   FileText,
   Circle, Clock, CheckCircle, 
@@ -51,9 +52,9 @@ export function KanbanBoard({ data }: KanbanBoardProps) {
                 <div className={cn("w-2 h-2 rounded-full", col.color)}></div>
                 <h3 className="text-[10px] font-black text-slate-700 uppercase tracking-widest">{col.title}</h3>
               </div>
-              <span className="px-2 py-0.5 bg-slate-100 text-slate-500 rounded-full text-[10px] font-black">
+              <Badge variant="muted" className="px-2 py-0.5 text-[10px]">
                 {items.length}
-              </span>
+              </Badge>
             </div>
 
             <div className="flex-1 bg-slate-50/50 p-3 rounded-[2.5rem] border border-slate-100 space-y-4 min-h-[500px]">
@@ -106,12 +107,12 @@ export function KanbanBoard({ data }: KanbanBoardProps) {
                         <div className="flex justify-between items-start">
                           <div className="flex flex-col gap-1">
                              <div className="flex items-center gap-1.5">
-                                <span className={cn(
-                                    "px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest text-white",
+                                <Badge className={cn(
+                                    "px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest text-white border-transparent",
                                     isDG ? "bg-pink-500" : isDT ? "bg-blue-600" : "bg-indigo-600"
                                 )}>
                                     {isDG ? 'DG' : isDT ? 'DT' : 'PROD'}
-                                </span>
+                                </Badge>
                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">{parentId || 'N/A'}</span>
                              </div>
                              <div className="flex items-center gap-1 mt-0.5">
@@ -136,13 +137,13 @@ export function KanbanBoard({ data }: KanbanBoardProps) {
                              <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">{picUtama}</span>
                           </div>
                           
-                          <span className={cn(
+                          <Badge className={cn(
                               "px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-tight shadow-sm",
                               col.color.replace('bg-', 'text-').replace('500', '600'),
                               col.color.replace('bg-', 'bg-').replace('500', '50')
                           )}>
                              {getStatusValue(item)}
-                          </span>
+                          </Badge>
                         </div>
                       </div>
                     </motion.div>

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useAuth } from "@/features/auth/AuthContext";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useLayoutStore } from "@/lib/store/useLayoutStore";
 import { 
   List, 
@@ -12,10 +12,13 @@ import {
 import ThemeToggle from "@/components/layout/ThemeToggle";
 import { auth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 export default function TopHeader() {
   const { user, name } = useAuth();
   const pathname = usePathname();
+  const router = useRouter();
   const { toggleSidebar } = useLayoutStore();
   const [isSpinning, setIsSpinning] = useState(false);
 
@@ -39,8 +42,7 @@ export default function TopHeader() {
 
   const handleRefresh = () => {
     setIsSpinning(true);
-    // Simulate refresh data globally, or just reload the window
-    window.location.reload();
+    router.refresh();
     setTimeout(() => setIsSpinning(false), 1000);
   };
 
@@ -49,6 +51,7 @@ export default function TopHeader() {
       <div className="flex min-w-0 items-center gap-2 sm:gap-4">
         <button 
           title="Buka Sidebar" 
+          aria-label="Buka sidebar navigasi"
           onClick={toggleSidebar}
           className="lg:hidden p-2 -ml-2 text-slate-600 hover:bg-slate-100 rounded-xl transition shrink-0"
         >
@@ -60,23 +63,25 @@ export default function TopHeader() {
       </div>
       
       <div className="flex items-center gap-1.5 sm:gap-3">
-        <button 
+        <Button
           onClick={handleRefresh} 
-          className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition active:scale-95"
+          variant="ghost"
+          size="sm"
+          className="px-2 sm:px-3 text-slate-600 dark:text-slate-300"
         >
           <ArrowsClockwise weight="bold" className={isSpinning ? "animate-spin-custom text-indigo-500" : ""} />
           <span className="hidden sm:inline">REFRESH</span>
-        </button>
+        </Button>
 
         <ThemeToggle />
 
         <div className="hidden sm:block h-6 w-[1px] bg-slate-200 dark:bg-slate-700"></div>
 
-        <span id="user-display" className="hidden md:inline-block text-[10px] sm:text-xs font-bold bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-300 px-2 sm:px-3 py-1 rounded-full uppercase tracking-widest border border-indigo-100 dark:border-indigo-800 truncate max-w-[180px]">
+        <Badge id="user-display" variant="indigo" className="hidden md:inline-flex truncate max-w-[180px]">
           {name || user?.email || "USER"}
-        </span>
+        </Badge>
 
-        <button 
+        <Button
           onClick={async () => {
             try {
               await signOut(auth);
@@ -85,11 +90,13 @@ export default function TopHeader() {
               console.error("Logout failed", err);
               window.location.href = '/login';
             }
-          }} 
-          className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 text-xs font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition border border-transparent hover:border-rose-100 dark:hover:border-rose-800"
+          }}
+          variant="ghost"
+          size="sm"
+          className="px-2 sm:px-3 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20"
         >
           <SignOut weight="bold" /> <span className="hidden sm:inline">LOGOUT</span>
-        </button>
+        </Button>
       </div>
     </header>
   );

@@ -3,6 +3,9 @@
 import { Printer, CaretUpDown, Lightning, Warning, Circle } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import { resolveWorkflowStatus } from "@/lib/workflow";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 // eslint-disable-next-line
 type DataRow = Record<string, any>;
@@ -42,12 +45,9 @@ export default function DataTable<T extends DataRow = DataRow>({
     };
     
     return (
-      <span className={cn(
-        "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border",
-        colors[s] || "bg-slate-100 text-slate-600 border-slate-200"
-      )}>
+      <Badge className={cn("text-[10px]", colors[s] || "bg-slate-100 text-slate-600 border-slate-200")}>
         {s}
-      </span>
+      </Badge>
     );
   };
 
@@ -124,16 +124,16 @@ export default function DataTable<T extends DataRow = DataRow>({
               <option value="MER">MER - Mer</option>
             </select>
             
-            <input 
+            <Input
               type="text" 
               placeholder="Cari JOP/Buyer..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="flex-1 p-3 pl-4 border border-slate-200 rounded-2xl outline-none text-xs font-medium focus:ring-4 focus:ring-indigo-500/10 bg-slate-50 transition-all shadow-inner"
+              className="flex-1 h-auto p-3 pl-4 rounded-2xl text-xs font-medium focus:ring-4 focus:ring-indigo-500/10 bg-slate-50 transition-all shadow-inner"
             />
 
             <div className="flex gap-2 sm:col-span-2 md:col-span-1">
-              <button 
+              <Button
                 onClick={() => {
                   const csvData = data.map(item => columns.map(col => `"${item[col.key] || ''}"`).join(',')).join('\n');
                   const header = columns.map(col => `"${col.label}"`).join(',');
@@ -144,14 +144,15 @@ export default function DataTable<T extends DataRow = DataRow>({
                   a.download = `Prepress_Data_${activeTab}_${new Date().toISOString().split('T')[0]}.csv`;
                   a.click();
                 }}
-                className="flex-1 bg-indigo-50 text-indigo-600 px-4 py-3 rounded-2xl text-[10px] sm:text-xs font-black flex items-center justify-center gap-2 transition hover:bg-indigo-100 active:scale-95 border border-indigo-100"
+                variant="secondary"
+                className="flex-1 h-auto bg-indigo-50 text-indigo-600 px-4 py-3 rounded-2xl text-[10px] sm:text-xs font-black border border-indigo-100 hover:bg-indigo-100"
               >
                 EXPORT CSV
-              </button>
+              </Button>
               
-              <button onClick={() => window.print()} className="flex-1 bg-slate-900 text-white px-4 py-3 rounded-2xl text-[10px] sm:text-xs font-black flex items-center justify-center gap-2 transition hover:bg-slate-800 active:scale-95 shadow-lg shadow-slate-200">
+              <Button onClick={() => window.print()} className="flex-1 h-auto bg-slate-900 text-white px-4 py-3 rounded-2xl text-[10px] sm:text-xs font-black hover:bg-slate-800 shadow-lg shadow-slate-200">
                 <Printer weight="bold" size={16} className="hidden sm:inline" /> PRINT
-              </button>
+              </Button>
             </div>
           </div>
         </div>

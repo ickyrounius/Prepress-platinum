@@ -121,6 +121,8 @@ const CollapsibleGroup = ({ group, pathname, closeSidebar, compact }: Collapsibl
     <div>
       <button
         onClick={() => setOpen(v => !v)}
+        aria-expanded={open}
+        aria-label={`${open ? 'Tutup' : 'Buka'} menu ${group.label}`}
         className="w-full flex items-center justify-between px-4 py-1.5 rounded-lg hover:bg-slate-800/50 transition-colors group"
       >
         <span className={cn("text-[10px] font-black uppercase tracking-widest", colorClass)}>
