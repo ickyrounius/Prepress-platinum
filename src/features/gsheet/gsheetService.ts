@@ -15,8 +15,19 @@ export interface GSheetImportResult {
 /**
  * Service untuk menarik data dari Google Sheets dan memasukkannya ke Firestore/RTDB
  */
-export const importDataFromGSheet = async (type: 'JOP' | 'JOS'): Promise<GSheetImportResult> => {
+export const importDataFromGSheet = async (
+  type: 'JOP' | 'JOS',
+  actorUid: string
+): Promise<GSheetImportResult> => {
   try {
+    if (!actorUid) {
+      return {
+        success: false,
+        importedCount: 0,
+        error: "Aktor import tidak valid.",
+      };
+    }
+
     if (!GSHEET_FETCH_URL) {
       return {
         success: false,
@@ -57,6 +68,9 @@ export const importDataFromGSheet = async (type: 'JOP' | 'JOS'): Promise<GSheetI
         ...row,
         ID: uniqueId,
         id: uniqueId,
+        operator_id: actorUid,
+        OPERATOR_ID: actorUid,
+        imported_by_uid: actorUid,
         LAST_UPDATED: serverTimestamp(),
         ...(type === 'JOP' ? { ST_WF_JOP: (row.ST_WF_JOP || row.ST_WORKFLOW || 'OPEN') } : {}),
         ...(type === 'JOS' ? { ST_WF_JOS: (row.ST_WF_JOS || row.ST_WORKFLOW || 'OPEN') } : {}),

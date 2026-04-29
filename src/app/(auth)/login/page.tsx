@@ -41,11 +41,12 @@ export default function LoginPage() {
       await sendPasswordResetEmail(auth, email);
       notify("Link reset password telah dikirim ke email Anda. Silakan cek inbox/spam.", "success");
       setErrorMsg("");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
-      if (error.code === 'auth/user-not-found') {
+      const authError = error as AuthError;
+      if (authError.code === 'auth/user-not-found') {
         setErrorMsg("Email tidak ditemukan dalam sistem.");
-      } else if (error.code === 'auth/invalid-email') {
+      } else if (authError.code === 'auth/invalid-email') {
         setErrorMsg("Format email tidak valid.");
       } else {
         setErrorMsg("Gagal mengirim email reset. Pastikan koneksi stabil.");
