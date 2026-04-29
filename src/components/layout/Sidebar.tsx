@@ -246,7 +246,7 @@ const SUPERADMIN_GROUPS: MenuGroup[] = [
     items: MENU_DT,
   },
   {
-    label: 'DG — DESIGN GRAFIS',
+    label: 'DG/DS — DESIGN GRAFIS & SETTER',
     color: 'violet',
     items: MENU_DG,
   },

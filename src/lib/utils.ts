@@ -38,6 +38,6 @@ export function throttle<T extends (...args: any[]) => any>(
       setTimeout(() => (inThrottle = false), limit);
       return result;
     }
-  } as (...args: Parameters<T>) => ReturnType<T> | void;
+  };
 }
 

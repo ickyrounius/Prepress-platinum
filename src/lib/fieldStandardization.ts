@@ -14,14 +14,14 @@ export const CANONICAL_FIELDS = {
   // Workflow Status Fields
   JOP_WORKFLOW_STATUS: 'ST_WF_JOP',
   JOS_WORKFLOW_STATUS: 'ST_WF_JOS',
-  
+
   // Dates
   JOP_MASUK_DATE: 'TGL_MASUK_JOP',
   JOS_MASUK_DATE: 'TGL_MASUK_JOS',
   TARGET_DATE: 'TGL_TARGET',
   JOP_DATE: 'TGL_JOP',
   JOS_DATE: 'TGL_JOS',
-  
+
   // Names and Types
   JOP_NUMBER: 'NO_JOP',
   JOS_NUMBER: 'NO_JOS',
@@ -29,20 +29,21 @@ export const CANONICAL_FIELDS = {
   JOS_TYPE: 'TIPE_JOS',
   JOP_NAME: 'NAMA_JOP',
   JOS_NAME: 'NAMA_JOS',
-  
+
   // People
   PIC_MAIN: 'PIC_UTAMA',
   PIC_SUPPORT: 'PIC_SUPPORT',
   OPERATOR: 'OPERATOR',
   QC_USER: 'QC_USER',
-  
+
   // Production Status
-  PROD_STATUS: 'ST_PRO_JOP',
-  
+  PROD_STATUS_JOP: 'ST_PRO_JOP',
+  PROD_STATUS_JOS: 'ST_PRO_JOS',
+
   // Update tracking
   LAST_UPDATED: 'LAST_UPDATED',
   LAST_UPDATED_BY: 'LAST_UPDATED_BY',
-  
+
   // Company/Buyer Info
   BUYER: 'BUYER',
   ID: 'ID'
@@ -60,33 +61,32 @@ export const FIELD_ALIASES: Record<string, keyof typeof CANONICAL_FIELDS> = {
   'status_dt': 'JOP_WORKFLOW_STATUS',
   'workflow_status': 'JOP_WORKFLOW_STATUS',
   'st_jop': 'JOP_WORKFLOW_STATUS',
-  
+
   'ST_WF_JOS': 'JOS_WORKFLOW_STATUS',
   'status_jos': 'JOS_WORKFLOW_STATUS',
   'status_dg': 'JOS_WORKFLOW_STATUS',
-  'status_jos': 'JOS_WORKFLOW_STATUS',
-  
+
   // Date Aliases
   'TGL_MASUK_JOP': 'JOP_MASUK_DATE',
   'tgl_masuk': 'JOP_MASUK_DATE',
   'tgl_masuk_jop': 'JOP_MASUK_DATE',
   'tanggal_masuk': 'JOP_MASUK_DATE',
   'DATE_IN': 'JOP_MASUK_DATE',
-  
+
   'TGL_MASUK_JOS': 'JOS_MASUK_DATE',
   'TGL_MASUK': 'JOS_MASUK_DATE', // Could be either, context determines
-  
+
   'TGL_TARGET': 'TARGET_DATE',
   'tgl_target': 'TARGET_DATE',
   'target_date': 'TARGET_DATE',
   'TGL_TARGET_JOP': 'TARGET_DATE',
   'TGL_TARGET_JOS': 'TARGET_DATE',
-  
+
   'TGL_JOP': 'JOP_DATE',
   'tgl_jop': 'JOP_DATE',
   'TGL_JOS': 'JOS_DATE',
   'tgl_jos': 'JOS_DATE',
-  
+
   // Name/Number Aliases
   'NO_JOP': 'JOP_NUMBER',
   'no_jop': 'JOP_NUMBER',
@@ -94,36 +94,34 @@ export const FIELD_ALIASES: Record<string, keyof typeof CANONICAL_FIELDS> = {
   'jop_no': 'JOP_NUMBER',
   'JOP_ID': 'JOP_NUMBER',
   'jop_id': 'JOP_NUMBER',
-  
+
   'NO_JOS': 'JOS_NUMBER',
   'no_jos': 'JOS_NUMBER',
   'JOS_NO': 'JOS_NUMBER',
   'jos_no': 'JOS_NUMBER',
   'JOS_ID': 'JOS_NUMBER',
   'jos_id': 'JOS_NUMBER',
-  'id_jos': 'JOS_NUMBER',
-  
+
   'TIPE_JOP': 'JOP_TYPE',
   'tipe_jop': 'JOP_TYPE',
   'JOP_TYPE': 'JOP_TYPE',
   'jop_type': 'JOP_TYPE',
-  'TIPE_JOP': 'JOP_TYPE',
-  
+
   'TIPE_JOS': 'JOS_TYPE',
   'tipe_jos': 'JOS_TYPE',
   'JOS_TYPE': 'JOS_TYPE',
   'jos_type': 'JOS_TYPE',
-  
+
   'NAMA_JOP': 'JOP_NAME',
   'nama_jop': 'JOP_NAME',
   'JOP_NAME': 'JOP_NAME',
   'jop_name': 'JOP_NAME',
-  
+
   'NAMA_JOS': 'JOS_NAME',
   'nama_jos': 'JOS_NAME',
   'JOS_NAME': 'JOS_NAME',
   'jos_name': 'JOS_NAME',
-  
+
   // People Aliases
   'PIC_UTAMA': 'PIC_MAIN',
   'pic_utama': 'PIC_MAIN',
@@ -131,31 +129,33 @@ export const FIELD_ALIASES: Record<string, keyof typeof CANONICAL_FIELDS> = {
   'pic_main': 'PIC_MAIN',
   'MAIN_PIC': 'PIC_MAIN',
   'pic_utama_jop': 'PIC_MAIN',
-  
+
   'PIC_SUPPORT': 'PIC_SUPPORT',
   'pic_support': 'PIC_SUPPORT',
   'PIC_SUPPORTING': 'PIC_SUPPORT',
   'SUPPORT_PIC': 'PIC_SUPPORT',
-  
+
   'OPERATOR': 'OPERATOR',
   'operator': 'OPERATOR',
   'operator_id': 'OPERATOR',
   'OPERATOR_ID': 'OPERATOR',
-  
+
   'QC_USER': 'QC_USER',
   'qc_user': 'QC_USER',
   'QC_OPERATOR': 'QC_USER',
   'qc_operator': 'QC_USER',
-  
+
   // Production Status Aliases
-  'ST_PRO_JOP': 'PROD_STATUS',
-  'st_pro_jop': 'PROD_STATUS',
-  'status_pro_jop': 'PROD_STATUS',
-  'ST_PRO_JOS': 'PROD_STATUS',
-  'ST_PRO_NO_B': 'PROD_STATUS',
-  'production_status': 'PROD_STATUS',
-  'prod_status': 'PROD_STATUS',
-  
+  'ST_PRO_JOP': 'PROD_STATUS_JOP',
+  'st_pro_jop': 'PROD_STATUS_JOP',
+  'status_pro_jop': 'PROD_STATUS_JOP',
+  'ST_PRO_JOS': 'PROD_STATUS_JOS',
+  'st_pro_jos': 'PROD_STATUS_JOS',
+  'status_pro_jos': 'PROD_STATUS_JOS',
+  'ST_PRO_NO_B': 'PROD_STATUS_JOP', // No B usually follows JOP
+  'production_status': 'PROD_STATUS_JOP',
+  'prod_status': 'PROD_STATUS_JOP',
+
   // Update tracking Aliases
   'LAST_UPDATED': 'LAST_UPDATED',
   'last_updated': 'LAST_UPDATED',
@@ -163,12 +163,12 @@ export const FIELD_ALIASES: Record<string, keyof typeof CANONICAL_FIELDS> = {
   'UPDATED_AT': 'LAST_UPDATED',
   'timestamp': 'LAST_UPDATED',
   'TIMESTAMP': 'LAST_UPDATED',
-  
+
   'LAST_UPDATED_BY': 'LAST_UPDATED_BY',
   'last_updated_by': 'LAST_UPDATED_BY',
   'updated_by': 'LAST_UPDATED_BY',
   'UPDATED_BY': 'LAST_UPDATED_BY',
-  
+
   // Company/Buyer Aliases
   'BUYER': 'BUYER',
   'buyer': 'BUYER',
@@ -176,7 +176,7 @@ export const FIELD_ALIASES: Record<string, keyof typeof CANONICAL_FIELDS> = {
   'buyer_name': 'BUYER',
   'COMPANY': 'BUYER',
   'company': 'BUYER',
-  
+
   'ID': 'ID',
   'id': 'ID',
   'ID_JOP': 'ID',
@@ -194,18 +194,18 @@ export const FIELD_ALIASES: Record<string, keyof typeof CANONICAL_FIELDS> = {
 export function getCanonicalFieldName(fieldName: string): string {
   const normalized = fieldName.trim().toUpperCase();
   const aliasKey = FIELD_ALIASES[normalized];
-  
+
   if (aliasKey) {
     return CANONICAL_FIELDS[aliasKey] as string;
   }
-  
+
   // If not found in aliases, try case-insensitive direct lookup in canonical fields
   for (const [key, value] of Object.entries(CANONICAL_FIELDS)) {
     if (value.toUpperCase() === normalized) {
       return value;
     }
   }
-  
+
   // Fallback: return the original field name if not recognized
   console.warn(`Field "${fieldName}" not in standardization map. Using as-is.`);
   return fieldName;
@@ -220,18 +220,18 @@ export function getCanonicalFieldName(fieldName: string): string {
  */
 export function getFieldValue(obj: Record<string, any>, fieldAlias: string): any {
   if (!obj) return undefined;
-  
+
   // Try direct key first
   if (fieldAlias in obj) {
     return obj[fieldAlias];
   }
-  
+
   // Try exact canonical field
   const canonical = CANONICAL_FIELDS[getCanonicalFieldName(fieldAlias) as keyof typeof CANONICAL_FIELDS];
   if (canonical in obj) {
     return obj[canonical];
   }
-  
+
   // Try all possible aliases for this canonical name
   const targetCanonical = FIELD_ALIASES[fieldAlias.toUpperCase()];
   if (targetCanonical) {
@@ -240,7 +240,7 @@ export function getFieldValue(obj: Record<string, any>, fieldAlias: string): any
       return obj[canonicalValue];
     }
   }
-  
+
   // Try all keys in aliases to find which canonical this might be
   for (const [alias, canonicalKey] of Object.entries(FIELD_ALIASES)) {
     if (alias.toUpperCase() === fieldAlias.toUpperCase()) {
@@ -250,7 +250,7 @@ export function getFieldValue(obj: Record<string, any>, fieldAlias: string): any
       }
     }
   }
-  
+
   return undefined;
 }
 
@@ -268,7 +268,7 @@ export function setFieldValue(
   value: any
 ): Record<string, any> {
   const canonical = getCanonicalFieldName(fieldName);
-  
+
   // Remove all known aliases for this field
   const targetCanonical = FIELD_ALIASES[fieldName.toUpperCase()];
   if (targetCanonical) {
@@ -279,7 +279,7 @@ export function setFieldValue(
       }
     }
   }
-  
+
   // Set the canonical field
   obj[canonical] = value;
   return obj;
@@ -292,7 +292,7 @@ export function setFieldValue(
  */
 export function normalizeFieldNames(obj: Record<string, any>): Record<string, any> {
   const normalized: Record<string, any> = {};
-  
+
   for (const [key, value] of Object.entries(obj)) {
     const canonical = getCanonicalFieldName(key);
     // Avoid overwriting if the key already maps to same canonical
@@ -300,6 +300,6 @@ export function normalizeFieldNames(obj: Record<string, any>): Record<string, an
       normalized[canonical] = value;
     }
   }
-  
+
   return normalized;
 }

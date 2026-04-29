@@ -119,7 +119,11 @@ export const RecentActivityList = () => {
                     </span>
                     <span className="flex items-center gap-1">
                       <Clock size={12} weight="bold" /> 
-                      {log.timestamp ? formatDistanceToNow(log.timestamp.toDate(), { addSuffix: true }) : 'Just now'}
+                      {(() => {
+                        if (!log.timestamp) return 'Just now';
+                        const date = (log.timestamp as any).toDate ? (log.timestamp as any).toDate() : new Date(log.timestamp as any);
+                        return formatDistanceToNow(date, { addSuffix: true });
+                      })()}
                     </span>
                   </div>
                 </div>

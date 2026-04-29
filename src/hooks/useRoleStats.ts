@@ -5,6 +5,7 @@ import { db } from '@/lib/firebase';
 import { collection, onSnapshot, query, where, Timestamp } from 'firebase/firestore';
 import { format, subDays, startOfDay, endOfDay, isSameDay } from 'date-fns';
 import { classifyWorkflowStatus, detectJosType, resolveWorkflowStatus } from '@/lib/workflow';
+import { getFieldValue } from '@/lib/fieldStandardization';
 import type { DashboardItem } from '@/lib/types';
 
 export interface StatSummary {
@@ -37,7 +38,7 @@ export function useRoleStats(collectionName: string) {
   useEffect(() => {
     const q = query(collection(db, collectionName));
     const unsub = onSnapshot(q, (snap) => {
-      const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const docs = snap.docs.map(d => ({ id: d.id, ...d.data() } as DashboardItem));
       setItems(docs);
       setLoading(false);
     }, () => setLoading(false));
@@ -61,10 +62,12 @@ export function useRoleStats(collectionName: string) {
     const now = new Date();
 
     items.forEach(item => {
-      const sourceType = collectionName.includes('jod') || collectionName.includes('jos') ? 'DG' : 'DT';
+      const isJop = collectionName.includes('jop') || collectionName.includes('dt');
+      const sourceType = isJop ? 'DT' : 'DG';
+      
       const bucket = classifyWorkflowStatus(
         resolveWorkflowStatus(item as Record<string, unknown>, sourceType),
-        item.ST_PRO_JOP || item.status_pro_jop || item.ST_PRO_JOS
+        getFieldValue(item, isJop ? 'PROD_STATUS_JOP' : 'PROD_STATUS_JOS')
       );
       
       if (bucket === 'closed') summary.closed++;
@@ -72,15 +75,16 @@ export function useRoleStats(collectionName: string) {
       else if (bucket === 'review') summary.blueprint++;
       else summary.process++;
 
-      const josType = detectJosType(item.TIPE_JOS || item.tipe_jos || item.TIPE_JOP || item.tipe_jop || '');
+      const typeVal = getFieldValue(item, isJop ? 'JOP_TYPE' : 'JOS_TYPE') || '';
+      const josType = detectJosType(typeVal as string);
       if (josType === 'EXPORT') summary.exportCount++;
       else if (josType === 'JASA') summary.jasaCount++;
       else if (josType === 'LOCAL') summary.localCount++;
 
       // Overdue check
-      const targetDate = item.tgl_target_no_jop || item.tgl_target_no_jos || item.TGL_TARGET || item.date_target;
-      if (targetDate) {
-        const t = new Date(targetDate);
+      const targetDateVal = getFieldValue(item, 'TARGET_DATE');
+      if (targetDateVal) {
+        const t = new Date(targetDateVal as string | number | Date);
         if (!isNaN(t.getTime()) && t < now && bucket !== 'closed') {
           summary.overdue++;
         } else if (bucket === 'closed') {
@@ -90,7 +94,7 @@ export function useRoleStats(collectionName: string) {
     });
 
     return summary;
-  }, [items]);
+  }, [items, collectionName]);
 
   const trendData = useMemo((): ChartDataPoint[] => {
     const last7Days = Array.from({ length: 7 }, (_, i) => {
@@ -103,9 +107,10 @@ export function useRoleStats(collectionName: string) {
     });
 
     items.forEach(item => {
-      const dateVal = item.tgl_no_jop || item.tgl_no_jos || item.DATE || item.TGL_INPUT;
+      // Use JOP_DATE or JOS_DATE or LAST_UPDATED as fallback
+      const dateVal = getFieldValue(item, 'JOP_DATE') || getFieldValue(item, 'JOS_DATE') || getFieldValue(item, 'LAST_UPDATED');
       if (dateVal) {
-        const d = new Date(dateVal);
+        const d = new Date(dateVal as string | number | Date);
         if (!isNaN(d.getTime())) {
           const point = last7Days.find(p => isSameDay(p.fullDate, d));
           if (point) point.value++;
@@ -119,7 +124,7 @@ export function useRoleStats(collectionName: string) {
   const workloadData = useMemo((): WorkloadDataPoint[] => {
     const picCounts: Record<string, number> = {};
     items.forEach(item => {
-      const pic = item.pic_utama || item.PIC_UTAMA || item.operator_id || 'Unknown';
+      const pic = (getFieldValue(item, 'PIC_MAIN') || getFieldValue(item, 'OPERATOR') || 'Unknown') as string;
       picCounts[pic] = (picCounts[pic] || 0) + 1;
     });
 

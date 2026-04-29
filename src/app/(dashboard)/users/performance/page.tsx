@@ -328,7 +328,7 @@ export default function UserPerformancePage() {
   );
 }
 
-type IconComponent = React.ComponentType<{ weight?: string; size?: number; [key: string]: any }>;
+type IconComponent = React.ComponentType<any>;
 
 function KPICard({ title, value, icon: Icon, color }: { title: string, value: string | number, icon: IconComponent, color: string }) {
   return (

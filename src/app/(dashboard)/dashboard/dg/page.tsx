@@ -25,6 +25,7 @@ import { cn } from '@/lib/utils';
 import type { Icon } from '@phosphor-icons/react';
 import { KanbanBoard, type KanbanItem } from '@/components/dashboard/KanbanBoard';
 import { resolveWorkflowStatus, classifyWorkflowStatus } from '@/lib/workflow';
+import { getFieldValue } from '@/lib/fieldStandardization';
 import { useAuth } from '@/features/auth/AuthContext';
 
 const containerVariants = {
@@ -167,9 +168,9 @@ export default function DGDashboard() {
     });
 
     filteredItems.forEach(item => {
-      const dateVal = item.DATE || item.timestamp_input;
+      const dateVal = getFieldValue(item, 'JOS_DATE') || getFieldValue(item, 'LAST_UPDATED');
       if (dateVal) {
-        const d = new Date(dateVal);
+        const d = new Date(dateVal as string | number | Date);
         const dayStr = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
         const point = last7Days.find(p => p.date === dayStr);
         if (point) point.value++;

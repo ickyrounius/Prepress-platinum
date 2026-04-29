@@ -22,6 +22,8 @@ import {
   Cube
 } from '@phosphor-icons/react';
 import { resolveWorkflowStatus, classifyWorkflowStatus } from '@/lib/workflow';
+import { getFieldValue } from '@/lib/fieldStandardization';
+import { useAuth } from '@/features/auth/AuthContext';
 import TrendChart from '@/components/dashboard/TrendChart';
 import WorkloadChart from '@/components/dashboard/WorkloadChart';
 import { cn } from '@/lib/utils';
@@ -116,7 +118,6 @@ const StatCard = ({ title, value, icon: Icon, colorClass }: StatCardProps) => {
 };
 
 import { useRoleStats } from '@/hooks/useRoleStats';
-import { useAuth } from '@/features/auth/AuthContext';
 
 export default function DTDashboard() {
   const { user } = useAuth();
@@ -175,9 +176,9 @@ export default function DTDashboard() {
     });
 
     filteredItems.forEach(item => {
-      const dateVal = item.tgl_no_jop || item.DATE || item.timestamp_input;
+      const dateVal = getFieldValue(item, 'JOP_DATE') || getFieldValue(item, 'LAST_UPDATED');
       if (dateVal) {
-        const d = new Date(dateVal);
+        const d = new Date(dateVal as string | number | Date);
         const dayStr = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
         const point = last7Days.find(p => p.date === dayStr);
         if (point) point.value++;
