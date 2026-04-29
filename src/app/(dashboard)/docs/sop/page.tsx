@@ -34,9 +34,9 @@ const DEFAULT_WIKI: WikiSection[] = [
   },
   {
     id: 'design',
-    title: 'Alur Kerja Desain (DT & DG)',
+    title: 'Alur Kerja Desain (DESIGN TEKNIK & DESIGN GRAFIS)',
     iconStr: 'PenTool',
-    content: `OPERATOR DT / CAD:\nTugas utama mencakup pembuatan layout dan blueprint. Update status ke "Blueprint" saat file siap cetak sampel. Gunakan fitur Export Audit Log untuk melaporkan revisi CAD yang berulang.\n\nDESIGNER DG / DS:\nFokus pada pemrosesan file grafis. Status diset ke "Done" hanya setelah divalidasi oleh QC atau User Supervisor. Pastikan resolusi gambar sesuai standar output.`
+    content: `OPERATOR DESIGN TEKNIK (DT) / CAD:\nTugas utama mencakup pembuatan layout dan blueprint. Update status ke "Blueprint" saat file siap cetak sampel. Gunakan fitur Export Audit Log untuk melaporkan revisi CAD yang berulang.\n\nDESIGNER DESIGN GRAFIS (DG) / DESIGN SETTER (DS):\nFokus pada pemrosesan file grafis. Status diset ke "Done" hanya setelah divalidasi oleh QC atau User Supervisor. Pastikan resolusi gambar sesuai standar output.`
   },
   {
     id: 'prepress',

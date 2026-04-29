@@ -195,8 +195,8 @@ export default function DGDashboard() {
             <Pen weight="bold" size={28} />
           </div>
           <div>
-            <h1 className="text-3xl font-black tracking-tight text-slate-800 dark:text-slate-100">DG Dashboard</h1>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Design Graphic Monitoring Performance</p>
+            <h1 className="text-3xl font-black tracking-tight text-slate-800 dark:text-slate-100">DESIGN GRAFIS Dashboard</h1>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">DESIGN GRAFIS Monitoring Performance</p>
           </div>
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-4">
@@ -246,7 +246,7 @@ export default function DGDashboard() {
               </div>
               <div>
                 <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 uppercase tracking-tight">Tren JOS Masuk (30 Hari)</h3>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Aktivitas Volume Design Graphic</p>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Aktivitas Volume DESIGN GRAFIS</p>
               </div>
           </div>
           <div className="h-80">
@@ -272,8 +272,8 @@ export default function DGDashboard() {
 
       <motion.div variants={itemVariants} className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-[3rem] p-8 shadow-sm">
         <div className="mb-6">
-          <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 uppercase tracking-tight">Kanban Proses DG</h3>
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Board khusus proses divisi Design Graphic</p>
+          <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 uppercase tracking-tight">Kanban Proses DESIGN GRAFIS</h3>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Board khusus proses divisi DESIGN GRAFIS</p>
         </div>
         <KanbanBoard data={kanbanItems} />
       </motion.div>

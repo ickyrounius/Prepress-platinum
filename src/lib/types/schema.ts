@@ -28,8 +28,8 @@ export function generateUniqueId(dept: string): string {
  * Peta kode departemen standar yang dipakai dalam ID
  */
 export const DEPT_CODES = {
-  DT:         "DT",   // Design Teknis / JOP
-  DG:         "DG",   // Desain Grafis / JOS
+  DT:         "DT",   // DESIGN TEKNIK / JOP
+  DG:         "DG",   // DESIGN GRAFIS / JOS
   PREPRESS:   "PP",   // Prepress
   QC:         "QC",   // Quality Control
   SUPPORT:    "SD",   // Support Design

@@ -201,15 +201,15 @@ const ADMIN_MENU: MenuItem[] = [
 ];
 
 const MENU_DT: MenuItem[] = [
-  { name: 'Dashboard DT',    href: '/dashboard/dt',       icon: LayoutDashboard },
-  { name: 'Input JOP Baru',  href: '/panel/dt/input-jop', icon: FileText },
-  { name: 'Panel Kerja DT',  href: '/panel/dt',           icon: Settings },
+  { name: 'Dashboard DESIGN TEKNIK',    href: '/dashboard/dt',       icon: LayoutDashboard },
+  { name: 'Input JOP Baru',             href: '/panel/dt/input-jop', icon: FileText },
+  { name: 'Panel Kerja DESIGN TEKNIK',  href: '/panel/dt',           icon: Settings },
 ];
 
 const MENU_DG: MenuItem[] = [
-  { name: 'Dashboard DG',    href: '/dashboard/dg',       icon: LayoutDashboard },
-  { name: 'Input JOS Baru',  href: '/panel/dg/input-jos', icon: FileText },
-  { name: 'Panel Kerja DG',  href: '/panel/dg',           icon: Settings },
+  { name: 'Dashboard DESIGN GRAFIS',    href: '/dashboard/dg',       icon: LayoutDashboard },
+  { name: 'Input JOS Baru',             href: '/panel/dg/input-jos', icon: FileText },
+  { name: 'Panel Kerja DESIGN GRAFIS',  href: '/panel/dg',           icon: Settings },
 ];
 
 const MENU_QC: MenuItem[] = [
@@ -241,12 +241,12 @@ const MENU_SPV: MenuItem[] = [
 
 const SUPERADMIN_GROUPS: MenuGroup[] = [
   {
-    label: 'DT — Desain Teknik',
+    label: 'DT — DESIGN TEKNIK',
     color: 'indigo',
     items: MENU_DT,
   },
   {
-    label: 'DG — Desain Grafis',
+    label: 'DG — DESIGN GRAFIS',
     color: 'violet',
     items: MENU_DG,
   },

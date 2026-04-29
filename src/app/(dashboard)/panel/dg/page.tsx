@@ -106,7 +106,7 @@ export default function DGPanel() {
                         <Palette weight="bold" size={32} />
                     </div>
                     <div className="space-y-1">
-                        <h1 className="text-3xl font-black text-slate-900 tracking-tight leading-none">Design Graphic</h1>
+                        <h1 className="text-3xl font-black text-slate-900 tracking-tight leading-none">DESIGN GRAFIS</h1>
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-pink-500 animate-pulse" />
                             Creative & Artwork Workflow
@@ -124,7 +124,7 @@ export default function DGPanel() {
       </div>
 
       <GlobalInputForm
-        title="Form Progress DG (Design Graphic)"
+        title="Form Progress DESIGN GRAFIS (DG)"
         collectionName="proses_jod"
         autoGenPrefix="DG-PROC"
         className="p-0 border-none shadow-none max-w-none bg-transparent space-y-12"
