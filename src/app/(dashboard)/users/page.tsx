@@ -21,6 +21,7 @@ interface UserItem {
   email?: string;
   lastLogin?: string;
   ACTIVE?: boolean;
+  VALIDATED?: boolean;
 }
 
 export default function UsersPage() {
@@ -43,7 +44,8 @@ export default function UsersPage() {
             email: d.EMAIL || d.email || '-',
             KATEGORI: d.KATEGORI || d.role || 'GUEST',
             lastLogin: d.LAST_LOGIN || d.lastLogin || '-',
-            ACTIVE: d.ACTIVE !== false // Default to true if undefined
+            ACTIVE: d.ACTIVE !== false, // Default to true if undefined
+            VALIDATED: d.VALIDATED !== false // Default to true if undefined
           } as UserItem);
         });
         setUsers(usersList);
@@ -105,6 +107,29 @@ export default function UsersPage() {
     } catch (err) {
       console.error("Error toggling status:", err);
       alert("Gagal mengubah status user.");
+    }
+  };
+
+  const handleToggleValidation = async (uid: string, currentValidation: boolean) => {
+    try {
+      const userRef = doc(db, "T_USERS", uid);
+      await updateDoc(userRef, {
+        VALIDATED: !currentValidation,
+        ACTIVE: !currentValidation ? true : undefined, // Aktifkan otomatis saat divalidasi
+        UPDATED_AT: Date.now()
+      });
+      if (user?.uid) {
+        await recordAuditLog({
+          actorUid: user.uid,
+          action: "toggle_user_validation",
+          entityType: "users",
+          entityId: uid,
+          metadata: { newValidation: !currentValidation },
+        });
+      }
+    } catch (err) {
+      console.error("Error toggling validation:", err);
+      alert("Gagal mengubah status validasi user.");
     }
   };
 
@@ -215,6 +240,7 @@ export default function UsersPage() {
           onUpdateRole={handleUpdateRole} 
           onDelete={handleDeleteUser}
           onToggleStatus={handleToggleStatus}
+          onToggleValidation={handleToggleValidation}
         />
       </motion.div>
 

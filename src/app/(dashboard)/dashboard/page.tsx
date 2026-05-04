@@ -31,13 +31,13 @@ export default function DashboardPage() {
   const router = useRouter();
   const [viewMode, setViewMode] = useState<'overview' | 'kanban'>('overview');
 
-  // Redirect based on role if not Admin
+  // Redirect based on role if not Admin or UMUM
   React.useEffect(() => {
     if (loading || !role) return;
     const r = normalizeRole(role);
     const ADMIN_ROLES = ["ADMIN", "DEVELOPER", "MANAGER"];
     
-    if (!ADMIN_ROLES.includes(r)) {
+    if (!ADMIN_ROLES.includes(r) && r !== 'UMUM') {
       if (['DT', 'CAD', 'SPV DT', 'ADMIN DT'].includes(r)) router.push('/dashboard/dt');
       else if (['DG', 'DS', 'SPV DG', 'ADMIN DG'].includes(r)) router.push('/dashboard/dg');
       else if (['PRODUCTION', 'SPV PREPRESS', 'KOORDINATOR', 'OP CTP', 'OP CTCP', 'OP FLEXO', 'OP SCREEN', 'OP ETCHING', 'ADMIN PREPRESS'].includes(r)) router.push('/dashboard/prepress');

@@ -3,12 +3,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Lock, Mail, Users, User, ArrowRight } from "lucide-react";
+import { Lock, Mail, User, ArrowRight, CheckCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
-import { ROLE_SELECT_GROUPS, isValidUserRole } from "@/lib/userRoles";
 
 interface AuthError {
   code?: string;
@@ -19,9 +18,9 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [role, setRole] = useState("MANAGER");
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [success, setSuccess] = useState(false);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,28 +28,22 @@ export default function RegisterPage() {
     setErrorMsg("");
 
     try {
-      if (!isValidUserRole(role)) {
-        throw new Error("Role user tidak valid.");
-      }
-
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Create a user document in Firestore to store their role and name
+      // Create a user document in Firestore with pending status
       await setDoc(doc(db, "T_USERS", user.uid), {
         NAMA: name,
         EMAIL: email,
-        KATEGORI: role,
+        KATEGORI: "UMUM",
         UID: user.uid,
-        ACTIVE: true,
+        ACTIVE: false,
+        VALIDATED: false,
         UPDATED_AT: Date.now(),
         CREATED_AT: new Date().toISOString()
       });
 
-      // Redirect to dashboard after successful registration
-      setTimeout(() => {
-        router.push("/");
-      }, 500);
+      setSuccess(true);
     } catch (error: unknown) {
       console.error("Registration error:", error);
       const authError = error as AuthError;
@@ -65,6 +58,29 @@ export default function RegisterPage() {
     }
   };
 
+  if (success) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-tr from-background via-background to-primary/20 relative overflow-hidden">
+        <div className="absolute top-[-10%] right-[-10%] w-96 h-96 bg-primary/20 rounded-full blur-[100px]" />
+        
+        <div className="w-full max-w-md animate-slide-up z-10">
+          <div className="glass rounded-2xl p-8 border border-border/50 shadow-2xl relative overflow-hidden text-center">
+            <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <CheckCircle className="w-10 h-10 text-emerald-600" />
+            </div>
+            <h2 className="text-2xl font-bold mb-2">Registrasi Berhasil!</h2>
+            <p className="text-muted-foreground mb-6">
+              Akun Anda telah dibuat. Silakan tunggu validasi dari administrator untuk dapat mengakses sistem.
+            </p>
+            <Link href="/login" className="w-full h-11 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-colors flex items-center justify-center gap-2">
+              Ke Halaman Login
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-tr from-background via-background to-primary/20 relative overflow-hidden">
       {/* Decorative blobs */}
@@ -76,7 +92,7 @@ export default function RegisterPage() {
             <div className="flex justify-center mb-4">
               <Image src="/logo.png" alt="Prepress Platinum Logo" width={160} height={64} className="h-16 w-auto object-contain drop-shadow-sm" />
             </div>
-            <p className="text-muted-foreground text-sm">Join the Prepress Platinum System</p>
+            <p className="text-muted-foreground text-sm">Daftar Akun Prepress Platinum</p>
           </div>
 
           {errorMsg && (
@@ -87,7 +103,7 @@ export default function RegisterPage() {
 
           <form onSubmit={handleRegister} className="space-y-4">
             <div className="space-y-1">
-              <label className="text-sm font-medium ml-1">Full Name</label>
+              <label className="text-sm font-medium ml-1">Nama Lengkap</label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <input
@@ -96,7 +112,7 @@ export default function RegisterPage() {
                   onChange={e => setName(e.target.value)}
                   required
                   className="w-full h-11 bg-background border border-border rounded-xl pl-10 pr-4 focus:ring-2 focus:ring-primary/50 outline-none transition-all"
-                  placeholder="John Doe"
+                  placeholder="Nama Lengkap Anda"
                 />
               </div>
             </div>
@@ -111,30 +127,8 @@ export default function RegisterPage() {
                   onChange={e => setEmail(e.target.value)}
                   required
                   className="w-full h-11 bg-background border border-border rounded-xl pl-10 pr-4 focus:ring-2 focus:ring-primary/50 outline-none transition-all"
-                  placeholder="work@prepress.com"
+                  placeholder="email@perusahaan.com"
                 />
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-sm font-medium ml-1">Department Role</label>
-              <div className="relative">
-                <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                <select
-                  value={role}
-                  onChange={e => setRole(e.target.value)}
-                  className="w-full h-11 bg-background border border-border rounded-xl pl-10 pr-4 focus:ring-2 focus:ring-primary/50 outline-none transition-all appearance-none"
-                >
-                  {ROLE_SELECT_GROUPS.map((group) => (
-                    <optgroup key={group.label} label={group.label}>
-                      {group.options.map((roleOption) => (
-                        <option key={roleOption} value={roleOption}>
-                          {roleOption}
-                        </option>
-                      ))}
-                    </optgroup>
-                  ))}
-                </select>
               </div>
             </div>
 
@@ -153,21 +147,26 @@ export default function RegisterPage() {
               </div>
             </div>
 
+            <div className="text-xs text-muted-foreground bg-amber-50 p-3 rounded-xl border border-amber-200">
+              <p className="font-semibold text-amber-700 mb-1">Catatan:</p>
+              <p>Setelah mendaftar, akun Anda akan menunggu validasi dari administrator sebelum dapat digunakan.</p>
+            </div>
+
             <button
               type="submit"
               disabled={isLoading}
               className="w-full h-11 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 mt-2 disabled:opacity-70"
             >
-              {isLoading ? "Signing up..." : (
-                <>Sign Up <ArrowRight className="w-4 h-4 ml-1" /></>
+              {isLoading ? "Mendaftarkan..." : (
+                <>Daftar <ArrowRight className="w-4 h-4 ml-1" /></>
               )}
             </button>
           </form>
 
           <p className="text-center text-sm text-muted-foreground mt-6">
-            Already have an account?{" "}
+            Sudah punya akun?{" "}
             <Link href="/login" className="text-primary font-semibold hover:underline">
-              Log In
+              Masuk
             </Link>
           </p>
         </div>

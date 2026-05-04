@@ -11,6 +11,8 @@ interface AuthContextType {
   role: string | null;
   name: string | null;
   loading: boolean;
+  validated: boolean;
+  active: boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -18,6 +20,8 @@ const AuthContext = createContext<AuthContextType>({
   role: null,
   name: null,
   loading: true,
+  validated: false,
+  active: false,
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -27,6 +31,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [role, setRole] = useState<string | null>(null);
   const [name, setName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [validated, setValidated] = useState(false);
+  const [active, setActive] = useState(false);
   const { notify } = useNotification();
 
   useEffect(() => {
@@ -39,9 +45,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const data = userDocInfo.data();
             setRole(data.KATEGORI);
             setName(data.NAMA || data.displayName || null);
+            setValidated(data.VALIDATED !== false);
+            setActive(data.ACTIVE !== false);
           } else {
             setRole("GUEST");
             setName(currentUser.displayName || null);
+            setValidated(false);
+            setActive(false);
           }
         } catch (error) {
           console.error("Error fetching user role", error);
@@ -50,6 +60,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         setRole(null);
         setName(null);
+        setValidated(false);
+        setActive(false);
       }
       setLoading(false);
     });
@@ -58,7 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [notify]);
 
   return (
-    <AuthContext.Provider value={{ user, role, name, loading }}>
+    <AuthContext.Provider value={{ user, role, name, loading, validated, active }}>
       {children}
     </AuthContext.Provider>
   );

@@ -6,7 +6,7 @@ import {
   CaretUpDown, MagnifyingGlass, UserCircle, 
   Envelope, IdentificationBadge, ShieldCheck,
   Trash, CheckCircle, MinusCircle, UserCirclePlus,
-  ChartLineUp
+  ChartLineUp, Clock
 } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
 import { ROLE_SELECT_GROUPS } from '@/lib/userRoles';
@@ -19,6 +19,7 @@ interface UserData {
   email?: string;
   lastLogin?: string;
   ACTIVE?: boolean;
+  VALIDATED?: boolean;
 }
 
 interface UserTableProps {
@@ -26,9 +27,10 @@ interface UserTableProps {
   onUpdateRole: (uid: string, newRole: string) => void;
   onDelete: (uid: string, name: string) => void;
   onToggleStatus: (uid: string, currentStatus: boolean) => void;
+  onToggleValidation: (uid: string, currentValidation: boolean) => void;
 }
 
-export const UserTable = ({ users, onUpdateRole, onDelete, onToggleStatus }: UserTableProps) => {
+export const UserTable = ({ users, onUpdateRole, onDelete, onToggleStatus, onToggleValidation }: UserTableProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortKey, setSortKey] = useState<keyof UserData>('KATEGORI');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
@@ -103,6 +105,7 @@ export const UserTable = ({ users, onUpdateRole, onDelete, onToggleStatus }: Use
                         <CaretUpDown className="group-hover:text-indigo-500" />
                     </div>
                 </th>
+                <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">VALIDASI</th>
                 <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">STATUS</th>
                 <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">LOGIN TERAKHIR</th>
                 <th className="px-6 py-5 text-right text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">AKSI</th>
@@ -140,6 +143,23 @@ export const UserTable = ({ users, onUpdateRole, onDelete, onToggleStatus }: Use
                         <ShieldCheck weight="bold" className="w-3 h-3" />
                         {user.KATEGORI}
                       </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <button 
+                        onClick={() => onToggleValidation(user.id, user.VALIDATED ?? false)}
+                        className={cn(
+                          "inline-flex items-center gap-2 px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all",
+                          (user.VALIDATED ?? false) 
+                            ? "bg-emerald-50 text-emerald-600 hover:bg-emerald-100" 
+                            : "bg-amber-50 text-amber-600 hover:bg-amber-100"
+                        )}
+                      >
+                        {(user.VALIDATED ?? false) ? (
+                          <><CheckCircle weight="bold" /> DIVALIDASI</>
+                        ) : (
+                          <><Clock weight="bold" /> PENDING</>
+                        )}
+                      </button>
                     </td>
                     <td className="px-6 py-4">
                       <button 
