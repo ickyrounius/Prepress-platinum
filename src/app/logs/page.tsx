@@ -35,8 +35,12 @@ export default function LogHistoryPage() {
         id: doc.id,
         type: activeType,
         ...doc.data()
-      }));
-      setLogs(logData as unknown as LogEntry[]);
+      })) as unknown as LogEntry[];
+      
+      if (!Array.isArray(logData)) {
+        console.warn('Invalid log data structure received');
+      }
+      setLogs(logData);
       setLoading(false);
     });
 

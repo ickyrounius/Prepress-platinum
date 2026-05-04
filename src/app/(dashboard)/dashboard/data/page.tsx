@@ -38,11 +38,14 @@ function MasterDataContent() {
     const q = query(jopRef, orderBy('timestamp_input', 'desc'));
     
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const allData = snapshot.docs.map(doc => ({
+      const allData: WorkflowJop[] = snapshot.docs.map(doc => ({
         ID: doc.id,
         ...doc.data()
-      })) as unknown as WorkflowJop[];
+      })) as WorkflowJop[];
       
+      if (!Array.isArray(allData) || !allData.every(item => item?.ID)) {
+        console.warn('Malformed data received from Firestore');
+      }
       setData(allData);
       setTotalAktif(allData.filter((item) => resolveWorkflowStatus(item as Record<string, unknown>, 'DT').toUpperCase() !== 'CLOSED').length);
       setTotalClosed(allData.filter((item) => resolveWorkflowStatus(item as Record<string, unknown>, 'DT').toUpperCase() === 'CLOSED').length);

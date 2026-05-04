@@ -4,7 +4,7 @@ import { ref, set } from 'firebase/database';
 import { generateUniqueId, DEPT_CODES } from '@/lib/types/schema';
 
 // URL Google Apps Script yang berfungsi sebagai fetcher data
-const GSHEET_FETCH_URL = process.env.NEXT_PUBLIC_GSHEET_FETCH_URL || "https://script.google.com/macros/s/AKfycby-IMPORT-XXX/exec";
+const GSHEET_FETCH_URL = process.env.NEXT_PUBLIC_GSHEET_FETCH_URL || "";
 
 export interface GSheetImportResult {
   success: boolean;
@@ -15,8 +15,27 @@ export interface GSheetImportResult {
 /**
  * Service untuk menarik data dari Google Sheets dan memasukkannya ke Firestore/RTDB
  */
-export const importDataFromGSheet = async (type: 'JOP' | 'JOS'): Promise<GSheetImportResult> => {
+export const importDataFromGSheet = async (
+  type: 'JOP' | 'JOS',
+  actorUid: string
+): Promise<GSheetImportResult> => {
   try {
+    if (!actorUid) {
+      return {
+        success: false,
+        importedCount: 0,
+        error: "Aktor import tidak valid.",
+      };
+    }
+
+    if (!GSHEET_FETCH_URL) {
+      return {
+        success: false,
+        importedCount: 0,
+        error: "NEXT_PUBLIC_GSHEET_FETCH_URL belum dikonfigurasi.",
+      };
+    }
+
     const response = await fetch(`${GSHEET_FETCH_URL}?type=${type}`, {
       method: 'GET',
     });
@@ -34,6 +53,7 @@ export const importDataFromGSheet = async (type: 'JOP' | 'JOS'): Promise<GSheetI
     const batch = writeBatch(db);
     const collectionName = type === 'JOP' ? 'workflows_jop' : 'workflows_jos';
     const deptCode = type === 'JOP' ? DEPT_CODES.DT : DEPT_CODES.DG;
+    const activePayloads: Array<{ id: string; payload: Record<string, unknown> }> = [];
 
     let count = 0;
     for (const row of rows) {
@@ -48,6 +68,9 @@ export const importDataFromGSheet = async (type: 'JOP' | 'JOS'): Promise<GSheetI
         ...row,
         ID: uniqueId,
         id: uniqueId,
+        operator_id: actorUid,
+        OPERATOR_ID: actorUid,
+        imported_by_uid: actorUid,
         LAST_UPDATED: serverTimestamp(),
         ...(type === 'JOP' ? { ST_WF_JOP: (row.ST_WF_JOP || row.ST_WORKFLOW || 'OPEN') } : {}),
         ...(type === 'JOS' ? { ST_WF_JOS: (row.ST_WF_JOS || row.ST_WORKFLOW || 'OPEN') } : {}),
@@ -63,13 +86,18 @@ export const importDataFromGSheet = async (type: 'JOP' | 'JOS'): Promise<GSheetI
           : (row.ST_WF_JOS || row.ST_WORKFLOW || '')
       ).toUpperCase();
       if (!['CLOSED', 'DONE', 'CANCEL'].includes(workflowStatus)) {
-        await set(ref(rtdb, `active_jobs/${collectionName}/${uniqueId}`), payload);
+        activePayloads.push({ id: uniqueId, payload: payload as Record<string, unknown> });
       }
       
       count++;
     }
 
     await batch.commit();
+    await Promise.all(
+      activePayloads.map((item) =>
+        set(ref(rtdb, `active_jobs/${collectionName}/${item.id}`), item.payload)
+      )
+    );
     return { success: true, importedCount: count };
 
   } catch (error: unknown) {

@@ -67,39 +67,24 @@ export function normalizeWorkflowStatusInput(value: unknown): string {
  * - JOP should prefer ST_WF_JOP
  * - JOS should prefer ST_WF_JOS
  */
+import { getFieldValue } from "./fieldStandardization";
+
 export function resolveWorkflowStatus(
   item: Record<string, unknown>,
   sourceType?: string
 ): string {
   if (sourceType === "DT") {
-    return String(
-      item.ST_WF_JOP ||
-      item.ST_WORKFLOW ||
-      item.status_workflow ||
-      item.status_dt ||
-      ""
-    );
+    return String(getFieldValue(item, "JOP_WORKFLOW_STATUS") || "");
   }
 
   if (sourceType === "DG") {
-    return String(
-      item.ST_WF_JOS ||
-      item.ST_WORKFLOW ||
-      item.status_workflow ||
-      item.status_dg ||
-      ""
-    );
+    return String(getFieldValue(item, "JOS_WORKFLOW_STATUS") || "");
   }
 
   return String(
-    item.ST_WF_JOP ||
-    item.ST_WF_JOS ||
-    item.ST_WORKFLOW ||
-    item.status_workflow ||
-    item.status_dg ||
-    item.status_dt ||
-    item.status_cad ||
-    item.tahapan_prepress ||
+    getFieldValue(item, "JOP_WORKFLOW_STATUS") ||
+    getFieldValue(item, "JOS_WORKFLOW_STATUS") ||
+    item.ST_WORKFLOW || // fallback for very old items
     ""
   );
 }

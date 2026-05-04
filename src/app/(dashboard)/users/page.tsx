@@ -8,6 +8,7 @@ import { exportToPDF } from '@/features/report/exportPDF';
 import { useAuth } from '@/features/auth/AuthContext';
 import { recordAuditLog } from '@/features/audit-log/auditLogService';
 import { isValidUserRole } from '@/lib/userRoles';
+import { setUserRoleByAdmin } from '@/lib/userManagementService';
 import { 
   UsersThree, ShieldCheck, DownloadSimple,
   CircleNotch, WarningCircle 
@@ -68,10 +69,7 @@ export default function UsersPage() {
         return;
       }
 
-      const userRef = doc(db, "T_USERS", uid);
-      await updateDoc(userRef, {
-        KATEGORI: newRole
-      });
+      await setUserRoleByAdmin({ uid, role: newRole });
       if (user?.uid) {
         await recordAuditLog({
           actorUid: user.uid,

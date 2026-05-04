@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { db } from '@/lib/firebase';
-import { doc, getDoc, collection, query, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc, collection, query, getDocs, where } from 'firebase/firestore';
 import { motion } from 'framer-motion';
 import { 
   User, ShieldCheck, Trophy, Medal, 
@@ -41,10 +41,11 @@ function UserPerformanceContent() {
     fetchUser();
   }, [id]);
 
-  // 2. Fetch User Activities across all collections
+  // 2. Fetch User Activities using indexed server-side filters
   useEffect(() => {
-    if (!userData?.NAMA && !userData?.displayName) return;
+    if (!id || (!userData?.NAMA && !userData?.displayName)) return;
     const userName = userData.NAMA || userData.displayName;
+    let cancelled = false;
 
     const collections = [
       'proses_dt_b',
@@ -57,35 +58,46 @@ function UserPerformanceContent() {
       'proses_support_b',
     ];
 
-    const unsubscribes = collections.map(col => {
-      const q = query(collection(db, col));
-      return onSnapshot(q, (snapshot) => {
-        const items: DashboardItem[] = [];
-        snapshot.forEach(doc => {
-          const d = doc.data();
-          // Filter by PIC in snapshot loop to keep it simple but real-time
-          if (
-            String(d.pic_utama || d.PIC_UTAMA || d.pic || '').toUpperCase() === userName.toUpperCase() ||
-            String(d.pic_support || d.PIC_SUPPORT || '').toUpperCase() === userName.toUpperCase()
-          ) {
-            const sourceType = col === 'proses_dt_b' ? 'DT' : col === 'proses_jod' ? 'DG' : col === 'proses_support_b' ? 'SUPPORT' : 'PROD';
-            items.push({ id: doc.id, sourceType, ...d } as DashboardItem);
-          }
-        });
-        
-        setRawItems(prev => {
-          const others = prev.filter(p => !items.some(newItem => newItem.id === p.id));
-          return [...others, ...items];
-        });
-      });
-    });
+    const fetchActivities = async () => {
+      try {
+        setLoading(true);
+        const normalizedName = String(userName).trim();
+        const jobs = collections.flatMap((col) => [
+          { col, task: getDocs(query(collection(db, col), where('PIC_UTAMA_UID', '==', id))) },
+          { col, task: getDocs(query(collection(db, col), where('PIC_SUPPORT_UIDS', 'array-contains', id))) },
+          { col, task: getDocs(query(collection(db, col), where('PIC_UTAMA', '==', normalizedName))) },
+          { col, task: getDocs(query(collection(db, col), where('pic_utama', '==', normalizedName))) },
+          { col, task: getDocs(query(collection(db, col), where('PIC_SUPPORT', '==', normalizedName))) },
+          { col, task: getDocs(query(collection(db, col), where('pic_support', '==', normalizedName))) },
+        ]);
 
-    const timer = setTimeout(() => setLoading(false), 2000);
-    return () => {
-      unsubscribes.forEach(unsub => unsub());
-      clearTimeout(timer);
+        const snapshots = await Promise.all(jobs.map((job) => job.task));
+        if (cancelled) return;
+
+        const deduped = new Map<string, DashboardItem>();
+        snapshots.forEach((snapshot, idx) => {
+          const col = jobs[idx].col;
+          snapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            const sourceType = col === 'proses_dt_b' ? 'DT' : col === 'proses_jod' ? 'DG' : col === 'proses_support_b' ? 'SUPPORT' : 'PROD';
+            const key = `${col}:${docSnap.id}`;
+            deduped.set(key, { id: docSnap.id, sourceType, ...data } as DashboardItem);
+          });
+        });
+
+        setRawItems(Array.from(deduped.values()));
+      } catch (err) {
+        console.error('Error loading user activities:', err);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     };
-  }, [userData]);
+
+    void fetchActivities();
+    return () => {
+      cancelled = true;
+    };
+  }, [id, userData]);
 
   // 3. Process Stats
   const stats = useMemo(() => {
@@ -328,7 +340,9 @@ export default function UserPerformancePage() {
   );
 }
 
-function KPICard({ title, value, icon: Icon, color }: { title: string, value: string | number, icon: any, color: string }) {
+type IconComponent = React.ComponentType<any>;
+
+function KPICard({ title, value, icon: Icon, color }: { title: string, value: string | number, icon: IconComponent, color: string }) {
   return (
     <motion.div 
       whileHover={{ y: -5 }}

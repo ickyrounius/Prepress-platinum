@@ -1,10 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { db } from '@/lib/firebase';
-import { collection, query, onSnapshot, orderBy, limit } from 'firebase/firestore';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
   LineChart, Line,
@@ -15,13 +13,13 @@ import {
   ChartPieSlice, Users, ChartLineUp, Trophy, 
   DownloadSimple,
   ArrowsCounterClockwise,
-  Kanban, ChartBar, Lightning, Pulse, TrendUp
+  Kanban, ChartBar, Lightning, Pulse, TrendUp, WarningCircle, Empty
 } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
 import { KanbanBoard } from '@/components/dashboard/KanbanBoard';
 import { useAuth } from '@/features/auth/AuthContext';
 import { recordAuditLog } from '@/features/audit-log/auditLogService';
-import { classifyWorkflowStatus, detectJopType, detectJosType, resolveWorkflowStatus, type JopType, type JosType } from '@/lib/workflow';
+import { resolveWorkflowStatus, type JopType, type JosType } from '@/lib/workflow';
 import { getKPIColorClasses } from '@/features/kpi/kpiStyles';
 
 interface DashboardItem extends Record<string, unknown> {
@@ -36,9 +34,12 @@ import { useDashboardData } from '@/hooks/useDashboardData';
 
 export default function DashboardInternal() {
   const { user } = useAuth();
+  const shouldReduceMotion = useReducedMotion();
   const [viewMode, setViewMode] = useState<'overview' | 'kanban'>('overview');
   
   const {
+    isLoading,
+    error,
     filteredItems,
     stats,
     productivityData,
@@ -51,6 +52,7 @@ export default function DashboardInternal() {
     setDateRange,
     resetFilters
   } = useDashboardData();
+  const hasData = filteredItems.length > 0;
 
   const workflowStatusData = useMemo(() => [
     { name: 'Selesai', value: stats.closed, color: '#10b981' },
@@ -98,15 +100,15 @@ export default function DashboardInternal() {
     show: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.3
+        staggerChildren: shouldReduceMotion ? 0 : 0.06,
+        delayChildren: shouldReduceMotion ? 0 : 0.15
       }
     }
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } }
+    hidden: { opacity: 0, y: shouldReduceMotion ? 0 : 12 },
+    show: { opacity: 1, y: 0, transition: { duration: shouldReduceMotion ? 0.1 : 0.35, ease: "easeOut" } }
   };
 
   return (
@@ -201,13 +203,38 @@ export default function DashboardInternal() {
                 </button>
                 <button
                   onClick={exportDashboardPDF}
-                  className="flex-1 sm:flex-none px-4 py-3 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 transition-all active:scale-95 shadow-lg flex items-center justify-center gap-2 text-[10px] sm:text-[11px] font-black uppercase tracking-widest"
+                  disabled={!hasData || isLoading}
+                  className="flex-1 sm:flex-none px-4 py-3 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 transition-all active:scale-95 shadow-lg flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <DownloadSimple weight="bold" className="w-4 h-4" /> PDF
                 </button>
             </div>
         </div>
       </motion.div>
+
+      {error && (
+        <motion.div variants={itemVariants} className="rounded-3xl border border-rose-200 bg-rose-50 px-5 py-4 dark:border-rose-900/60 dark:bg-rose-950/30">
+          <div className="flex items-center gap-3 text-rose-700 dark:text-rose-300">
+            <WarningCircle weight="fill" className="h-5 w-5 shrink-0" />
+            <p className="text-sm font-semibold">{error}</p>
+          </div>
+        </motion.div>
+      )}
+
+      {isLoading && (
+        <motion.div variants={itemVariants} className="rounded-3xl border border-slate-200 bg-white px-5 py-4 dark:border-slate-700 dark:bg-slate-800">
+          <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">Memuat data dashboard...</p>
+        </motion.div>
+      )}
+
+      {!isLoading && !error && !hasData && (
+        <motion.div variants={itemVariants} className="rounded-3xl border border-amber-200 bg-amber-50 px-5 py-4 dark:border-amber-900/60 dark:bg-amber-950/30">
+          <div className="flex items-center gap-3 text-amber-700 dark:text-amber-300">
+            <Empty weight="fill" className="h-5 w-5 shrink-0" />
+            <p className="text-sm font-semibold">Tidak ada data yang cocok dengan filter saat ini.</p>
+          </div>
+        </motion.div>
+      )}
 
       <AnimatePresence mode="wait">
         {viewMode === 'overview' ? (
@@ -227,8 +254,8 @@ export default function DashboardInternal() {
                     <motion.div 
                     key={card.id}
                     variants={itemVariants}
-                    whileHover={{ y: -8, scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    whileHover={shouldReduceMotion ? undefined : { y: -4, scale: 1.01 }}
+                    whileTap={shouldReduceMotion ? undefined : { scale: 0.99 }}
                     className="relative overflow-hidden bg-white dark:bg-slate-800 p-6 rounded-[2.5rem] shadow-sm border border-slate-100 dark:border-slate-700 transition-all hover:shadow-2xl hover:border-indigo-100 dark:hover:border-indigo-800 group cursor-default"
                     >
                     <div className={cn(
@@ -244,14 +271,14 @@ export default function DashboardInternal() {
                         )}>
                         <card.icon weight="bold" size={24} />
                         </div>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 group-hover:text-indigo-500 transition-colors">{card.title}</p>
+                        <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1 group-hover:text-indigo-500 transition-colors">{card.title}</p>
                         <h3 className={cn(
                         "text-4xl font-black transition-all group-hover:scale-110 origin-left",
                         card.id === 'Total' ? "text-slate-800 dark:text-slate-100" : colors.text
                         )}>{card.value}</h3>
                         <div className="mt-4 flex items-center gap-1.5 overflow-hidden">
                            <Pulse className={cn("w-3 h-3 group-hover:animate-pulse", colors.text)} weight="bold" />
-                           <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest">Real-time update</span>
+                           <span className="text-[11px] font-black text-slate-300 uppercase tracking-widest">Real-time update</span>
                         </div>
                     </div>
                     </motion.div>
@@ -271,7 +298,7 @@ export default function DashboardInternal() {
                                 <ChartPieSlice weight="bold" size={20} className="sm:size-[24px]" />
                             </div>
                             <div>
-                                <p className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Status Overview</p>
+                                <p className="text-xs font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Status Overview</p>
                                 <h4 className="text-base sm:text-lg font-black text-slate-800 dark:text-slate-100 uppercase tracking-wider">Status Workflow</h4>
                             </div>
                         </div>
@@ -280,7 +307,7 @@ export default function DashboardInternal() {
                         <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                             <Pie
-                            isAnimationActive={true}
+                            isAnimationActive={!shouldReduceMotion}
                             animationBegin={300}
                             animationDuration={1500}
                             data={workflowStatusData}
@@ -312,11 +339,11 @@ export default function DashboardInternal() {
                                 <Users weight="bold" size={20} className="sm:size-[24px]" />
                             </div>
                             <div>
-                                <p className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Workload Capacity</p>
+                                <p className="text-xs font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Workload Capacity</p>
                                 <h4 className="text-base sm:text-lg font-black text-slate-800 dark:text-slate-100 uppercase tracking-wider">Beban Kerja PIC (TC)</h4>
                             </div>
                         </div>
-                        <div className="px-3 sm:px-4 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[8px] sm:text-[10px] font-black rounded-xl border border-blue-100 dark:border-blue-800 animate-pulse whitespace-nowrap">LIVE VIEW</div>
+                        <div className="px-3 sm:px-4 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-black rounded-xl border border-blue-100 dark:border-blue-800 animate-pulse whitespace-nowrap">LIVE VIEW</div>
                     </div>
                     <div className="h-64 sm:h-80 w-full">
                         <ResponsiveContainer width="100%" height="100%">
@@ -329,8 +356,8 @@ export default function DashboardInternal() {
                              contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} 
                             />
                             <Legend iconType="circle" wrapperStyle={{ fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.05em' }} />
-                            <Bar dataKey="tcUtama" name="Poin Utama" stackId="a" fill="#6366f1" radius={[0, 0, 8, 8]} barSize={28} isAnimationActive={true} animationDuration={2000} />
-                            <Bar dataKey="tcSupport" name="Poin Help" stackId="a" fill="#c7d2fe" radius={[8, 8, 0, 0]} barSize={28} isAnimationActive={true} animationDuration={2500} />
+                            <Bar dataKey="tcUtama" name="Poin Utama" stackId="a" fill="#6366f1" radius={[0, 0, 8, 8]} barSize={28} isAnimationActive={!shouldReduceMotion} animationDuration={2000} />
+                            <Bar dataKey="tcSupport" name="Poin Help" stackId="a" fill="#c7d2fe" radius={[8, 8, 0, 0]} barSize={28} isAnimationActive={!shouldReduceMotion} animationDuration={2500} />
                         </BarChart>
                         </ResponsiveContainer>
                     </div>
@@ -346,7 +373,7 @@ export default function DashboardInternal() {
                                 <ChartLineUp weight="bold" size={20} className="sm:size-[24px]" />
                             </div>
                             <div>
-                                <p className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Performance Trend</p>
+                                <p className="text-xs font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Performance Trend</p>
                                 <h4 className="text-base sm:text-lg font-black text-slate-800 dark:text-slate-100 uppercase tracking-wider">Tren JOP Masuk</h4>
                             </div>
                         </div>
@@ -360,7 +387,7 @@ export default function DashboardInternal() {
                             <RechartsTooltip 
                              contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} 
                             />
-                            <Line isAnimationActive={true} animationDuration={3000} type="monotone" dataKey="jop" name="JOP Masuk" stroke="#10b981" strokeWidth={4} dot={{ r: 5, fill: '#10b981', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 7, strokeWidth: 0 }} />
+                            <Line isAnimationActive={!shouldReduceMotion} animationDuration={3000} type="monotone" dataKey="jop" name="JOP Masuk" stroke="#10b981" strokeWidth={4} dot={{ r: 5, fill: '#10b981', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 7, strokeWidth: 0 }} />
                         </LineChart>
                         </ResponsiveContainer>
                     </div>
@@ -383,7 +410,7 @@ export default function DashboardInternal() {
                                 
                                 <div className="space-y-1 sm:space-y-2">
                                     <h4 className="text-2xl sm:text-3xl font-black text-white leading-tight">Performa <br /><span className="text-indigo-400 underline decoration-indigo-500/30 underline-offset-8">Prepress Platinum</span></h4>
-                                    <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Efficiency Achievement Rate</p>
+                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">Efficiency Achievement Rate</p>
                                 </div>
 
                                 <div className="space-y-3 sm:space-y-4">
@@ -395,7 +422,7 @@ export default function DashboardInternal() {
                                         <motion.div 
                                             initial={{ width: 0 }}
                                             animate={{ width: '98.4%' }}
-                                            transition={{ duration: 2, ease: "easeOut", delay: 1 }}
+                                            transition={{ duration: shouldReduceMotion ? 0.2 : 2, ease: "easeOut", delay: shouldReduceMotion ? 0 : 1 }}
                                             className="bg-indigo-500 h-full rounded-full shadow-[0_0_20px_rgba(99,102,241,0.5)]"
                                         />
                                     </div>
@@ -403,7 +430,7 @@ export default function DashboardInternal() {
                             </div>
                             
                             <div className="relative z-10 mt-6 pt-6 border-t border-white/5 flex items-center justify-between text-slate-500">
-                                <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest group-hover:text-white transition-colors">Lihat detail ranking PIC</span>
+                                <span className="text-xs font-black uppercase tracking-widest group-hover:text-white transition-colors">Lihat detail ranking PIC</span>
                                 <ArrowsCounterClockwise weight="bold" size={14} className="sm:size-[16px] group-hover:rotate-180 transition-transform duration-700" />
                             </div>
                         </div>
@@ -414,13 +441,19 @@ export default function DashboardInternal() {
         ) : (
           <motion.div 
             key="kanban"
-            initial={{ opacity: 0, x: 50, scale: 0.95 }}
+            initial={{ opacity: 0, x: shouldReduceMotion ? 0 : 50, scale: shouldReduceMotion ? 1 : 0.95 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: -50, scale: 0.95, transition: { duration: 0.3 } }}
-            transition={{ type: "spring", damping: 20, stiffness: 100 }}
+            exit={{ opacity: 0, x: shouldReduceMotion ? 0 : -50, scale: shouldReduceMotion ? 1 : 0.95, transition: { duration: 0.3 } }}
+            transition={shouldReduceMotion ? { duration: 0.2 } : { type: "spring", damping: 20, stiffness: 100 }}
             className="pb-8"
           >
-            <KanbanBoard data={filteredItems as any} />
+            {hasData ? (
+              <KanbanBoard data={filteredItems as any} />
+            ) : (
+              <div className="rounded-3xl border border-slate-200 bg-white px-5 py-10 text-center dark:border-slate-700 dark:bg-slate-800">
+                <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">Belum ada item untuk ditampilkan di kanban.</p>
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

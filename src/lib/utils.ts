@@ -24,18 +24,19 @@ export function debounce<T extends (...args: any[]) => any>(
 
 /**
  * Creates a throttled version of a function that only invokes the original function
- * at most once per `limit` ms.
+ * at most once per `limit` ms. Properly preserves return type for async functions.
  */
 export function throttle<T extends (...args: any[]) => any>(
   func: T,
   limit: number
-): (...args: Parameters<T>) => void {
+): (...args: Parameters<T>) => ReturnType<T> | void {
   let inThrottle = false;
   return (...args: Parameters<T>) => {
     if (!inThrottle) {
-      func(...args);
+      const result = func(...args);
       inThrottle = true;
       setTimeout(() => (inThrottle = false), limit);
+      return result;
     }
   };
 }

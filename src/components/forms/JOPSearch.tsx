@@ -7,6 +7,9 @@ import { ref, get } from 'firebase/database';
 import { Search, Loader2, X, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { resolveWorkflowStatus } from '@/lib/workflow';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 type SearchItem = {
   id: string;
@@ -150,7 +153,7 @@ export function JOPSearch({
           {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
         </div>
         
-        <input
+        <Input
           type="text"
           value={searchTerm}
           required={required && !selectedItem}
@@ -158,19 +161,21 @@ export function JOPSearch({
           onFocus={() => results.length > 0 && setIsOpen(true)}
           placeholder={placeholder || `Cari ${type === 'JOS' ? 'NO_JOS-D' : 'NO_JOP'}...`}
           className={cn(
-            "w-full pl-10 pr-10 py-3 border rounded-xl bg-slate-50 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all",
+            "pl-10 pr-10 h-auto py-3 border rounded-xl bg-slate-50 text-sm focus:ring-2 focus:ring-indigo-500 transition-all",
             selectedItem ? "border-emerald-200 bg-emerald-50/30 font-bold text-emerald-900" : "border-slate-200"
           )}
         />
 
         {(searchTerm || selectedItem) && (
-          <button
+          <Button
             type="button"
             onClick={clearSelection}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-rose-500 p-1 rounded-full hover:bg-slate-100 transition-colors"
+            variant="ghost"
+            size="sm"
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-rose-500 h-8 w-8 p-0 rounded-full hover:bg-slate-100 transition-colors"
           >
             <X className="w-4 h-4" />
-          </button>
+          </Button>
         )}
       </div>
 
@@ -205,14 +210,14 @@ export function JOPSearch({
                 >
                   <div className="flex justify-between items-center">
                     <span className="font-bold text-slate-900">{displayId}</span>
-                    <span className={cn(
-                      "text-[10px] px-2 py-0.5 rounded-full font-bold uppercase flex items-center gap-1",
+                    <Badge className={cn(
+                      "text-[10px] px-2 py-0.5 font-bold uppercase flex items-center gap-1",
                       item.is_rtdb ? "bg-indigo-100 text-indigo-700 shadow-sm" :
                       isFinished() ? "bg-emerald-100 text-emerald-700" :
                       "bg-blue-100 text-blue-700"
                     )}>
                       {getStatusLabel()}
-                    </span>
+                    </Badge>
                   </div>
                   <div className="flex justify-between text-[10px] text-slate-500 mt-1">
                     <span className="truncate max-w-[120px]">{(item.BUYER || item.buyer || 'N/A') as string}</span>

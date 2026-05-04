@@ -121,7 +121,7 @@ export default function DTPanel() {
                         <Calculator weight="bold" size={32} />
                     </div>
                     <div className="space-y-1">
-                        <h1 className="text-3xl font-black text-slate-900 tracking-tight leading-none">Technical Development</h1>
+                        <h1 className="text-3xl font-black text-slate-900 tracking-tight leading-none">DESIGN TEKNIK</h1>
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
                             Production Setup & TC Analysis
@@ -139,7 +139,7 @@ export default function DTPanel() {
       </div>
 
       <GlobalInputForm
-        title="Update Progress (DT / CAD)"
+        title="Update Progress DESIGN TEKNIK (DT / CAD)"
         collectionName="proses_dt_b"
         autoGenPrefix="DT-PROC"
         isProgressUpdate={true}

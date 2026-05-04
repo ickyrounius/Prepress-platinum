@@ -22,6 +22,8 @@ import {
   Cube
 } from '@phosphor-icons/react';
 import { resolveWorkflowStatus, classifyWorkflowStatus } from '@/lib/workflow';
+import { getFieldValue } from '@/lib/fieldStandardization';
+import { useAuth } from '@/features/auth/AuthContext';
 import TrendChart from '@/components/dashboard/TrendChart';
 import WorkloadChart from '@/components/dashboard/WorkloadChart';
 import { cn } from '@/lib/utils';
@@ -116,7 +118,6 @@ const StatCard = ({ title, value, icon: Icon, colorClass }: StatCardProps) => {
 };
 
 import { useRoleStats } from '@/hooks/useRoleStats';
-import { useAuth } from '@/features/auth/AuthContext';
 
 export default function DTDashboard() {
   const { user } = useAuth();
@@ -175,9 +176,9 @@ export default function DTDashboard() {
     });
 
     filteredItems.forEach(item => {
-      const dateVal = item.tgl_no_jop || item.DATE || item.timestamp_input;
+      const dateVal = getFieldValue(item, 'JOP_DATE') || getFieldValue(item, 'LAST_UPDATED');
       if (dateVal) {
-        const d = new Date(dateVal);
+        const d = new Date(dateVal as string | number | Date);
         const dayStr = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
         const point = last7Days.find(p => p.date === dayStr);
         if (point) point.value++;
@@ -203,8 +204,8 @@ export default function DTDashboard() {
             <Monitor weight="bold" size={28} />
           </div>
           <div>
-            <h1 className="text-3xl font-black tracking-tight text-slate-800 dark:text-slate-100">DT Dashboard</h1>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Desktop & CAD Monitoring Performance</p>
+            <h1 className="text-3xl font-black tracking-tight text-slate-800 dark:text-slate-100">DESIGN TEKNIK Dashboard</h1>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">DESIGN TEKNIK Monitoring Performance</p>
           </div>
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-4">
@@ -254,7 +255,7 @@ export default function DTDashboard() {
               </div>
               <div>
                 <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 uppercase tracking-tight">Tren JOP Masuk (30 Hari)</h3>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Aktivitas Volume Technical design</p>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Aktivitas Volume DESIGN TEKNIK</p>
               </div>
           </div>
           <div className="h-80">
@@ -280,8 +281,8 @@ export default function DTDashboard() {
 
       <motion.div variants={itemVariants} className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-[3rem] p-8 shadow-sm">
         <div className="mb-6">
-          <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 uppercase tracking-tight">Kanban Proses DT</h3>
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Board khusus proses divisi DT/CAD</p>
+          <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 uppercase tracking-tight">Kanban Proses DESIGN TEKNIK</h3>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Board khusus proses divisi DESIGN TEKNIK</p>
         </div>
         <KanbanBoard data={kanbanItems} />
       </motion.div>

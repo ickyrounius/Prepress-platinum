@@ -31,7 +31,6 @@ export default function RegisterPage() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Create a user document in Firestore with pending status
       await setDoc(doc(db, "T_USERS", user.uid), {
         NAMA: name,
         EMAIL: email,

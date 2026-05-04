@@ -5,6 +5,8 @@ import { motion } from 'framer-motion';
 import { ArrowsCounterClockwise, DownloadSimple, ChartBar, Kanban } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
 import type { JosTypeFilter, JopTypeFilter, DateRange } from '@/lib/types';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
 
 interface FilterHeaderProps {
   viewMode: 'overview' | 'kanban';
@@ -31,6 +33,8 @@ export default function FilterHeader({
   onResetFilters,
   onExportPDF,
 }: FilterHeaderProps) {
+  const router = useRouter();
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -61,9 +65,10 @@ export default function FilterHeader({
 
         <div className="hidden xl:block h-6 w-[1px] bg-slate-200 mx-2"></div>
 
-        <button 
-          onClick={() => window.location.reload()}
-          className="flex items-center gap-3 px-5 py-2.5 bg-indigo-50 hover:bg-indigo-100 rounded-2xl border border-indigo-100 transition-all group w-full sm:w-auto justify-center"
+        <Button
+          onClick={() => router.refresh()}
+          variant="secondary"
+          className="h-auto gap-3 px-5 py-2.5 bg-indigo-50 hover:bg-indigo-100 rounded-2xl border-indigo-100 group w-full sm:w-auto justify-center"
         >
           <div className="relative flex items-center justify-center">
             <div className="absolute w-3 h-3 bg-emerald-400 rounded-full animate-ping opacity-75"></div>
@@ -72,7 +77,7 @@ export default function FilterHeader({
           <span className="text-[9px] sm:text-[10px] font-black text-indigo-600 uppercase tracking-widest leading-none flex items-center gap-2">
             Live Sync <ArrowsCounterClockwise className="group-hover:rotate-180 transition-transform duration-700" weight="bold" />
           </span>
-        </button>
+        </Button>
       </div>
 
       <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto justify-center sm:justify-end">
@@ -124,19 +129,19 @@ export default function FilterHeader({
           </select>
         </div>
         <div className="flex gap-2 w-full sm:w-auto justify-center sm:justify-end">
-          <button
+          <Button
             onClick={onResetFilters}
-            className="p-3 bg-slate-900 text-white rounded-2xl hover:bg-black transition-all active:scale-95 group shadow-lg"
+            className="p-3 h-auto bg-slate-900 text-white rounded-2xl hover:bg-black transition-all active:scale-95 group shadow-lg"
             title="Reset Filters"
           >
             <ArrowsCounterClockwise weight="bold" className="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" />
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={onExportPDF}
-            className="flex-1 sm:flex-none px-4 py-3 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 transition-all active:scale-95 shadow-lg flex items-center justify-center gap-2 text-[10px] sm:text-[11px] font-black uppercase tracking-widest"
+            className="flex-1 sm:flex-none h-auto px-4 py-3 rounded-2xl shadow-lg text-[10px] sm:text-[11px] font-black uppercase tracking-widest"
           >
             <DownloadSimple weight="bold" className="w-4 h-4" /> PDF
-          </button>
+          </Button>
         </div>
       </div>
     </motion.div>

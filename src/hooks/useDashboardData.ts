@@ -6,6 +6,8 @@ import type { DashboardItem, JosTypeFilter, JopTypeFilter } from '@/lib/types';
 
 export function useDashboardData(collectionsToFetch?: string[]) {
   const [rawItems, setRawItems] = useState<DashboardItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [josTypeFilter, setJosTypeFilter] = useState<JosTypeFilter>('ALL');
   const [jopTypeFilter, setJopTypeFilter] = useState<JopTypeFilter>('ALL');
   const [dateRange, setDateRange] = useState({
@@ -77,6 +79,8 @@ export function useDashboardData(collectionsToFetch?: string[]) {
   }, [filteredItems]);
 
   useEffect(() => {
+    setIsLoading(true);
+    setError(null);
     const defaultCollections = [
       'proses_dt_b',
       'proses_jod',
@@ -90,8 +94,23 @@ export function useDashboardData(collectionsToFetch?: string[]) {
     const dbCollections = collectionsToFetch && collectionsToFetch.length > 0 ? collectionsToFetch : defaultCollections;
     const activeUnsubscribes: (() => void)[] = [];
     const combinedItemsMap: Record<string, DashboardItem[]> = {};
+    let updateTimeout: NodeJS.Timeout;
+    let hasReceivedSnapshot = false;
     
     dbCollections.forEach(col => { combinedItemsMap[col] = []; });
+
+    // Debounced update function to prevent excessive state updates
+    const scheduleUpdate = () => {
+      clearTimeout(updateTimeout);
+      updateTimeout = setTimeout(() => {
+        const allItems = Object.values(combinedItemsMap).flat();
+        setRawItems(allItems);
+        if (!hasReceivedSnapshot) {
+          hasReceivedSnapshot = true;
+          setIsLoading(false);
+        }
+      }, 300); // Batch updates every 300ms instead of on every listener change
+    };
 
     dbCollections.forEach(colName => {
         const q = query(
@@ -106,14 +125,19 @@ export function useDashboardData(collectionsToFetch?: string[]) {
                 items.push({ id: doc.id, sourceType, ...doc.data() } as DashboardItem);
             });
             combinedItemsMap[colName] = items;
-            setRawItems(Object.values(combinedItemsMap).flat());
+            scheduleUpdate();
         }, (err) => {
           console.error(`Error streaming ${colName}:`, err);
+          setError('Gagal memuat data dashboard. Coba refresh halaman.');
+          setIsLoading(false);
         });
         activeUnsubscribes.push(unsub);
     });
 
-    return () => activeUnsubscribes.forEach(unsub => unsub());
+    return () => {
+      clearTimeout(updateTimeout);
+      activeUnsubscribes.forEach(unsub => unsub());
+    };
   }, [collectionsToFetch]);
 
   const productivityData = useMemo(() => {
@@ -178,6 +202,8 @@ export function useDashboardData(collectionsToFetch?: string[]) {
 
   return {
     rawItems,
+    isLoading,
+    error,
     filteredItems,
     stats,
     productivityData,

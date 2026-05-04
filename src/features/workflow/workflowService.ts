@@ -33,8 +33,6 @@ export const updateJOPData = async (id: string, role: string, payload: Record<st
       LAST_UPDATED: serverTimestamp(),
     };
     const nowStr = new Date().toISOString();
-    
-    console.log(`[workflowService] Updating JOP ${id} for role ${role}`);
 
     if (role === 'spv') {
       updates = {

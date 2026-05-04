@@ -12,16 +12,16 @@
     "locks": {
       ".read": "auth != null",
       "$jobId": {
-        ".write": "auth != null",
-        ".validate": "newData.hasChildren(['activeUser', 'timestamp'])"
+        ".write": "auth != null && ((!data.exists() && newData.exists() && newData.child('activeUser/uid').val() === auth.uid) || (data.exists() && !newData.exists() && data.child('activeUser/uid').val() === auth.uid))",
+        ".validate": "newData.hasChildren(['activeUser', 'timestamp']) && newData.child('activeUser/uid').isString() && newData.child('timestamp').isNumber()"
       }
     },
     "active_jobs": {
       ".read": "auth != null",
       "$collection": {
         "$jobId": {
-          ".write": "auth != null",
-          ".validate": "newData.hasChildren(['id']) && (newData.child('timestamp_update').exists() || newData.child('timestamp_input').exists() || newData.child('LAST_UPDATED').exists())"
+          ".write": "auth != null && ((!data.exists() && newData.exists() && newData.child('operator_id').isString() && newData.child('operator_id').val() === auth.uid) || (data.exists() && newData.exists() && newData.child('operator_id').isString() && newData.child('operator_id').val() === auth.uid) || (data.exists() && !newData.exists() && data.child('operator_id').isString() && data.child('operator_id').val() === auth.uid))",
+          ".validate": "newData.hasChildren(['id', 'operator_id']) && newData.child('operator_id').isString() && (newData.child('timestamp_update').exists() || newData.child('timestamp_input').exists() || newData.child('LAST_UPDATED').exists())"
         }
       }
     }

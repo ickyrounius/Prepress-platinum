@@ -15,9 +15,11 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { importDataFromGSheet } from '@/features/gsheet/gsheetService';
 import { useNotification } from '@/features/notification/NotificationContext';
+import { useAuth } from '@/features/auth/AuthContext';
 
 export default function AdminPanel() {
   const { notify } = useNotification();
+  const { user } = useAuth();
   const [stats, setStats] = useState({
     users: 0,
     jop: 0,
@@ -56,10 +58,15 @@ export default function AdminPanel() {
   const [importType, setImportType] = useState<'JOP' | 'JOS' | null>(null);
 
   const handleImport = async (type: 'JOP' | 'JOS') => {
+    if (!user?.uid) {
+      notify("Sesi login tidak valid. Silakan login ulang.", "error");
+      return;
+    }
+
     setIsImporting(true);
     setImportType(type);
     try {
-      const result = await importDataFromGSheet(type);
+      const result = await importDataFromGSheet(type, user.uid);
       if (result.success) {
         notify(`Berhasil mengimport ${result.importedCount} data ${type}!`, "success");
       } else {
@@ -205,6 +212,6 @@ export default function AdminPanel() {
   );
 }
 
-function cn(...classes: any[]) {
+function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(' ');
 }

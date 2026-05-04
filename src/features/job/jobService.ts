@@ -13,7 +13,7 @@ import {
   orderBy,
   Timestamp
 } from 'firebase/firestore';
-import { ref, set, onValue, remove } from 'firebase/database';
+import { ref, set, onValue, remove, runTransaction } from 'firebase/database';
 import { JopData, BlueprintLog, QCLog, UserLock } from './jobTypes';
 import { generateUniqueId, DEPT_CODES } from '@/lib/types/schema';
 
@@ -33,8 +33,23 @@ export const saveJOP = async (
   formData: Partial<JopData> & { IS_RELAYOUT?: boolean }
 ): Promise<{ status: string; message: string }> => {
   try {
+    // Comprehensive field validation
     if (!formData.NO_JOP && !formData.IS_RELAYOUT) {
       throw new Error('JOP No wajib diisi!');
+    }
+    
+    // Validate required fields to prevent incomplete records
+    const requiredFields = ['TIPE_JOP', 'BUYER', 'NAMA_JOP'];
+    const missingFields = requiredFields.filter(
+      field => !formData[field as keyof typeof formData]?.toString().trim()
+    );
+    if (missingFields.length > 0) {
+      throw new Error(`Fields wajib diisi: ${missingFields.join(', ')}`);
+    }
+    
+    // Validate input data types and values
+    if (formData.NO_JOP && (typeof formData.NO_JOP !== 'string' || !formData.NO_JOP.trim())) {
+      throw new Error('NO_JOP harus berupa string yang tidak kosong');
     }
 
     const jopsRef = collection(db, 'workflows_jop');
@@ -133,14 +148,36 @@ export const lockJOP = async (
   id: string,
   userDetails: UserLock['activeUser']
 ) => {
-  await set(ref(rtdb, `locks/${id}`), {
-    activeUser: userDetails,
-    timestamp: Date.now(),
+  const lockRef = ref(rtdb, `locks/${id}`);
+  const result = await runTransaction(lockRef, (current) => {
+    if (current && current.activeUser?.uid && current.activeUser.uid !== userDetails.uid) {
+      return;
+    }
+    return {
+      activeUser: userDetails,
+      timestamp: Date.now(),
+    };
   });
+  if (!result.committed) {
+    throw new Error('JOP sedang dikunci oleh user lain.');
+  }
 };
 
-export const unlockJOP = async (id: string) => {
-  await remove(ref(rtdb, `locks/${id}`));
+export const unlockJOP = async (id: string, userUid?: string) => {
+  const lockRef = ref(rtdb, `locks/${id}`);
+  if (!userUid) {
+    await remove(lockRef);
+    return;
+  }
+
+  const result = await runTransaction(lockRef, (current) => {
+    if (!current) return null;
+    if (current.activeUser?.uid !== userUid) return;
+    return null;
+  });
+  if (!result.committed) {
+    throw new Error('Lock hanya bisa dibuka oleh pemilik lock.');
+  }
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

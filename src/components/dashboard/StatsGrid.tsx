@@ -6,6 +6,7 @@ import { Files, CheckCircle, PencilCircle, Gear, HandPalm, Pulse } from '@phosph
 import { cn } from '@/lib/utils';
 import { getKPIColorClasses } from '@/features/kpi/kpiStyles';
 import type { WorkflowStatusCounts } from '@/lib/types';
+import { Badge } from '@/components/ui/badge';
 
 interface StatsGridProps {
   stats: WorkflowStatusCounts;
@@ -76,11 +77,13 @@ export default function StatsGrid({ stats }: StatsGridProps) {
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 group-hover:text-indigo-500 transition-colors">{card.title}</p>
                 <h3 className={cn(
                   "text-4xl font-black transition-all group-hover:scale-110 origin-left",
-                  card.id === 'Total' ? "text-slate-800" : `text-${card.color}-600`
+                  card.id === 'Total' ? "text-slate-800" : colors.text
                 )}>{statsMap[card.id] || 0}</h3>
                 <div className="mt-4 flex items-center gap-1.5 overflow-hidden">
                   <Pulse className={cn("w-3 h-3 group-hover:animate-pulse", colors.text)} weight="bold" />
-                  <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest">Real-time update</span>
+                  <Badge variant="muted" className="px-2 py-0 text-[8px] text-slate-400 border-slate-200 bg-slate-50">
+                    Real-time update
+                  </Badge>
                 </div>
               </div>
             </motion.div>

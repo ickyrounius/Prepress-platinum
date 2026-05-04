@@ -36,10 +36,14 @@ if (typeof window !== "undefined") {
 const rtdb = getDatabase(app);
 const auth = getAuth(app);
 
-// Guard analytics for client side only
-let analytics;
+// Guard analytics for client side only - properly typed to handle undefined
+let analytics: ReturnType<typeof getAnalytics> | null = null;
 if (typeof window !== "undefined") {
-  analytics = getAnalytics(app);
+  try {
+    analytics = getAnalytics(app);
+  } catch (err) {
+    console.warn('Analytics initialization failed:', err);
+  }
 }
 
 export { app, db, rtdb, auth, analytics };
