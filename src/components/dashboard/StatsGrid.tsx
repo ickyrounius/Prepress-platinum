@@ -59,7 +59,7 @@ export default function StatsGrid({ stats }: StatsGridProps) {
                 variants={itemVariants}
                 whileHover={{ y: -8, scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="relative overflow-hidden bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-100 transition-all hover:shadow-2xl hover:border-indigo-100 group cursor-pointer h-full"
+                className="relative overflow-hidden bg-card p-6 rounded-[2.5rem] shadow-sm border border-border transition-all hover:shadow-2xl hover:border-indigo-500/30 group cursor-pointer h-full"
               >
               <div className={cn(
                 "absolute top-0 right-0 w-24 h-24 rounded-full -mr-12 -mt-12 transition-all group-hover:scale-150 group-hover:opacity-40 opacity-20",
@@ -70,18 +70,18 @@ export default function StatsGrid({ stats }: StatsGridProps) {
                   "w-12 h-12 rounded-2xl flex items-center justify-center mb-5 transition-all shadow-inner",
                   colors.lightBg,
                   colors.text,
-                  "group-hover:text-white group-hover:bg-slate-900 group-hover:shadow-lg"
+                  "group-hover:text-white group-hover:bg-slate-900 group-hover:dark:bg-indigo-600 group-hover:shadow-lg"
                 )}>
                   <card.icon weight="bold" size={24} />
                 </div>
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 group-hover:text-indigo-500 transition-colors">{card.title}</p>
                 <h3 className={cn(
                   "text-4xl font-black transition-all group-hover:scale-110 origin-left",
-                  card.id === 'Total' ? "text-slate-800" : colors.text
+                  card.id === 'Total' ? "text-foreground" : colors.text
                 )}>{statsMap[card.id] || 0}</h3>
                 <div className="mt-4 flex items-center gap-1.5 overflow-hidden">
                   <Pulse className={cn("w-3 h-3 group-hover:animate-pulse", colors.text)} weight="bold" />
-                  <Badge variant="muted" className="px-2 py-0 text-[8px] text-slate-400 border-slate-200 bg-slate-50">
+                  <Badge variant="muted" className="px-2 py-0 text-[8px] text-muted-foreground border-border bg-muted">
                     Real-time update
                   </Badge>
                 </div>

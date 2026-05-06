@@ -11,7 +11,8 @@ import {
   serverTimestamp,
   deleteDoc,
   orderBy,
-  Timestamp
+  Timestamp,
+  limit
 } from 'firebase/firestore';
 import { ref, set, onValue, remove, runTransaction } from 'firebase/database';
 import { JopData, BlueprintLog, QCLog, UserLock } from './jobTypes';
@@ -184,30 +185,32 @@ export const unlockJOP = async (id: string, userUid?: string) => {
 // Firestore Listeners
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Listen ke semua JOP yang belum Closed, diurutkan berdasarkan LAST_UPDATED terbaru. */
+/** Listen ke semua JOP yang belum Selesai/Done, diurutkan berdasarkan update terbaru. */
 export const listenToMergedData = (callback: (data: JopData[]) => void) => {
-  const q = query(collection(db, 'workflows_jop'));
+  // Ditambahkan limit 500 untuk mencegah download data berlebih jika database membengkak.
+  // Idealnya menggunakan pagination, namun limit ini cukup untuk dashboard operasional.
+  const q = query(
+    collection(db, 'workflows_jop'),
+    orderBy('LAST_UPDATED', 'desc'),
+    limit(500)
+  );
 
   return onSnapshot(
     q,
     (snapshot) => {
-      const changes: JopData[] = [];
+      const activeJobs: JopData[] = [];
       snapshot.forEach((d) => {
         const item = d.data() as JopData;
         const status = String(item.ST_WF_JOP || item.ST_WORKFLOW || '').toUpperCase();
+        
+        // Tetap filter di client untuk fleksibilitas pengecekan multi-field, 
+        // namun query sudah dibatasi 500 data terbaru.
         if (!['CLOSED', 'DONE', 'CANCEL'].includes(status)) {
-          changes.push(item);
+          activeJobs.push(item);
         }
       });
 
-      // Sort client-side agar tidak perlu index tambahan
-      changes.sort((a, b) => {
-        const aTime = (a.LAST_UPDATED as Timestamp)?.seconds ?? 0;
-        const bTime = (b.LAST_UPDATED as Timestamp)?.seconds ?? 0;
-        return bTime - aTime;
-      });
-
-      callback(changes);
+      callback(activeJobs);
     },
     (error: unknown) => {
       console.error('[jobService] listenToMergedData error:', error);
