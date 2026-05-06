@@ -121,7 +121,17 @@ export function useDashboardData(collectionsToFetch?: string[]) {
         const unsub = onSnapshot(q, (snapshot) => {
             const items: DashboardItem[] = [];
             snapshot.forEach(doc => {
-                const sourceType = colName === 'proses_dt_b' ? 'DT' : colName === 'proses_jod' ? 'DG' : colName === 'proses_support_b' ? 'SUPPORT' : 'PROD';
+                const sourceTypeMap: Record<string, DashboardItem['sourceType']> = {
+                  proses_dt_b: 'DT',
+                  proses_jod: 'DG',
+                  proses_ctp_b: 'CTP',
+                  proses_ctcp_b: 'CTCP',
+                  proses_flexo_b: 'FLEXO',
+                  proses_etching_b: 'ETCHING',
+                  proses_screen_b: 'SCREEN',
+                  proses_support_b: 'SUPPORT',
+                };
+                const sourceType: DashboardItem['sourceType'] = sourceTypeMap[colName] ?? 'PROD';
                 items.push({ id: doc.id, sourceType, ...doc.data() } as DashboardItem);
             });
             combinedItemsMap[colName] = items;

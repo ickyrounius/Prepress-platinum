@@ -1,16 +1,19 @@
 export interface DashboardItem extends Record<string, unknown> {
   id: string;
-  sourceType: 'DT' | 'DG' | 'PROD' | 'SUPPORT';
+  sourceType: 'DT' | 'DG' | 'CTP' | 'CTCP' | 'FLEXO' | 'SCREEN' | 'ETCHING' | 'GMG' | 'CNC' | 'BLUEPRINT' | 'QC' | 'PROD' | 'SUPPORT';
 }
 
 export interface UserData {
   uid: string;
   NAMA: string;
+  displayName?: string; // Fallback name
   email: string;
-  KATEGORI: string;
+  KATEGORI: string; // Used for Role mapping
   role?: string;
   permissions?: string[];
   active?: boolean;
+  ACTIVE?: boolean; // Firestore casing
+  LAST_LOGIN?: string;
   updated_at?: number;
 }
 
