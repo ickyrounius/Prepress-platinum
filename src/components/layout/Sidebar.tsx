@@ -220,12 +220,12 @@ const MENU_QC: MenuItem[] = [
 
 const MENU_PREPRESS: MenuItem[] = [
   { name: 'Dashboard Prepress', href: '/dashboard/prepress', icon: LayoutDashboard },
-  { name: 'Panel Prepress',     href: '/panel/prepress',     icon: Printer },
+  { name: 'Request Prepress',     href: '/panel/prepress',     icon: Printer },
 ];
 
 const MENU_PRODUCTION: MenuItem[] = [
   { name: 'Dashboard Produksi', href: '/dashboard/production', icon: LayoutDashboard },
-  { name: 'Panel Produksi',     href: '/panel/production',     icon: Wrench },
+  { name: 'Panel Prepress',     href: '/panel/production',     icon: Wrench },
 ];
 
 const MENU_SUPPORT: MenuItem[] = [
@@ -282,6 +282,8 @@ function getOperationalMenu(role: string | null): MenuItem[] {
   if (!role) return [];
   const r = normalizeRole(role);
   if ((ADMIN_ROLES as readonly string[]).includes(r)) return []; // handled by groups
+
+  if (r === 'UMUM') return MENU_PREPRESS;
 
   if (r === 'ADMIN DT')       return [...MENU_DT, ...MENU_QC];
   if (r === 'ADMIN DG')       return [...MENU_DG, ...MENU_QC];

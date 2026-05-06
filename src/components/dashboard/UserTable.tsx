@@ -6,14 +6,11 @@ import {
   CaretUpDown, MagnifyingGlass, UserCircle, 
   Envelope, IdentificationBadge, ShieldCheck,
   Trash, CheckCircle, MinusCircle, UserCirclePlus,
-  ChartLineUp
+  ChartLineUp, Clock
 } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
 import { ROLE_SELECT_GROUPS } from '@/lib/userRoles';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 
 interface UserData {
   id: string;
@@ -22,6 +19,7 @@ interface UserData {
   email?: string;
   lastLogin?: string;
   ACTIVE?: boolean;
+  VALIDATED?: boolean;
 }
 
 interface UserTableProps {
@@ -29,9 +27,10 @@ interface UserTableProps {
   onUpdateRole: (uid: string, newRole: string) => void;
   onDelete: (uid: string, name: string) => void;
   onToggleStatus: (uid: string, currentStatus: boolean) => void;
+  onToggleValidation: (uid: string, currentValidation: boolean) => void;
 }
 
-export const UserTable = ({ users, onUpdateRole, onDelete, onToggleStatus }: UserTableProps) => {
+export const UserTable = ({ users, onUpdateRole, onDelete, onToggleStatus, onToggleValidation }: UserTableProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortKey, setSortKey] = useState<keyof UserData>('KATEGORI');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
@@ -74,12 +73,12 @@ export const UserTable = ({ users, onUpdateRole, onDelete, onToggleStatus }: Use
       <div className="flex flex-col sm:flex-row items-center gap-4 bg-white p-4 rounded-[1.5rem] border border-slate-100 shadow-sm">
         <div className="relative flex-1 w-full">
           <MagnifyingGlass className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" weight="bold" />
-          <Input
+          <input 
             type="text" 
             placeholder="Cari nama, email, atau departemen..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-11 pr-4 py-3 h-auto bg-slate-50 border-none text-sm font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500/20"
+            className="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-xl text-sm font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
           />
         </div>
         <div className="px-4 py-2 bg-indigo-50 rounded-xl border border-indigo-100 flex items-center gap-2">
@@ -106,6 +105,7 @@ export const UserTable = ({ users, onUpdateRole, onDelete, onToggleStatus }: Use
                         <CaretUpDown className="group-hover:text-indigo-500" />
                     </div>
                 </th>
+                <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">VALIDASI</th>
                 <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">STATUS</th>
                 <th className="px-6 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">LOGIN TERAKHIR</th>
                 <th className="px-6 py-5 text-right text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">AKSI</th>
@@ -136,18 +136,36 @@ export const UserTable = ({ users, onUpdateRole, onDelete, onToggleStatus }: Use
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <Badge className={cn("inline-flex items-center gap-2 px-4 py-1.5 text-[9px] shadow-sm", getRoleStyle(user.KATEGORI))}>
+                      <div className={cn(
+                        "inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest shadow-sm",
+                        getRoleStyle(user.KATEGORI)
+                      )}>
                         <ShieldCheck weight="bold" className="w-3 h-3" />
                         {user.KATEGORI}
-                      </Badge>
+                      </div>
                     </td>
                     <td className="px-6 py-4">
-                      <Button
-                        onClick={() => onToggleStatus(user.id, user.ACTIVE ?? true)}
-                        variant="ghost"
-                        size="sm"
+                      <button 
+                        onClick={() => onToggleValidation(user.id, user.VALIDATED ?? false)}
                         className={cn(
-                          "inline-flex items-center gap-2 px-3 py-1 h-auto rounded-lg text-[9px] font-black uppercase tracking-widest transition-all",
+                          "inline-flex items-center gap-2 px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all",
+                          (user.VALIDATED ?? false) 
+                            ? "bg-emerald-50 text-emerald-600 hover:bg-emerald-100" 
+                            : "bg-amber-50 text-amber-600 hover:bg-amber-100"
+                        )}
+                      >
+                        {(user.VALIDATED ?? false) ? (
+                          <><CheckCircle weight="bold" /> DIVALIDASI</>
+                        ) : (
+                          <><Clock weight="bold" /> PENDING</>
+                        )}
+                      </button>
+                    </td>
+                    <td className="px-6 py-4">
+                      <button 
+                        onClick={() => onToggleStatus(user.id, user.ACTIVE ?? true)}
+                        className={cn(
+                          "inline-flex items-center gap-2 px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all",
                           (user.ACTIVE ?? true) 
                             ? "bg-emerald-50 text-emerald-600 hover:bg-emerald-100" 
                             : "bg-rose-50 text-rose-600 hover:bg-rose-100"
@@ -158,7 +176,7 @@ export const UserTable = ({ users, onUpdateRole, onDelete, onToggleStatus }: Use
                         ) : (
                           <><MinusCircle weight="bold" /> INACTIVE</>
                         )}
-                      </Button>
+                      </button>
                     </td>
                     <td className="px-6 py-4">
                       <p className="text-[10px] font-bold text-slate-500 uppercase flex items-center gap-2">
@@ -182,15 +200,13 @@ export const UserTable = ({ users, onUpdateRole, onDelete, onToggleStatus }: Use
                           currentRole={user.KATEGORI} 
                           onUpdate={(newRole) => onUpdateRole(user.id, newRole)} 
                         />
-                        <Button
+                        <button 
                           onClick={() => onDelete(user.id, user.displayName || 'User')}
-                          variant="ghost"
-                          size="sm"
                           className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all group/del"
                           title="Hapus User"
                         >
                           <Trash size={18} weight="bold" className="group-hover/del:scale-110 transition-transform" />
-                        </Button>
+                        </button>
                       </div>
                     </td>
                   </motion.tr>
@@ -209,15 +225,13 @@ function RoleSelector({ currentRole, onUpdate }: { currentRole: string, onUpdate
 
   return (
     <div className="relative inline-block text-left">
-        <Button
+        <button 
           onClick={() => setIsOpen(!isOpen)}
-          variant="ghost"
-          size="sm"
           className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-200 hover:border-indigo-300 hover:bg-slate-100 rounded-lg text-[9px] font-black uppercase tracking-widest text-slate-600 transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
         >
           <span>ROLE</span>
           <CaretUpDown weight="bold" className="text-slate-400" />
-        </Button>
+        </button>
 
       <AnimatePresence>
         {isOpen && (
@@ -243,16 +257,14 @@ function RoleSelector({ currentRole, onUpdate }: { currentRole: string, onUpdate
                       {group.label}
                     </p>
                     {group.options.map((option) => (
-                      <Button
+                      <button
                         key={option}
                         onClick={() => {
                           onUpdate(option);
                           setIsOpen(false);
                         }}
-                        variant="ghost"
-                        size="sm"
                         className={cn(
-                          "w-full h-auto text-left px-4 py-2.5 text-[10px] font-bold uppercase tracking-wide flex items-center justify-between group/btn transition-colors",
+                          "w-full text-left px-4 py-2.5 text-[10px] font-bold uppercase tracking-wide flex items-center justify-between group/btn transition-colors",
                           currentRole === option 
                             ? "bg-indigo-50 text-indigo-600" 
                             : "text-slate-600 hover:bg-slate-50 hover:text-indigo-500"
@@ -260,7 +272,7 @@ function RoleSelector({ currentRole, onUpdate }: { currentRole: string, onUpdate
                       >
                         {option}
                         {currentRole === option && <ShieldCheck weight="fill" className="text-indigo-500" />}
-                      </Button>
+                      </button>
                     ))}
                   </div>
                 ))}

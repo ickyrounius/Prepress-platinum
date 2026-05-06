@@ -24,6 +24,7 @@ export const USER_ROLES = [
   "GMG",
   "CNC",
   "BLUEPRINT",
+  "UMUM",
 ] as const;
 
 export type UserRole = typeof USER_ROLES[number];
@@ -34,6 +35,7 @@ export const ROLE_SELECT_GROUPS: Array<{ label: string; options: UserRole[] }> =
   { label: "Design Department", options: ["SPV DG", "DG", "DS", "SPV DT", "DT", "CAD", "QC"] },
   { label: "Prepress Department", options: ["SPV PREPRESS", "KOORDINATOR", "PRODUCTION", "OP CTP", "OP CTCP", "OP FLEXO", "OP SCREEN", "OP ETCHING"] },
   { label: "Support Department", options: ["SUPPORT DESIGN", "GMG", "CNC", "BLUEPRINT"] },
+  { label: "Umum", options: ["UMUM"] },
 ];
 
 export function isValidUserRole(role: string): role is UserRole {
