@@ -62,11 +62,23 @@ export interface JopData {
   
   // Archival info
   HOLD_REASON?: string;
+  HOLD_STARTED_AT?: number;
+  HOLD_DURATION_HOURS?: number;
   TINDAKAN_KOREKTIF?: string;
   REVISI_KE?: number;
+
+  // Approval
+  approvedBy?: string;
+  approvedAt?: string;
+  rejectedReason?: string;
+  approvalStatus?: 'PENDING' | 'APPROVED' | 'REJECTED';
+
+  // Search
+  searchable?: string;
   
   // Metadata
   LAST_UPDATED?: unknown;
+  LAST_UPDATED_BY?: string;
   
   // Legacy support / generic
   [key: string]: unknown;
@@ -120,6 +132,23 @@ export interface JosData {
   CYCLE_TIME?: number;
   WAITING_TIME?: number;
   DELAY_TIME?: number;
+
+  // HOLD timer
+  HOLD_REASON?: string;
+  HOLD_STARTED_AT?: number;
+  HOLD_DURATION_HOURS?: number;
+  REVISI_KE?: number;
+
+  // Approval
+  approvedBy?: string;
+  approvedAt?: string;
+  rejectedReason?: string;
+  approvalStatus?: 'PENDING' | 'APPROVED' | 'REJECTED';
+
+  // Search
+  searchable?: string;
+  LAST_UPDATED_BY?: string;
+  JENIS_BAHAN?: string;
   
   // Feedback
   [key: string]: unknown;
@@ -276,3 +305,54 @@ export interface ScreenData {
   SELESAI?: string;
   [key: string]: unknown;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NEW Types — Architecture Redesign
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface DailyKPI {
+  date: string;           // YYYYMMDD
+  uid: string;
+  NAMA: string;
+  completedJOS: number;
+  completedJOP: number;
+  overdueJOS: number;
+  overdueJOP: number;
+  revisionCount: number;
+  avgLeadTime: number;
+  holdHours: number;
+  updatedAt: number;
+}
+
+export interface PrepressChecklist {
+  id?: string;
+  jobId: string;
+  NO_B: string;
+  checkedBy: string;
+  checkedAt: number;
+  bleedOK: boolean;
+  overprintOK: boolean;
+  dpiOK: boolean;
+  barcodeOK: boolean;
+  trappingOK: boolean;
+  profileOK: boolean;
+  fontOK: boolean;
+  outputBlocked: boolean;
+}
+
+export interface PresenceData {
+  online: boolean;
+  displayName: string;
+  lastSeen: number;
+  currentPanel: string;
+}
+
+export interface DashboardCounters {
+  waiting: number;
+  inProgress: number;
+  hold: number;
+  revision: number;
+  lastUpdated: number;    // minute-precision epoch
+}
+
+export type DeptKey = 'DT' | 'DG' | 'PREPRESS' | 'SUPPORT';

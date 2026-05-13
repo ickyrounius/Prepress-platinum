@@ -179,6 +179,20 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // ── Prepress Checklists ──────────────────────────────────────────────────
+    match /prepress_checklists/{docId} {
+      allow read: if isSignedIn();
+      allow create, update: if isAdminLike() || isPrepress() || isQC();
+      allow delete: if isAdminLike();
+    }
+
+    // ── Daily KPI (pre-aggregated) ──────────────────────────────────────────
+    match /daily_kpi/{docId} {
+      allow read: if isAdminLike() || (isSignedIn() && docId.matches('.*_' + request.auth.uid));
+      allow create, update: if isSignedIn() && docId.matches('.*_' + request.auth.uid);
+      allow delete: if isAdminLike();
+    }
+
     // ── Default DENY ─────────────────────────────────────────────────────────
     match /{document=**} {
       allow read, write: if false;

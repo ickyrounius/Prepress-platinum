@@ -1,160 +1,106 @@
 'use client';
 
-import React from 'react';
-import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { cn } from '@/lib/utils';
-import { JopData, JosData } from '@/features/job/jobTypes';
-import { resolveWorkflowStatus } from '@/lib/workflow';
-import { Badge } from '@/components/ui/badge';
-import { 
-  FileText,
-  Circle, Clock, CheckCircle, 
-  WarningCircle, PauseCircle,
-  Stack
-} from '@phosphor-icons/react';
+import React, { useMemo } from 'react';
+import StatusPill from '@/components/ui/StatusPill';
+import { JopData } from '@/features/job/jobTypes';
+import { useJobList } from '@/hooks/useJobList';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
+import Spinner from '@/components/ui/Spinner';
 
-export type KanbanItem = (JopData | JosData) & { sourceType?: 'DG' | 'DT' | 'PROD' };
+const COLUMNS = ['WAITING', 'IN_PROGRESS', 'REVIEW', 'HOLD', 'DONE'];
 
-interface KanbanBoardProps {
-  data: KanbanItem[];
-}
+export default function KanbanBoard() {
+  const { data, isLoading } = useJobList<JopData>({ 
+    type: 'jop', 
+    statusFilter: ['CANCEL'], // Only active jobs
+    pageSize: 100 
+  });
 
-const COLUMN_CONFIG = [
-  { id: 'pending', title: 'Pending / Assigned', statuses: ['ASSIGNED', 'REVIEW'], color: 'bg-slate-500', icon: Clock },
-  { id: 'prosess', title: 'On Progress', statuses: ['LAYOUT', 'PROSESS', 'PROSES'], color: 'bg-blue-500', icon: Clock },
-  { id: 'review', title: 'Waiting Review', statuses: ['BLUEPRINT', 'ACC DG&MARKETING', 'PREVIEW', 'ACC DG', 'ACC'], color: 'bg-purple-500', icon: WarningCircle },
-  { id: 'hold', title: 'Hold / Revisi', statuses: ['HOLD', 'REVISI', 'REJECT'], color: 'bg-amber-500', icon: PauseCircle },
-  { id: 'closed', title: 'Closed / Done', statuses: ['CLOSED', 'DONE', 'SELESAI'], color: 'bg-emerald-500', icon: CheckCircle },
-];
+  const boardData = useMemo(() => {
+    const columns: Record<string, JopData[]> = {
+      WAITING: [],
+      IN_PROGRESS: [],
+      REVIEW: [],
+      HOLD: [],
+      DONE: [],
+    };
 
-export function KanbanBoard({ data }: KanbanBoardProps) {
-  const getStatusValue = (item: KanbanItem) => {
-    const status = resolveWorkflowStatus(item as Record<string, unknown>, item.sourceType);
-    return status.toUpperCase();
-  };
-
-  const getItemsByColumn = (statuses: string[]) => {
-    return data.filter(item => {
-        const status = getStatusValue(item);
-        return statuses.includes(status);
+    data.forEach(job => {
+      const status = (job.ST_WF_JOP || '').toUpperCase();
+      if (['CLOSED', 'DONE'].includes(status)) {
+        columns.DONE.push(job);
+      } else if (status === 'HOLD' || status === 'REVISI') {
+        columns.HOLD.push(job);
+      } else if (['BLUEPRINT', 'PREVIEW', 'REVIEW'].includes(status)) {
+        columns.REVIEW.push(job);
+      } else if (['LAYOUT', 'ON PROGRESS', 'PROSES'].includes(status)) {
+        columns.IN_PROGRESS.push(job);
+      } else {
+        columns.WAITING.push(job);
+      }
     });
-  };
+
+    return columns;
+  }, [data]);
+
+  if (isLoading) return <div className="p-12 flex justify-center"><Spinner label="Memuat papan produksi..." /></div>;
 
   return (
-    <div className="flex gap-6 overflow-x-auto pb-8 min-h-[600px] custom-scrollbar px-2">
-      {COLUMN_CONFIG.map((col) => {
-        const items = getItemsByColumn(col.statuses);
-        return (
-          <div key={col.id} className="flex-shrink-0 w-80 flex flex-col gap-4">
-            <div className="flex items-center justify-between px-2">
-              <div className="flex items-center gap-2">
-                <div className={cn("w-2 h-2 rounded-full", col.color)}></div>
-                <h3 className="text-[10px] font-black text-slate-700 uppercase tracking-widest">{col.title}</h3>
-              </div>
-              <Badge variant="muted" className="px-2 py-0.5 text-[10px]">
-                {items.length}
-              </Badge>
-            </div>
-
-            <div className="flex-1 bg-slate-50/50 p-3 rounded-[2.5rem] border border-slate-100 space-y-4 min-h-[500px]">
-              {items.length === 0 ? (
-                <div className="h-40 flex flex-col items-center justify-center text-slate-300 gap-2">
-                   <Circle className="w-8 h-8 opacity-20" />
-                   <span className="text-[9px] font-bold uppercase tracking-tighter">No jobs in this stage</span>
-                </div>
-              ) : (
-                items.map((item, i) => {
-                  const isDG = item.sourceType === 'DG';
-                  const isDT = item.sourceType === 'DT';
-                  
-                  const parentId = isDG 
-                    ? (item as JosData).NO_JOS 
-                    : (item as JopData).NO_JOP || (item as any).id || item.ID || 'N/A';
-                    
-                  const childId = isDG 
-                    ? (item as JosData).NO_JOD 
-                    : (item as JopData).NO_B || '-';
-                    
-                  const picUtama = (isDG ? (item as JosData).DESIGNER : (item as JopData).PIC_UTAMA) || 'Unassigned';
-                  const buyer = item.BUYER || '-';
-
-                  // Ensure stable unique key for React reconciliation
-                  const uniqueKey = (item as any).id || item.ID;
-                  if (!uniqueKey) {
-                    console.warn('KanbanBoard: Item missing stable ID for React key', { parentId, childId, i });
-                  }
-                  const stableKey = uniqueKey ? `${uniqueKey}-${parentId}` : `kanban-item-${parentId}-${childId}`;
-
-                  return (
-                    <Link 
-                      href={`/dashboard/data?search=${parentId}`}
-                      key={stableKey}
-                    >
-                      <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.05 }}
-                        className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:border-indigo-200 transition-all cursor-pointer group relative overflow-hidden"
-                      >
-                      {/* Decorative indicator */}
-                      <div className={cn(
-                        "absolute top-0 left-0 w-1 h-full",
-                        isDG ? "bg-pink-500" : isDT ? "bg-blue-500" : "bg-indigo-500"
-                      )}></div>
-
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-start">
-                          <div className="flex flex-col gap-1">
-                             <div className="flex items-center gap-1.5">
-                                <Badge className={cn(
-                                    "px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest text-white border-transparent",
-                                    isDG ? "bg-pink-500" : isDT ? "bg-blue-600" : "bg-indigo-600"
-                                )}>
-                                    {isDG ? 'DG' : isDT ? 'DT' : 'PROD'}
-                                </Badge>
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">{parentId || 'N/A'}</span>
-                             </div>
-                             <div className="flex items-center gap-1 mt-0.5">
-                                <Stack size={14} weight="bold" className="text-slate-300" />
-                                <h4 className="text-[11px] font-black text-slate-800 uppercase line-clamp-1">{childId || 'NO-CHILD'}</h4>
-                             </div>
-                          </div>
-                          <div className="w-8 h-8 bg-slate-50 rounded-xl flex items-center justify-center text-slate-300 group-hover:bg-slate-100 transition-colors">
-                             <FileText size={16} weight="bold" />
-                          </div>
-                        </div>
-
-                        <div className="pt-2">
-                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tight line-clamp-1">{String(buyer)}</p>
-                        </div>
-
-                        <div className="pt-3 border-t border-slate-50 flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                             <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[8px] font-black text-slate-400">
-                                {picUtama.substring(0, 2).toUpperCase()}
-                             </div>
-                             <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">{picUtama}</span>
-                          </div>
-                          
-                          <Badge className={cn(
-                              "px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-tight shadow-sm",
-                              col.color.replace('bg-', 'text-').replace('500', '600'),
-                              col.color.replace('bg-', 'bg-').replace('500', '50')
-                          )}>
-                             {getStatusValue(item)}
-                          </Badge>
-                        </div>
-                      </div>
-                    </motion.div>
-                  </Link>
-                  );
-                })
-              )}
-            </div>
+    <div className="flex h-[calc(100vh-140px)] gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-slate-700">
+      {COLUMNS.map(col => (
+        <div key={col} className="flex flex-col min-w-[300px] max-w-[300px] bg-slate-900/40 rounded-xl border border-slate-700/50">
+          <div className="p-3 border-b border-slate-700/50 flex items-center justify-between">
+            <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{col}</h3>
+            <span className="bg-slate-800 text-[10px] px-1.5 py-0.5 rounded-full text-slate-500 font-mono">
+              {boardData[col]?.length || 0}
+            </span>
           </div>
-        );
-      })}
+          
+          <div className="flex-1 p-2 space-y-2 overflow-y-auto scrollbar-none">
+            {boardData[col]?.map(job => (
+              <JobCard key={job.ID} job={job} />
+            ))}
+            {boardData[col]?.length === 0 && (
+              <div className="h-24 flex items-center justify-center border border-dashed border-slate-800 rounded-lg text-[10px] text-slate-700 italic">
+                Kosong
+              </div>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function JobCard({ job }: { job: JopData }) {
+  return (
+    <div className="bg-slate-800/60 p-3 rounded-lg border border-slate-700/50 hover:border-blue-500/50 transition-all group cursor-pointer">
+      <div className="flex items-start justify-between mb-2">
+        <span className="font-mono text-[10px] font-bold text-blue-400">{job.NO_JOP}</span>
+        <StatusPill status={job.ST_WF_JOP || ''} className="scale-75 origin-right" />
+      </div>
+      
+      <p className="text-xs text-slate-200 font-medium mb-1 line-clamp-2">{job.NAMA_JOP}</p>
+      <p className="text-[10px] text-slate-500 mb-2 truncate">{job.BUYER}</p>
+
+      <div className="flex items-center justify-between pt-2 border-t border-slate-700/50">
+        <div className="flex items-center gap-1.5">
+          <div className="h-4 w-4 rounded-full bg-slate-700 flex items-center justify-center text-[8px] text-slate-400 font-bold">
+            {(job.PIC_UTAMA || '?')[0].toUpperCase()}
+          </div>
+          <span className="text-[10px] text-slate-400 truncate max-w-[80px]">{job.PIC_UTAMA}</span>
+        </div>
+        
+        <div className="flex items-center gap-1">
+          <span className={`text-[9px] font-bold ${
+            job.LEVEL_TC === 'CRITICAL' ? 'text-red-400' : 
+            job.LEVEL_TC === 'COMPLEX' ? 'text-orange-400' : 
+            'text-slate-500'
+          }`}>
+            {job.LEVEL_TC?.slice(0,3)}
+          </span>
+        </div>
+      </div>
     </div>
   );
 }

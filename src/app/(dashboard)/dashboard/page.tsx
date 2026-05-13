@@ -1,135 +1,97 @@
 'use client';
 
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useAuth } from '@/features/auth/AuthContext';
-import { recordAuditLog } from '@/features/audit-log/auditLogService';
-import { exportToPDF } from '@/features/report/exportPDF';
-import { KanbanBoard, type KanbanItem } from '@/components/dashboard/KanbanBoard';
-import StatsGrid from '@/components/dashboard/StatsGrid';
-import FilterHeader from '@/components/dashboard/FilterHeader';
-import DashboardCharts from '@/components/dashboard/DashboardCharts';
-import { useDashboardData } from '@/hooks/useDashboardData';
-import type { JosTypeFilter, JopTypeFilter } from '@/lib/types';
-import { useRouter } from 'next/navigation';
-import { normalizeRole } from '@/lib/accessControl';
-import { resolveWorkflowStatus } from '@/lib/workflow';
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.3
-    }
-  }
-};
+import React from 'react';
+import { usePresence } from '@/hooks/usePresence';
+import { useUserStore } from '@/lib/store/useUserStore';
+import PresenceBar from '@/components/dashboard/PresenceBar';
+import DeptCounterWidget from '@/components/dashboard/DeptCounterWidget';
+import JobQueueTable, { JOP_COLUMNS, JOS_COLUMNS } from '@/components/dashboard/JobQueueTable';
+import { useJobList } from '@/hooks/useJobList';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
 
 export default function DashboardPage() {
-  const { user, role, loading } = useAuth();
-  const router = useRouter();
-  const [viewMode, setViewMode] = useState<'overview' | 'kanban'>('overview');
-
-  // Redirect based on role if not Admin or UMUM
-  React.useEffect(() => {
-    if (loading || !role) return;
-    const r = normalizeRole(role);
-    const ADMIN_ROLES = ["ADMIN", "DEVELOPER", "MANAGER"];
-    
-    if (!ADMIN_ROLES.includes(r) && r !== 'UMUM') {
-      if (['DT', 'CAD', 'SPV DT', 'ADMIN DT'].includes(r)) router.push('/dashboard/dt');
-      else if (['DG', 'DS', 'SPV DG', 'ADMIN DG'].includes(r)) router.push('/dashboard/dg');
-      else if (['PRODUCTION', 'SPV PREPRESS', 'KOORDINATOR', 'OP CTP', 'OP CTCP', 'OP FLEXO', 'OP SCREEN', 'OP ETCHING', 'ADMIN PREPRESS'].includes(r)) router.push('/dashboard/prepress');
-      else if (['SUPPORT DESIGN', 'GMG', 'CNC', 'BLUEPRINT'].includes(r)) router.push('/dashboard/support');
-    }
-  }, [role, loading, router]);
+  const { user } = useUserStore();
+  const { onlineUsers } = usePresence(user?.uid || null, user?.NAMA || 'Anonymous', 'dashboard');
 
   const {
-    filteredItems,
-    stats,
-    josTypeFilter,
-    setJosTypeFilter,
-    jopTypeFilter,
-    setJopTypeFilter,
-    dateRange,
-    setDateRange,
-    resetFilters,
-    productivityData,
-    trendData
-  } = useDashboardData();
+    data: jopData,
+    isLoading: jopLoading,
+    hasMore: jopHasMore,
+    loadMore: jopLoadMore,
+  } = useJobList({ type: 'jop', statusFilter: ['CLOSED', 'DONE', 'CANCEL'] });
 
-  const exportDashboardPDF = () => {
-    const columns = ['ID', 'Type', 'Buyer', 'Status', 'Sub Status'];
-    const rows = filteredItems.slice(0, 100).map((item) => [
-      String(item.id || '-'),
-      String(item.sourceType || '-'),
-      String(item.buyer || '-'),
-      resolveWorkflowStatus(item as Record<string, unknown>, String(item.sourceType || '')) || '-',
-      String(item.ST_PRO_JOP || '-'),
-    ]);
-    exportToPDF('Prepress Dashboard Report', columns, rows, `prepress-dashboard-${Date.now()}.pdf`);
-    if (user?.uid) {
-      void recordAuditLog({
-        actorUid: user.uid,
-        action: "export_pdf",
-        entityType: "dashboard",
-        entityId: "main_dashboard",
-        metadata: { rows: rows.length, josTypeFilter, jopTypeFilter },
-      });
-    }
-  };
+  const {
+    data: josData,
+    isLoading: josLoading,
+    hasMore: josHasMore,
+    loadMore: josLoadMore,
+  } = useJobList({ type: 'jos', statusFilter: ['CLOSED', 'DONE', 'CANCEL'] });
 
   return (
-    <motion.div
-      initial="hidden"
-      animate="show"
-      variants={containerVariants}
-      className="space-y-8 pb-12"
-    >
-      <FilterHeader
-        viewMode={viewMode}
-        onViewModeChange={setViewMode}
-        dateRange={dateRange}
-        onDateRangeChange={setDateRange}
-        josTypeFilter={josTypeFilter}
-        onJosTypeFilterChange={setJosTypeFilter}
-        jopTypeFilter={jopTypeFilter}
-        onJopTypeFilterChange={setJopTypeFilter}
-        onResetFilters={resetFilters}
-        onExportPDF={exportDashboardPDF}
-      />
+    <div className="space-y-6 p-6 pb-24">
+      {/* Header & Presence */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-white tracking-tight">Operational Dashboard</h1>
+          <p className="text-slate-400 text-sm">Real-time production monitoring & control.</p>
+        </div>
+        <PresenceBar onlineUsers={onlineUsers} />
+      </div>
 
-      <AnimatePresence mode="wait">
-        {viewMode === 'overview' ? (
-          <motion.div
-            key="overview"
-            variants={containerVariants}
-            initial="hidden"
-            animate="show"
-            exit={{ opacity: 0, scale: 0.98, transition: { duration: 0.3 } }}
-            className="space-y-8"
-          >
-            <StatsGrid stats={stats} />
-            <DashboardCharts
-              stats={stats}
-              productivityData={productivityData}
-              trendData={trendData}
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <ErrorBoundary panelName="Counter DT">
+          <DeptCounterWidget dept="DT" />
+        </ErrorBoundary>
+        <ErrorBoundary panelName="Counter DG">
+          <DeptCounterWidget dept="DG" />
+        </ErrorBoundary>
+        <ErrorBoundary panelName="Counter Prepress">
+          <DeptCounterWidget dept="PREPRESS" />
+        </ErrorBoundary>
+        <ErrorBoundary panelName="Counter Support">
+          <DeptCounterWidget dept="SUPPORT" />
+        </ErrorBoundary>
+      </div>
+
+      {/* Main Content Split */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        {/* JOP Section */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-slate-200">Active JOP (Technical)</h2>
+            <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">List (Limit 30)</span>
+          </div>
+          <ErrorBoundary panelName="JOP Table">
+            <JobQueueTable
+              data={jopData}
+              columns={JOP_COLUMNS}
+              isLoading={jopLoading}
+              hasMore={jopHasMore}
+              onLoadMore={jopLoadMore}
+              emptyMessage="Tidak ada JOP aktif"
             />
-          </motion.div>
-        ) : (
-          <motion.div
-            key="kanban"
-            initial={{ opacity: 0, x: 50, scale: 0.95 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: -50, scale: 0.95, transition: { duration: 0.3 } }}
-            transition={{ type: "spring", damping: 20, stiffness: 100 }}
-            className="pb-8"
-          >
-            <KanbanBoard data={filteredItems as unknown as KanbanItem[]} />
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
+          </ErrorBoundary>
+        </section>
+
+        {/* JOS Section */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-slate-200">Active JOS (Graphic)</h2>
+            <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">List (Limit 30)</span>
+          </div>
+          <ErrorBoundary panelName="JOS Table">
+            <JobQueueTable
+              data={josData}
+              columns={JOS_COLUMNS}
+              isLoading={josLoading}
+              hasMore={josHasMore}
+              onLoadMore={josLoadMore}
+              emptyMessage="Tidak ada JOS aktif"
+            />
+          </ErrorBoundary>
+        </section>
+      </div>
+    </div>
   );
 }

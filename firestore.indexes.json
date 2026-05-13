@@ -1,4 +1,97 @@
 {
-  "indexes": [],
+  "indexes": [
+    {
+      "collectionGroup": "workflows_jop",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "ST_WF_JOP", "order": "ASCENDING" },
+        { "fieldPath": "LAST_UPDATED", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "workflows_jop",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "TIPE_JOP", "order": "ASCENDING" },
+        { "fieldPath": "ST_WF_JOP", "order": "ASCENDING" },
+        { "fieldPath": "LAST_UPDATED", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "workflows_jop",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "PIC_UTAMA", "order": "ASCENDING" },
+        { "fieldPath": "ST_WF_JOP", "order": "ASCENDING" },
+        { "fieldPath": "LAST_UPDATED", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "workflows_jos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "ST_WF_JOS", "order": "ASCENDING" },
+        { "fieldPath": "LAST_UPDATED", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "workflows_jos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "TIPE_JOS", "order": "ASCENDING" },
+        { "fieldPath": "ST_WF_JOS", "order": "ASCENDING" },
+        { "fieldPath": "LAST_UPDATED", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "workflows_jos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "DESIGNER", "order": "ASCENDING" },
+        { "fieldPath": "ST_WF_JOS", "order": "ASCENDING" },
+        { "fieldPath": "LAST_UPDATED", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "daily_kpi",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "uid", "order": "ASCENDING" },
+        { "fieldPath": "date", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "audit_logs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "entity_id", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "proses_dt_b",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "NO_JOP", "order": "ASCENDING" },
+        { "fieldPath": "LAST_UPDATED", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "workflows_jop",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "searchable", "order": "ASCENDING" },
+        { "fieldPath": "LAST_UPDATED", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "workflows_jos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "searchable", "order": "ASCENDING" },
+        { "fieldPath": "LAST_UPDATED", "order": "DESCENDING" }
+      ]
+    }
+  ],
   "fieldOverrides": []
 }

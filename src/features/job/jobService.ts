@@ -10,13 +10,16 @@ import {
   onSnapshot,
   serverTimestamp,
   deleteDoc,
+  updateDoc,
   orderBy,
   Timestamp,
-  limit
+  limit,
+  increment,
 } from 'firebase/firestore';
 import { ref, set, onValue, remove, runTransaction } from 'firebase/database';
 import { JopData, BlueprintLog, QCLog, UserLock } from './jobTypes';
 import { generateUniqueId, DEPT_CODES } from '@/lib/types/schema';
+import { recordAuditLog } from '../audit-log/auditLogService';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -24,6 +27,20 @@ import { generateUniqueId, DEPT_CODES } from '@/lib/types/schema';
 
 function todayString(): string {
   return new Date().toISOString().split('T')[0];
+}
+
+/** Build normalised searchable string for prefix search */
+function buildSearchableJOP(data: Partial<JopData>): string {
+  return [
+    data.NO_JOP,
+    data.BUYER,
+    data.NAMA_JOP,
+    data.PIC_UTAMA,
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase()
+    .trim();
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -99,6 +116,8 @@ export const saveJOP = async (
       LA: 0, DP: 0,
       TOTAL_TC: 0, REVISI_KE: 0,
       TC_UTAMA: 0, TC_SUPPORT: 0,
+      HOLD_DURATION_HOURS: 0,
+      searchable: buildSearchableJOP(formData),
     };
 
     await setDoc(doc(db, 'workflows_jop', uniqueId), newJop);
@@ -234,4 +253,81 @@ export const listenToQCLogs = (callback: (data: QCLog[]) => void) => {
     snapshot.forEach((d) => changes.push(d.data() as QCLog));
     callback(changes);
   });
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HOLD Timer Logic
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Set a JOP to HOLD — records hold start timestamp */
+export const holdJOP = async (id: string, reason: string, actorUid: string) => {
+  const docRef = doc(db, 'workflows_jop', id);
+  const snap = await getDoc(docRef);
+  if (!snap.exists()) throw new Error('JOP tidak ditemukan!');
+  const before = snap.data() as JopData;
+
+  await updateDoc(docRef, {
+    ST_WF_JOP: 'HOLD',
+    HOLD_STARTED_AT: Date.now(),
+    HOLD_REASON: reason,
+    LAST_UPDATED: serverTimestamp(),
+  });
+
+  await recordAuditLog({
+    actor_uid: actorUid,
+    action: 'hold',
+    entity_type: 'workflows_jop',
+    entity_id: id,
+    before: { ST_WF_JOP: before.ST_WF_JOP },
+    after: { ST_WF_JOP: 'HOLD', HOLD_REASON: reason },
+  });
+};
+
+/** Resume a JOP from HOLD — accumulates hold hours */
+export const resumeJOP = async (
+  id: string,
+  resumeStatus: string,
+  actorUid: string
+) => {
+  const docRef = doc(db, 'workflows_jop', id);
+  const snap = await getDoc(docRef);
+  if (!snap.exists()) throw new Error('JOP tidak ditemukan!');
+  const data = snap.data() as JopData;
+
+  const holdMs = data.HOLD_STARTED_AT ? Date.now() - (data.HOLD_STARTED_AT as number) : 0;
+  const holdHours = holdMs / 3_600_000;
+
+  await updateDoc(docRef, {
+    ST_WF_JOP: resumeStatus,
+    HOLD_DURATION_HOURS: increment(holdHours),
+    HOLD_STARTED_AT: null,
+    LAST_UPDATED: serverTimestamp(),
+  });
+
+  await recordAuditLog({
+    actor_uid: actorUid,
+    action: 'hold',
+    entity_type: 'workflows_jop',
+    entity_id: id,
+    before: { ST_WF_JOP: 'HOLD' },
+    after: { ST_WF_JOP: resumeStatus, addedHoldHours: holdHours },
+  });
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Search (prefix-based on searchable field)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const searchJOP = async (term: string, pageSize = 50): Promise<JopData[]> => {
+  if (!term || term.length < 3) return [];
+  const t = term.toLowerCase();
+  const q = query(
+    collection(db, 'workflows_jop'),
+    where('searchable', '>=', t),
+    where('searchable', '<=', t + '\uf8ff'),
+    orderBy('searchable'),
+    limit(pageSize)
+  );
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => d.data() as JopData);
 };

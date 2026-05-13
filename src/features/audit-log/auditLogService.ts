@@ -2,11 +2,12 @@ import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "../../lib/firebase";
 
 export interface AuditLogPayload {
-  actorUid: string;
+  actor_uid: string;
   action: string;
-  entityType: string;
-  entityId: string;
-  metadata?: Record<string, unknown>;
+  entity_type: string;
+  entity_id: string;
+  before?: Record<string, unknown>;
+  after?: Record<string, unknown>;
 }
 
 /**
@@ -15,12 +16,10 @@ export interface AuditLogPayload {
 export async function recordAuditLog(payload: AuditLogPayload): Promise<void> {
   try {
     await addDoc(collection(db, "audit_logs"), {
-      actor_uid: payload.actorUid,
-      action: payload.action,
-      entity_type: payload.entityType,
-      entity_id: payload.entityId,
-      metadata: payload.metadata || {},
-      timestamp: serverTimestamp(),
+      ...payload,
+      before: payload.before || {},
+      after: payload.after || {},
+      timestamp: Date.now(), // Store as number for easy sorting/filtering
     });
   } catch (error) {
     console.error("Failed to write audit log", error);

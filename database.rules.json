@@ -24,6 +24,18 @@
           ".validate": "newData.hasChildren(['id', 'operator_id']) && newData.child('operator_id').isString() && (newData.child('timestamp_update').exists() || newData.child('timestamp_input').exists() || newData.child('LAST_UPDATED').exists())"
         }
       }
+    },
+    "dashboardCounters": {
+      ".read": "auth != null",
+      "$dept": {
+        ".write": "auth != null"
+      }
+    },
+    "presence": {
+      "$uid": {
+        ".read": "auth != null",
+        ".write": "auth != null && auth.uid === $uid"
+      }
     }
   }
 }
