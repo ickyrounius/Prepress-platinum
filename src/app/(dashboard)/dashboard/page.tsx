@@ -8,6 +8,7 @@ import DeptCounterWidget from '@/components/dashboard/DeptCounterWidget';
 import JobQueueTable, { JOP_COLUMNS, JOS_COLUMNS } from '@/components/dashboard/JobQueueTable';
 import { useJobList } from '@/hooks/useJobList';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
+import { JopData, JosData } from '@/features/job/jobTypes';
 
 export default function DashboardPage() {
   const { user } = useUserStore();
@@ -18,14 +19,14 @@ export default function DashboardPage() {
     isLoading: jopLoading,
     hasMore: jopHasMore,
     loadMore: jopLoadMore,
-  } = useJobList({ type: 'jop', statusFilter: ['CLOSED', 'DONE', 'CANCEL'] });
+  } = useJobList<JopData>({ type: 'jop', statusFilter: ['CLOSED', 'DONE', 'CANCEL'] });
 
   const {
     data: josData,
     isLoading: josLoading,
     hasMore: josHasMore,
     loadMore: josLoadMore,
-  } = useJobList({ type: 'jos', statusFilter: ['CLOSED', 'DONE', 'CANCEL'] });
+  } = useJobList<JosData>({ type: 'jos', statusFilter: ['CLOSED', 'DONE', 'CANCEL'] });
 
   return (
     <div className="space-y-6 p-6 pb-24">

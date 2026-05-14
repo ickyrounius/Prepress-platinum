@@ -30,11 +30,11 @@ interface DeptCounterWidgetProps {
 }
 
 export default function DeptCounterWidget({ dept }: DeptCounterWidgetProps) {
-  const { counters, isLoading } = useDashboardCounters();
-  const c = counters[dept];
+  const store = useDashboardCounters() as { summaries?: any };
+  const c = store.summaries?.[dept] || { waiting: 0, inProgress: 0, hold: 0, revision: 0, updatedAt: null };
 
-  const lastUpdatedStr = c.lastUpdated
-    ? new Date(c.lastUpdated).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+  const lastUpdatedStr = c.updatedAt
+    ? new Date(c.updatedAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
     : '—';
 
   return (
@@ -51,16 +51,16 @@ export default function DeptCounterWidget({ dept }: DeptCounterWidgetProps) {
           {DEPT_LABELS[dept]}
         </h3>
         <span className="text-[10px] text-slate-500">
-          {isLoading ? '...' : lastUpdatedStr}
+          {!c.updatedAt ? '...' : lastUpdatedStr}
         </span>
       </div>
 
       {/* Counter Grid */}
       <div className="grid grid-cols-2 gap-2">
-        <CounterBadge label="Waiting" value={c.waiting} color="text-amber-400" />
-        <CounterBadge label="In Progress" value={c.inProgress} color="text-blue-400" />
-        <CounterBadge label="Hold" value={c.hold} color="text-red-400" />
-        <CounterBadge label="Revisi" value={c.revision} color="text-orange-400" />
+        <CounterBadge label="Waiting" value={c.waiting || 0} color="text-amber-400" />
+        <CounterBadge label="In Progress" value={c.inProgress || 0} color="text-blue-400" />
+        <CounterBadge label="Hold" value={c.hold || 0} color="text-red-400" />
+        <CounterBadge label="Revisi" value={c.revision || 0} color="text-orange-400" />
       </div>
     </div>
   );

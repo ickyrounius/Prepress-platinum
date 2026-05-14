@@ -1,76 +1,80 @@
+/**
+ * useJobStore.ts
+ * Caches paginated job lists per department + filters.
+ * Server state cache — not derived/computed data.
+ */
+
 import { create } from 'zustand';
-import { JopData, JosData } from '@/features/job/jobTypes';
+import type { QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
+import type { DashboardItem } from '../types';
 
-interface JobFilters {
-  status: string[];
-  tipe: string;
-  buyer: string;
-  pic: string;
-  dateRange: { start: string; end: string } | null;
+interface JobStoreState {
+  // Keyed by dept key (e.g. 'DT', 'DG', 'CTP')
+  jobs: Record<string, DashboardItem[]>;
+  // Last pagination cursor per dept key
+  cursors: Record<string, QueryDocumentSnapshot<DocumentData> | null>;
+  // Timestamp of last fetch per dept key
+  lastFetch: Record<string, number>;
+  // Whether there are more pages per dept key
+  hasMore: Record<string, boolean>;
+
+  setJobs: (dept: string, items: DashboardItem[]) => void;
+  appendJobs: (dept: string, items: DashboardItem[], cursor: QueryDocumentSnapshot<DocumentData> | null, hasMore: boolean) => void;
+  updateJob: (dept: string, jobId: string, patch: Partial<DashboardItem>) => void;
+  setCursor: (dept: string, cursor: QueryDocumentSnapshot<DocumentData> | null) => void;
+  invalidate: (dept?: string) => void;
+  isStale: (dept: string, ttlMs?: number) => boolean;
 }
 
-interface JobState {
-  // Data
-  jobs: JopData[];
-  josJobs: JosData[];
-  
-  // UI / Logic State
-  filters: JobFilters;
-  page: number;
-  pageSize: number;
-  lastFetch: number;
-  isLoading: boolean;
-  
-  // Actions
-  setJobs: (jobs: JopData[]) => void;
-  setJosJobs: (jobs: JosData[]) => void;
-  setLoading: (loading: boolean) => void;
-  applyFilter: (key: keyof JobFilters, value: any) => void;
-  resetFilters: () => void;
-  setPage: (page: number) => void;
-  nextPage: () => void;
-  prevPage: () => void;
-  clearStore: () => void;
-}
+const DEFAULT_TTL = 30_000; // 30 seconds
 
-const initialFilters: JobFilters = {
-  status: [],
-  tipe: 'ALL',
-  buyer: '',
-  pic: '',
-  dateRange: null,
-};
+export const useJobStore = create<JobStoreState>((set, get) => ({
+  jobs: {},
+  cursors: {},
+  lastFetch: {},
+  hasMore: {},
 
-export const useJobStore = create<JobState>((set) => ({
-  jobs: [],
-  josJobs: [],
-  
-  filters: initialFilters,
-  page: 1,
-  pageSize: 30,
-  lastFetch: 0,
-  isLoading: false,
+  setJobs: (dept, items) =>
+    set((s) => ({
+      jobs: { ...s.jobs, [dept]: items },
+      lastFetch: { ...s.lastFetch, [dept]: Date.now() },
+    })),
 
-  setJobs: (jobs) => set({ jobs, lastFetch: Date.now() }),
-  setJosJobs: (josJobs) => set({ josJobs, lastFetch: Date.now() }),
-  setLoading: (isLoading) => set({ isLoading }),
-  
-  applyFilter: (key, value) => set((state) => ({
-    filters: { ...state.filters, [key]: value },
-    page: 1 // Reset to first page on filter change
-  })),
-  
-  resetFilters: () => set({ filters: initialFilters, page: 1 }),
-  
-  setPage: (page) => set({ page }),
-  nextPage: () => set((state) => ({ page: state.page + 1 })),
-  prevPage: () => set((state) => ({ page: Math.max(1, state.page - 1) })),
-  
-  clearStore: () => set({
-    jobs: [],
-    josJobs: [],
-    filters: initialFilters,
-    page: 1,
-    lastFetch: 0
-  }),
+  appendJobs: (dept, items, cursor, hasMore) =>
+    set((s) => ({
+      jobs: { ...s.jobs, [dept]: [...(s.jobs[dept] ?? []), ...items] },
+      cursors: { ...s.cursors, [dept]: cursor },
+      hasMore: { ...s.hasMore, [dept]: hasMore },
+      lastFetch: { ...s.lastFetch, [dept]: Date.now() },
+    })),
+
+  updateJob: (dept, jobId, patch) =>
+    set((s) => {
+      const list = s.jobs[dept] ?? [];
+      return {
+        jobs: {
+          ...s.jobs,
+          [dept]: list.map((j) => j.id === jobId ? { ...j, ...patch } : j),
+        },
+      };
+    }),
+
+  setCursor: (dept, cursor) =>
+    set((s) => ({ cursors: { ...s.cursors, [dept]: cursor } })),
+
+  invalidate: (dept) => {
+    if (dept) {
+      set((s) => ({
+        lastFetch: { ...s.lastFetch, [dept]: 0 },
+        cursors:   { ...s.cursors,   [dept]: null },
+      }));
+    } else {
+      set({ lastFetch: {}, cursors: {} });
+    }
+  },
+
+  isStale: (dept, ttlMs = DEFAULT_TTL) => {
+    const last = get().lastFetch[dept] ?? 0;
+    return Date.now() - last > ttlMs;
+  },
 }));

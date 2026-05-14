@@ -1,38 +1,52 @@
-'use client';
-
-import { useEffect, useState } from 'react';
-import { rtdb } from '@/lib/firebase';
-import { ref, onValue, off } from 'firebase/database';
-import { DashboardCounters, DeptKey } from '@/features/job/jobTypes';
-
 /**
- * Hook to subscribe to RTDB dashboardCounters.
- * Returns counters per department, updated at minute-level granularity.
+ * useDashboardCounters.ts
+ * Reads dept_summary/ from Firestore (one-shot, cached via useDeptSummaryStore).
+ * Falls back to RTDB dashboardCounters only if Firestore is unavailable.
+ *
+ * STRATEGY: Read dept_summary once on mount. Skip if cache is fresh (<60s).
+ * Manual refresh triggered by invalidate().
  */
-export function useDashboardCounters() {
-  const [counters, setCounters] = useState<Record<DeptKey, DashboardCounters>>({
-    DT: { waiting: 0, inProgress: 0, hold: 0, revision: 0, lastUpdated: 0 },
-    DG: { waiting: 0, inProgress: 0, hold: 0, revision: 0, lastUpdated: 0 },
-    PREPRESS: { waiting: 0, inProgress: 0, hold: 0, revision: 0, lastUpdated: 0 },
-    SUPPORT: { waiting: 0, inProgress: 0, hold: 0, revision: 0, lastUpdated: 0 },
-  });
-  const [isLoading, setIsLoading] = useState(true);
+
+import { useEffect, useCallback } from 'react';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../lib/firebase';
+import { useDeptSummaryStore } from '../lib/store/useDeptSummaryStore';
+import type { Department, DeptSummary } from '../lib/types';
+
+const DEPT_IDS: Department[] = ['DT', 'DG', 'CTP', 'CTCP', 'FLEXO', 'ETCHING', 'SCREEN'];
+
+export function useDashboardCounters(dept?: Department) {
+  const { summaries, isStale, setSummary } = useDeptSummaryStore();
+
+  const fetchSummary = useCallback(async (d: Department) => {
+    try {
+      const snap = await getDoc(doc(db, 'dept_summary', d));
+      if (snap.exists()) {
+        setSummary(d, snap.data() as DeptSummary);
+      }
+    } catch {
+      // silently fail — summary is non-critical
+    }
+  }, [setSummary]);
 
   useEffect(() => {
-    const counterRef = ref(rtdb, 'dashboardCounters');
-
-    const handler = onValue(counterRef, (snap) => {
-      const val = snap.val();
-      if (val) {
-        setCounters((prev) => ({ ...prev, ...val }));
+    const targets = dept ? [dept] : DEPT_IDS;
+    for (const d of targets) {
+      if (isStale()) {
+        void fetchSummary(d);
       }
-      setIsLoading(false);
-    });
+    }
+  }, [dept, fetchSummary, isStale]);
 
-    return () => {
-      off(counterRef, 'value', handler as any);
+  if (dept) {
+    return {
+      summary: summaries[dept] ?? null,
+      refresh: () => void fetchSummary(dept),
     };
-  }, []);
+  }
 
-  return { counters, isLoading };
+  return {
+    summaries,
+    refresh: () => DEPT_IDS.forEach((d) => void fetchSummary(d)),
+  };
 }

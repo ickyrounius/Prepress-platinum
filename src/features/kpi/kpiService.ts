@@ -1,69 +1,102 @@
-import { db } from "@/lib/firebase";
-import { doc, updateDoc, setDoc, getDoc, serverTimestamp, increment } from "firebase/firestore";
-import { DailyKPI } from "../job/jobTypes";
-
 /**
- * Increment KPI metrics for a user on a specific date.
- * Uses Firestore FieldValue.increment for atomic updates.
+ * kpiService.ts
+ * Lightweight KPI read/write for daily_kpi collection.
+ *
+ * RULES:
+ * - Doc ID format: YYYY-MM-DD_uid
+ * - Always use batched write: job update + KPI delta in one commit
+ * - HOLD time tracked separately — excluded from performance score
+ * - Overdue uses activeDuration only
  */
-export async function updateDailyKPIMetrics(
-  uid: string,
-  userName: string,
-  metrics: Partial<Omit<DailyKPI, "date" | "uid" | "NAMA" | "updatedAt">>
-): Promise<void> {
-  const today = new Date().toISOString().split("T")[0].replace(/-/g, ""); // YYYYMMDD
-  const docId = `${today}_${uid}`;
-  const docRef = doc(db, "daily_kpi", docId);
 
-  try {
-    // We use setDoc with merge to ensure the document exists
-    const updatePayload: any = {
-      date: today,
-      uid: uid,
-      NAMA: userName,
-      updatedAt: Date.now(),
-    };
+import {
+  doc,
+  getDoc,
+  setDoc,
+  getDocs,
+  query,
+  collection,
+  where,
+  orderBy,
+  limit,
+} from 'firebase/firestore';
+import { db } from '../../lib/firebase';
+import type { DailyKPI, Department } from '../../lib/types';
 
-    // Transform metrics to increments
-    Object.keys(metrics).forEach((key) => {
-      const val = (metrics as any)[key];
-      if (typeof val === "number") {
-        updatePayload[key] = increment(val);
-      } else {
-        updatePayload[key] = val;
-      }
-    });
+const COL = 'daily_kpi';
 
-    await setDoc(docRef, updatePayload, { merge: true });
-  } catch (error) {
-    console.error("Failed to update daily KPI", error);
-  }
+// ─────────────────────────────────────────────────────────────────────────────
+// HELPERS
+// ─────────────────────────────────────────────────────────────────────────────
+
+export function todayKey(): string {
+  return new Date().toISOString().slice(0, 10); // YYYY-MM-DD
 }
 
-/**
- * Specifically handles job completion KPI logic.
- * Should be called when ST_WF_JOP or ST_WF_JOS transitions to DONE/CLOSED.
- */
-export async function recordJobCompletionKPI(
+export function kpiDocId(uid: string, date?: string): string {
+  return `${date ?? todayKey()}_${uid}`;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// READ
+// ─────────────────────────────────────────────────────────────────────────────
+
+export async function getMyKPI(uid: string, date?: string): Promise<DailyKPI | null> {
+  const id = kpiDocId(uid, date);
+  const snap = await getDoc(doc(db, COL, id));
+  return snap.exists() ? (snap.data() as DailyKPI) : null;
+}
+
+export async function getKPIRange(uid: string, days = 30): Promise<DailyKPI[]> {
+  const q = query(
+    collection(db, COL),
+    where('uid', '==', uid),
+    orderBy('date', 'desc'),
+    limit(days)
+  );
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => d.data() as DailyKPI);
+}
+
+export async function getDeptKPI(dept: Department, date?: string): Promise<DailyKPI[]> {
+  const target = date ?? todayKey();
+  const q = query(
+    collection(db, COL),
+    where('dept', '==', dept),
+    where('date', '==', target),
+    limit(30)
+  );
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => d.data() as DailyKPI);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// WRITE — merge delta into today's KPI doc
+// ─────────────────────────────────────────────────────────────────────────────
+
+export function buildKPIDelta(
   uid: string,
-  userName: string,
-  type: "JOS" | "JOP",
-  isOverdue: boolean,
-  leadTime: number
+  displayName: string,
+  dept: Department,
+  delta: Partial<Pick<DailyKPI,
+    'completedJobs' | 'overdueJobs' | 'revisionJobs' | 'activeJobs' | 'approvalCount' | 'holdTime'
+  >>
+): { id: string; data: Partial<DailyKPI> } {
+  const date = todayKey();
+  return {
+    id: kpiDocId(uid, date),
+    data: { date, uid, displayName, dept, updatedAt: Date.now(), ...delta },
+  };
+}
+
+export async function upsertKPI(
+  uid: string,
+  displayName: string,
+  dept: Department,
+  delta: Partial<Pick<DailyKPI,
+    'completedJobs' | 'overdueJobs' | 'revisionJobs' | 'activeJobs' | 'approvalCount' | 'holdTime'
+  >>
 ): Promise<void> {
-  const metrics: any = {};
-  if (type === "JOS") {
-    metrics.completedJOS = 1;
-    if (isOverdue) metrics.overdueJOS = 1;
-  } else {
-    metrics.completedJOP = 1;
-    if (isOverdue) metrics.overdueJOP = 1;
-  }
-  
-  // Note: leadTime average calculation in Firestore is tricky without Cloud Functions.
-  // We'll store sum or just the latest for now, or handle aggregation on the client.
-  // For Spark plan, we'll just track the counts and let client calculate avg from 90-day history if needed,
-  // or we could store totalLeadTime and completedCount to calculate avg.
-  
-  await updateDailyKPIMetrics(uid, userName, metrics);
+  const { id, data } = buildKPIDelta(uid, displayName, dept, delta);
+  await setDoc(doc(db, COL, id), data, { merge: true });
 }

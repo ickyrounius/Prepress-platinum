@@ -30,10 +30,10 @@ const itemVariants = {
 export default function DashboardCharts({ stats, productivityData, trendData }: DashboardChartsProps) {
   const router = useRouter();
   const workflowStatusData = [
-    { name: 'Selesai', value: stats.closed, color: '#10b981', status: 'closed' },
-    { name: 'Review/BP', value: stats.blueprint, color: '#0ea5e9', status: 'aktif' },
-    { name: 'Proses', value: stats.process, color: '#3b82f6', status: 'aktif' },
-    { name: 'Tertunda', value: stats.hold, color: '#f59e0b', status: 'aktif' },
+    { name: 'Selesai', value: stats.done, color: '#10b981', status: 'closed' },
+    { name: 'Review/BP', value: stats.checking + stats.approved, color: '#0ea5e9', status: 'aktif' },
+    { name: 'Proses', value: stats.inProgress, color: '#3b82f6', status: 'aktif' },
+    { name: 'Tertunda', value: stats.hold + stats.revision, color: '#f59e0b', status: 'aktif' },
   ].filter(d => d.value > 0);
 
   return (

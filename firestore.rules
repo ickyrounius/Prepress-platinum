@@ -2,7 +2,11 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    function isSignedIn() { return request.auth != null; }
+    // ── Auth helpers ──────────────────────────────────────────────────────────
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
 
     function userDoc() {
       return get(/databases/$(database)/documents/T_USERS/$(request.auth.uid)).data;
@@ -12,6 +16,8 @@ service cloud.firestore {
       return isSignedIn() && userDoc().KATEGORI in roles;
     }
 
+    // ── Role groups ───────────────────────────────────────────────────────────
+
     function isAdminLike() {
       return hasRole(['ADMIN', 'DEVELOPER', 'MANAGER']);
     }
@@ -20,151 +26,207 @@ service cloud.firestore {
       return hasRole(['ADMIN DT', 'ADMIN DG', 'ADMIN PREPRESS']);
     }
 
-    function isAnyAdmin() { return isAdminLike() || isOperationalAdmin(); }
-
-    function isDT() { return hasRole(['DT', 'SPV DT', 'ADMIN DT', 'CAD']); }
-    function isDG() { return hasRole(['DG', 'DS', 'SPV DG', 'ADMIN DG']); }
-
-    function isPrepress() {
-      return hasRole(['PREPRESS', 'SPV PREPRESS','KOORDINATOR','PRODUCTION',
-        'OP CTP','OP CTCP','OP FLEXO','OP SCREEN','OP ETCHING','ADMIN PREPRESS']);
+    function isAnyAdmin() {
+      return isAdminLike() || isOperationalAdmin();
     }
 
-    function isQC()      { return hasRole(['QC', 'QC INSPECTOR']); }
-    function isSupport() { return hasRole(['SUPPORT', 'SUPPORT DESIGN','GMG','CNC','BLUEPRINT']); }
+    function isDT() {
+      return hasRole(['DT', 'CAD', 'SPV DT', 'ADMIN DT']);
+    }
 
-    function isOwnerWrite() {
-      return isSignedIn() && request.resource.data.operator_id == request.auth.uid;
+    function isDG() {
+      return hasRole(['DG', 'DS', 'SPV DG', 'ADMIN DG']);
+    }
+
+    function isSPV() {
+      return hasRole(['SPV DT', 'SPV DG', 'SPV PREPRESS', 'KOORDINATOR']);
+    }
+
+    function isPrepress() {
+      return hasRole([
+        'PREPRESS', 'SPV PREPRESS', 'KOORDINATOR', 'PRODUCTION',
+        'OP CTP', 'OP CTCP', 'OP FLEXO', 'OP SCREEN', 'OP ETCHING',
+        'ADMIN PREPRESS'
+      ]);
+    }
+
+    function isQC() {
+      return hasRole(['QC', 'QC INSPECTOR']);
+    }
+
+    function isSupport() {
+      return hasRole(['SUPPORT DESIGN', 'GMG', 'CNC', 'BLUEPRINT']);
     }
 
     function isSelf(uid) {
       return isSignedIn() && request.auth.uid == uid;
     }
 
-    function hasImmutableUserSecurityFields(uid) {
-      return request.resource.data.UID == resource.data.UID
-        && request.resource.data.UID == uid
-        && request.resource.data.EMAIL == resource.data.EMAIL
-        && request.resource.data.KATEGORI == resource.data.KATEGORI
-        && request.resource.data.ACTIVE == resource.data.ACTIVE;
+    function isOwner() {
+      return isSignedIn() && (
+        request.resource.data.PIC_UTAMA == request.auth.uid ||
+        request.resource.data.DESIGNER  == request.auth.uid ||
+        request.resource.data.OPERATOR  == request.auth.uid
+      );
     }
 
-    // ── T_USERS ─────────────────────────────────────────────────────────────
+    // ── T_USERS ───────────────────────────────────────────────────────────────
     match /T_USERS/{uid} {
-      allow read: if isAdminLike() || isSelf(uid);
+      allow read:   if isAdminLike() || isSelf(uid);
       allow create: if isAdminLike();
-      allow update: if isAdminLike() || (isSelf(uid) && hasImmutableUserSecurityFields(uid));
+      allow update: if isAdminLike() || (
+        isSelf(uid)
+        && request.resource.data.UID      == resource.data.UID
+        && request.resource.data.EMAIL    == resource.data.EMAIL
+        && request.resource.data.KATEGORI == resource.data.KATEGORI
+        && request.resource.data.ACTIVE   == resource.data.ACTIVE
+      );
       allow delete: if isAdminLike();
     }
 
-    // ── App Settings ────────────────────────────────────────────────────────
+    // ── App Settings ──────────────────────────────────────────────────────────
     match /m_settings/{docId} {
-      allow read: if isSignedIn();
+      allow read:              if isSignedIn();
       allow create, update, delete: if isAdminLike();
     }
 
-    // ── JOS & JOP Workflows ─────────────────────────────────────────────────
-    match /workflows_jos/{docId} {
-      allow read: if isSignedIn();
-      allow create, update: if isAdminLike() || isOperationalAdmin() || isOwnerWrite() || isDT() || isDG() || isPrepress() || isQC() || isSupport();
-      allow delete: if isAdminLike();
-    }
-
+    // ── JOP (Design Technical) ────────────────────────────────────────────────
     match /workflows_jop/{docId} {
-      allow read: if isSignedIn();
-      allow create, update: if isAdminLike() || isOperationalAdmin() || isOwnerWrite() || isDT() || isDG() || isPrepress() || isQC() || isSupport();
+      allow read:   if isSignedIn();
+      allow create: if isAdminLike() || isDT() || isOwner();
+      allow update: if isAdminLike() || isDT() || isQC() || isPrepress() || isOwner();
       allow delete: if isAdminLike();
     }
 
-    // ── Proses collections ──────────────────────────────────────────────────
-    match /proses_jod/{docId} {
-      allow read: if isSignedIn();
-      allow create, update: if isAdminLike() || isDG() || isOwnerWrite();
+    // ── JOS (Design Graphic) ──────────────────────────────────────────────────
+    match /workflows_jos/{docId} {
+      allow read:   if isSignedIn();
+      allow create: if isAdminLike() || isDG() || isOwner();
+      allow update: if isAdminLike() || isDG() || isQC() || isOwner();
       allow delete: if isAdminLike();
     }
 
+    // ── DT Process Board ──────────────────────────────────────────────────────
     match /proses_dt_b/{docId} {
-      allow read: if isSignedIn();
-      allow create, update: if isAdminLike() || isDT() || isQC() || isOwnerWrite();
-      allow delete: if isAdminLike();
+      allow read:          if isSignedIn();
+      allow create, update: if isAdminLike() || isDT() || isQC();
+      allow delete:        if isAdminLike();
     }
 
+    // ── JOD (Design Graphic sub-process) ─────────────────────────────────────
+    match /proses_jod/{docId} {
+      allow read:          if isSignedIn();
+      allow create, update: if isAdminLike() || isDG();
+      allow delete:        if isAdminLike();
+    }
+
+    // ── Prepress Process Collections ──────────────────────────────────────────
     match /proses_prepress_b/{docId} {
-      allow read: if isSignedIn();
-      allow create, update: if isAdminLike() || isPrepress() || isOwnerWrite();
-      allow delete: if isAdminLike();
+      allow read:          if isSignedIn();
+      allow create, update: if isAdminLike() || isPrepress();
+      allow delete:        if isAdminLike();
     }
 
     match /proses_ctp_b/{docId} {
-      allow read: if isSignedIn();
-      allow create, update: if isAdminLike() || isPrepress() || isOwnerWrite();
-      allow delete: if isAdminLike();
+      allow read:          if isSignedIn();
+      allow create, update: if isAdminLike() || isPrepress();
+      allow delete:        if isAdminLike();
     }
 
     match /proses_ctcp_b/{docId} {
-      allow read: if isSignedIn();
-      allow create, update: if isAdminLike() || isPrepress() || isOwnerWrite();
-      allow delete: if isAdminLike();
+      allow read:          if isSignedIn();
+      allow create, update: if isAdminLike() || isPrepress();
+      allow delete:        if isAdminLike();
     }
 
     match /proses_flexo_b/{docId} {
-      allow read: if isSignedIn();
-      allow create, update: if isAdminLike() || isPrepress() || isOwnerWrite();
-      allow delete: if isAdminLike();
+      allow read:          if isSignedIn();
+      allow create, update: if isAdminLike() || isPrepress();
+      allow delete:        if isAdminLike();
     }
 
     match /proses_etching_b/{docId} {
-      allow read: if isSignedIn();
-      allow create, update: if isAdminLike() || isPrepress() || isOwnerWrite();
-      allow delete: if isAdminLike();
+      allow read:          if isSignedIn();
+      allow create, update: if isAdminLike() || isPrepress();
+      allow delete:        if isAdminLike();
     }
 
     match /proses_screen_b/{docId} {
-      allow read: if isSignedIn();
-      allow create, update: if isAdminLike() || isPrepress() || isOwnerWrite();
-      allow delete: if isAdminLike();
+      allow read:          if isSignedIn();
+      allow create, update: if isAdminLike() || isPrepress();
+      allow delete:        if isAdminLike();
     }
 
+    // ── Support Process ───────────────────────────────────────────────────────
     match /proses_support_b/{docId} {
-      allow read: if isSignedIn();
-      allow create, update: if isAdminLike() || isSupport() || isOwnerWrite();
-      allow delete: if isAdminLike();
+      allow read:          if isSignedIn();
+      allow create, update: if isAdminLike() || isSupport();
+      allow delete:        if isAdminLike();
     }
 
+    // ── Prepress Requests ─────────────────────────────────────────────────────
     match /prepress_requests/{docId} {
-      allow read: if isSignedIn();
-      allow create, update: if isAdminLike() || isDT() || isPrepress() || isOwnerWrite();
-      allow delete: if isAdminLike();
+      allow read:          if isSignedIn();
+      allow create, update: if isAdminLike() || isDT() || isPrepress();
+      allow delete:        if isAdminLike();
     }
 
-    // ── Blueprint Logs (jobService → listenToBlueprintLogs) ─────────────────
+    // ── Revisions — append-only ───────────────────────────────────────────────
+    match /revisions/{id} {
+      allow read:   if isSignedIn();
+      allow create: if isSignedIn()
+                    && request.resource.data.changedBy == request.auth.uid;
+      allow update, delete: if isAdminLike();
+    }
+
+    // ── Approvals — SPV/admin create, immutable after APPROVED ───────────────
+    match /approvals/{id} {
+      allow read:   if isSignedIn();
+      allow create: if isSPV() || isAdminLike();
+      allow update: if isAdminLike();
+      allow delete: if false;
+    }
+
+    // ── Dept Summary — pre-aggregated counters ────────────────────────────────
+    match /dept_summary/{dept} {
+      allow read:   if isSignedIn();
+      allow write:  if isAnyAdmin() || isDT() || isDG() || isPrepress() || isQC() || isSupport();
+    }
+
+    // ── Prepress Checklists ───────────────────────────────────────────────────
+    match /prepress_checklists/{docId} {
+      allow read:          if isSignedIn();
+      allow create, update: if isAdminLike() || isPrepress() || isQC();
+      allow delete:        if isAdminLike();
+    }
+
+    // ── Blueprint Logs ────────────────────────────────────────────────────────
     match /logs_blueprint/{logId} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn() && (isAdminLike() || isPrepress() || isQC());
+      allow read:        if isSignedIn();
+      allow create:      if isSignedIn() && (isAdminLike() || isPrepress() || isQC());
       allow update, delete: if isAdminLike();
     }
 
-    // ── QC Logs (jobService → listenToQCLogs) ───────────────────────────────
+    // ── QC Logs ───────────────────────────────────────────────────────────────
     match /logs_qc/{logId} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn() && (isAdminLike() || isQC() || isDT() || isDG());
+      allow read:        if isSignedIn();
+      allow create:      if isSignedIn() && (isAdminLike() || isQC() || isDT() || isDG());
       allow update, delete: if isAdminLike();
     }
 
-    // ── Deleted JOPs / recycle bin (jobService → deleteJOPData) ────────────
+    // ── Deleted JOPs — recycle bin ────────────────────────────────────────────
     match /deleted_jops/{docId} {
-      allow read: if isAnyAdmin();
-      allow create: if isAnyAdmin();
+      allow read:        if isAnyAdmin();
+      allow create:      if isAnyAdmin();
       allow update, delete: if isAdminLike();
     }
 
-    // ── User Activity Logs — log aktivitas per user ──────────────────────────
-    // Path: /user_activity_logs/{uid}/entries/{logId}
+    // ── User Activity Logs — per-user subcollection ───────────────────────────
     match /user_activity_logs/{uid} {
       allow read: if isAdminLike() || request.auth.uid == uid;
 
       match /entries/{logId} {
-        allow read: if isAdminLike() || request.auth.uid == uid;
+        allow read:   if isAdminLike() || request.auth.uid == uid;
         allow create: if isSignedIn()
                       && request.auth.uid == uid
                       && request.resource.data.actor_uid == uid;
@@ -172,28 +234,24 @@ service cloud.firestore {
       }
     }
 
-    // ── Global Audit Logs (immutable) ────────────────────────────────────────
+    // ── Global Audit Logs — immutable ─────────────────────────────────────────
     match /audit_logs/{logId} {
-      allow read: if isAnyAdmin();
-      allow create: if isSignedIn() && request.resource.data.actor_uid == request.auth.uid;
+      allow read:        if isAnyAdmin();
+      allow create:      if isSignedIn()
+                         && request.resource.data.actor_uid == request.auth.uid;
       allow update, delete: if false;
     }
 
-    // ── Prepress Checklists ──────────────────────────────────────────────────
-    match /prepress_checklists/{docId} {
-      allow read: if isSignedIn();
-      allow create, update: if isAdminLike() || isPrepress() || isQC();
-      allow delete: if isAdminLike();
-    }
-
-    // ── Daily KPI (pre-aggregated) ──────────────────────────────────────────
+    // ── Daily KPI — pre-aggregated ────────────────────────────────────────────
     match /daily_kpi/{docId} {
-      allow read: if isAdminLike() || (isSignedIn() && docId.matches('.*_' + request.auth.uid));
-      allow create, update: if isSignedIn() && docId.matches('.*_' + request.auth.uid);
-      allow delete: if isAdminLike();
+      allow read:        if isAdminLike() || isSPV()
+                         || (isSignedIn() && docId.matches('.*_' + request.auth.uid));
+      allow create, update: if isSignedIn()
+                            && docId.matches('.*_' + request.auth.uid);
+      allow delete:      if isAdminLike();
     }
 
-    // ── Default DENY ─────────────────────────────────────────────────────────
+    // ── Default DENY ──────────────────────────────────────────────────────────
     match /{document=**} {
       allow read, write: if false;
     }

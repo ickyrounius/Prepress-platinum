@@ -7,17 +7,25 @@ import { useJobList } from '@/hooks/useJobList';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import Spinner from '@/components/ui/Spinner';
 
+export interface KanbanItem extends Record<string, any> {
+  sourceType?: string;
+  ST_WF_JOP?: string;
+  ST_WF_JOS?: string;
+}
+
 const COLUMNS = ['WAITING', 'IN_PROGRESS', 'REVIEW', 'HOLD', 'DONE'];
 
-export default function KanbanBoard() {
-  const { data, isLoading } = useJobList<JopData>({ 
+export function KanbanBoard({ data: propData }: { data?: KanbanItem[] }) {
+  const { data: fetchedData, isLoading } = useJobList<JopData>({ 
     type: 'jop', 
     statusFilter: ['CANCEL'], // Only active jobs
     pageSize: 100 
   });
 
+  const dataToUse = propData || fetchedData;
+
   const boardData = useMemo(() => {
-    const columns: Record<string, JopData[]> = {
+    const columns: Record<string, any[]> = {
       WAITING: [],
       IN_PROGRESS: [],
       REVIEW: [],
@@ -25,7 +33,7 @@ export default function KanbanBoard() {
       DONE: [],
     };
 
-    data.forEach(job => {
+    dataToUse.forEach(job => {
       const status = (job.ST_WF_JOP || '').toUpperCase();
       if (['CLOSED', 'DONE'].includes(status)) {
         columns.DONE.push(job);

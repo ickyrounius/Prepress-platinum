@@ -36,10 +36,10 @@ const itemVariants = {
 export default function StatsGrid({ stats }: StatsGridProps) {
   const statsMap: Record<string, number> = {
     Total: stats.total,
-    Closed: stats.closed,
-    Blueprint: stats.blueprint,
-    'On Process': stats.process,
-    Hold: stats.hold,
+    Closed: stats.done,
+    Blueprint: stats.checking + stats.approved,
+    'On Process': stats.inProgress,
+    Hold: stats.hold + stats.revision,
   };
 
   return (
