@@ -1,0 +1,335 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "description": "Schema proses per divisi untuk Prepress App (draft review).",
+    "note": "Dokumen ini hanya referensi struktur data. Tidak mengubah implementasi kode."
+  },
+  "common_fields": {
+    "timestamp_input": "epoch_milliseconds",
+    "operator_uid": "firebase_auth_uid",
+    "catatan": "string_optional"
+  },
+  "tc_terms": {
+    "LA": "Loop Approval (indikator revisi approval berulang/terlalu banyak).",
+    "DP": "Deadline Pressure (indikator tekanan deadline)."
+  },
+  "division_schema": {
+    "DG_DS": {
+      "collection": "proses_jod",
+      "doc_id_pattern": "NO_JOD",
+      "key_relation": {
+        "parent": "NO_JOS",
+        "child": "NO_JOD"
+      },
+      "document_shape": {
+        "no_jos": "string",
+        "no_jod": "string",
+        "dept": "DG",
+        "role_type": "DG|DS",
+        "status_dg": "PROSES|PREVIEW|HOLD|DONE|CANCEL",
+        "status_qc": "APPROVED|REJECT|HOLD",
+        "pic_utama": "string_optional",
+        "pic_support": "string_optional",
+        "catatan_spv": "string_optional",
+        "catatan_dg": "string_optional",
+        "tc": {
+          "kt": "number",
+          "rp": "number",
+          "bs": "number",
+          "cad": "number",
+          "la": "number",
+          "dp": "number",
+          "total_tc": "number"
+        },
+        "timestamp_input": "number",
+        "operator_uid": "string"
+      }
+    },
+    "DT_CAD": {
+      "collection": "proses_dt_b",
+      "doc_id_pattern": "AUTO_ID_or_NO_JOP_NO_B",
+      "key_relation": {
+        "parent": "NO_JOP",
+        "child": "NO_B"
+      },
+      "document_shape": {
+        "no_jop": "string",
+        "no_b": "string",
+        "dept": "DT",
+        "role_type": "DT|CAD",
+        "status_dt": "PROSES|BLUEPRINT|ACC DG|HOLD|DONE",
+        "status_cad": "PROSES|HOLD|DONE",
+        "status_qc": "APPROVED|REJECT|HOLD",
+        "pic_utama": "string_optional",
+        "pic_support": "string_optional",
+        "catatan_dt_cad": "string_optional",
+        "tc": {
+          "kt": "number",
+          "rp": "number",
+          "bs": "number",
+          "cad": "number",
+          "la": "number",
+          "dp": "number",
+          "total_tc": "number"
+        },
+        "timestamp_input": "number",
+        "operator_uid": "string"
+      }
+    },
+    "BLUEPRINT": {
+      "collection": "proses_support_b",
+      "doc_id_pattern": "NO_JOP_NO_B_BLUEPRINT",
+      "key_relation": {
+        "parent": "NO_JOP",
+        "child": "NO_B"
+      },
+      "document_shape": {
+        "no_jop": "string",
+        "no_b": "string",
+        "dept": "SUPPORT",
+        "tool": "BLUEPRINT",
+        "status_workflow": "PROSES|HOLD|DONE",
+        "catatan": "string_optional",
+        "timestamp_input": "number",
+        "operator_uid": "string"
+      }
+    },
+    "GMG": {
+      "collection": "proses_support_b",
+      "doc_id_pattern": "NO_JOP_NO_B_GMG",
+      "key_relation": {
+        "parent": "NO_JOP",
+        "child": "NO_B"
+      },
+      "document_shape": {
+        "no_jop": "string",
+        "no_b": "string",
+        "dept": "SUPPORT",
+        "tool": "GMG",
+        "status_workflow": "PROSES|HOLD|DONE",
+        "catatan": "string_optional",
+        "timestamp_input": "number",
+        "operator_uid": "string"
+      }
+    },
+    "CNC": {
+      "collection": "proses_support_b",
+      "doc_id_pattern": "NO_JOP_NO_B_CNC",
+      "key_relation": {
+        "parent": "NO_JOP",
+        "child": "NO_B"
+      },
+      "document_shape": {
+        "no_jop": "string",
+        "no_b": "string",
+        "dept": "SUPPORT",
+        "tool": "CNC",
+        "status_workflow": "PROSES|HOLD|DONE",
+        "catatan": "string_optional",
+        "timestamp_input": "number",
+        "operator_uid": "string"
+      }
+    },
+    "PREPRESS": {
+      "key_relation": {
+        "parent": "NO_JOP",
+        "child": "NO_B"
+      },
+      "collection_by_process": {
+        "CTCP": "proses_ctcp_b",
+        "CTP": "proses_ctp_b",
+        "FLEXO": "proses_flexo_b",
+        "ETCHING": "proses_etching_b",
+        "SCREEN": "proses_screen_b"
+      },
+      "doc_id_pattern": "AUTO_ID_or_NO_JOP_NO_B",
+      "document_shape": {
+        "no_jop": "string",
+        "no_b": "string",
+        "dept": "PREPRESS",
+        "proses_pengerjaan": "CTCP|CTP|FLEXO|ETCHING|SCREEN",
+        "status_workflow": "PROSES|HOLD|DONE",
+        "status_prepress": "APPROVED|REJECT|HOLD",
+        "tahapan_prepress": "PROSES|REVIEW|DONE",
+        "plate_baik": "number_optional",
+        "plate_rusak": "number_optional",
+        "plate_gantian": "number_optional",
+        "catatan_operator": "string_optional",
+        "timestamp_input": "number",
+        "operator_uid": "string"
+      }
+    }
+  },
+  "workflow_parent_schema": {
+    "JOS": {
+      "collection": "workflows_jos",
+      "doc_id": "NO_JOS",
+      "document_shape": {
+        "id": "NO_JOS",
+        "tipe_jos": "JASA|LOCAL|EXPORT",
+        "buyer": "string",
+        "tgl_no_jos": "YYYY-MM-DD",
+        "tgl_target_no_jos": "YYYY-MM-DD",
+        "status_workflow": "ON_PROCESS|HOLD|OVERDUE|CLOSED",
+        "child_jod_ids": [
+          "NO_JOD"
+        ],
+        "created_by": "uid",
+        "created_at": "number",
+        "updated_at": "number"
+      }
+    },
+    "JOP": {
+      "collection": "workflows_jop",
+      "doc_id": "NO_JOP",
+      "document_shape": {
+        "id": "NO_JOP",
+        "source_jos_ids": [
+          "NO_JOS"
+        ],
+        "tipe_jop": "EXPORT|JASA|LOCAL|SMS|KARTON_BOX",
+        "buyer": "string",
+        "nama_produk": "string",
+        "tgl_no_jop": "YYYY-MM-DD",
+        "tgl_target_no_jop": "YYYY-MM-DD",
+        "status_workflow": "ON_PROCESS|HOLD|OVERDUE|CLOSED",
+        "child_no_b_ids": [
+          "NO_B"
+        ],
+        "created_by": "uid",
+        "created_at": "number",
+        "updated_at": "number"
+      }
+    }
+  },
+  "tc_cad_complexity_reference": {
+    "description": "Referensi penilaian kerumitan diecut AutoCAD untuk skor CAD (TC).",
+    "scale": "1_to_5",
+    "levels": [
+      {
+        "level": 1,
+        "label": "Sederhana (Basic)",
+        "bentuk": [
+          "Kotak (box)",
+          "Persegi panjang",
+          "Lingkaran dasar"
+        ],
+        "garis": "Sedikit garis potong (cutting) dan garis lipat (creasing).",
+        "fitur": [
+          "Tanpa lubang interior",
+          "Tanpa sudut tajam khusus",
+          "Tanpa radius khusus"
+        ],
+        "contoh": "Kotak kardus standar"
+      },
+      {
+        "level": 2,
+        "label": "Menengah (Moderate)",
+        "bentuk": [
+          "Bentuk gabungan (persegi dengan flap)"
+        ],
+        "garis": "Mulai menggunakan sudut tumpul (radius/fillet) pada ujung flap.",
+        "fitur": [
+          "Satu atau dua notch (takikan) untuk penguncian"
+        ]
+      },
+      {
+        "level": 3,
+        "label": "Kompleks (Complex)",
+        "bentuk": [
+          "Bentuk diecut khusus (custom contour) dengan kurva"
+        ],
+        "garis": "Kombinasi banyak garis potong dan lipat dalam satu komponen.",
+        "fitur": [
+          "Presisi tinggi pada sudut-sudut dalam",
+          "Sering terdapat perforasi"
+        ]
+      },
+      {
+        "level": 4,
+        "label": "Sangat Kompleks (Highly Complex)",
+        "bentuk": [
+          "Desain pop-up",
+          "Diecut bentuk produk",
+          "Banyak lubang kecil interior"
+        ],
+        "garis": "Kurva organik halus (spline) yang kompleks.",
+        "fitur": [
+          "Jarak antar garis sangat rapat",
+          "Membutuhkan toleransi sangat kecil"
+        ]
+      },
+      {
+        "level": 5,
+        "label": "Sangat Rumit/Teknis (Extreme Complexity)",
+        "bentuk": [
+          "Detail mikro (perforasi super kecil atau huruf)",
+          "Bentuk 3D rumit yang diratakan"
+        ],
+        "garis": "Menggunakan fitur nesting untuk efisiensi material maksimum.",
+        "fitur": [
+          "Kiss-cut (potong stiker tanpa memotong kertas dasar)",
+          "Optimasi tata letak bahan tingkat lanjut"
+        ]
+      }
+    ]
+  },
+  "tc_la_loop_approval_reference": {
+    "description": "Referensi skala Loop Approval (LA) untuk kompleksitas siklus persetujuan desain.",
+    "scale": "1_to_5",
+    "levels": [
+      {
+        "level": 1,
+        "label": "Persetujuan Langsung (Direct Approval)",
+        "alur": "Satu arah (Desainer -> Klien/Atasan).",
+        "kriteria": [
+          "Desain sederhana (contoh: social media post harian)",
+          "Tidak butuh asistensi teknis",
+          "Revisi minor (warna/teks)",
+          "Langsung final"
+        ]
+      },
+      {
+        "level": 2,
+        "label": "Persetujuan Linear (Standard Loop)",
+        "alur": "Bertahap (Desainer -> Editor/Art Director -> Klien).",
+        "kriteria": [
+          "Desain layout standar (brosur, poster)",
+          "Pengecekan elemen visual dasar",
+          "Maksimal 2 kali putaran revisi sebelum final"
+        ]
+      },
+      {
+        "level": 3,
+        "label": "Persetujuan Kolaboratif (Cross-Department)",
+        "alur": "Lintas departemen (Desainer -> Marketing -> Legal/Produksi -> Klien).",
+        "kriteria": [
+          "Desain dengan konten sensitif (iklan cetak, packaging)",
+          "Butuh validasi data/teks dari tim lain",
+          "Pengecekan spesifikasi teknis cetak"
+        ]
+      },
+      {
+        "level": 4,
+        "label": "Persetujuan Bertingkat (Multi-Stage Validation)",
+        "alur": "Prosedural ketat (Konsep -> Mock-up -> Prototype -> Final Approval).",
+        "kriteria": [
+          "Desain identitas merek (branding) atau layout buku/majalah besar",
+          "Melibatkan banyak stakeholder level manajerial",
+          "Butuh dummy fisik sebelum disetujui"
+        ]
+      },
+      {
+        "level": 5,
+        "label": "Persetujuan Strategis & Teknis (High-Stake Loop)",
+        "alur": "Iterasi tanpa batas hingga sempurna (Desainer -> Direksi -> Riset Pasar -> Produksi Massal).",
+        "kriteria": [
+          "Desain produk global atau kampanye skala nasional",
+          "Pengujian usability (untuk UI/UX)",
+          "Toleransi kesalahan nol",
+          "Persetujuan dari level eksekutif tertinggi"
+        ]
+      }
+    ]
+  }
+}
